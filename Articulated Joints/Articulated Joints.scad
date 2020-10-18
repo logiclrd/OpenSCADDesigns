@@ -1,9 +1,10 @@
-detail = $preview ? 7 : 20;
+detail = $preview ? 10 : 10;
 
-joint_tolerance = 0.3;
+joint_tolerance = 1;
 joint_rounding = 0.5;
-joint_spacing = 0.5;
-joint_hook_width = 2;
+base_joint_hook_width = 2;
+base_joint_bar_size = 3;
+number_of_segments = 3;
 
 function find_circle_tangent_from_point(circle_x, circle_y, circle_r, point_x, point_y) =
   // Define the tangent line as (y - point_y) = m * (x - point_x)
@@ -91,32 +92,32 @@ function find_circle_tangent_from_point(circle_x, circle_y, circle_r, point_x, p
   [circle_x + circle_r * cos(angle_to_tangent_point), circle_y + circle_r * sin(angle_to_tangent_point)];
 
 module segment_hull(
-  up_width, up_height, up_inner_diameter, up_outer_diameter,
+  up_width, up_height, previous_down_height, joint_bar_size,
   length,
-  down_width, down_height, down_inner_diameter)
+  down_width, down_height, joint_hook_width, next_joint_bar_size)
 {
   up_edge_left = [-0.5 * up_width, 0, 0.5 * up_height];
   up_edge_right = [0.5 * up_width, 0, 0.5 * up_height];
   
-  up_shoulder_left = [-0.6 * up_width, up_inner_diameter, 0.55 * up_height];
-  up_shoulder_right = [0.6 * up_width, up_inner_diameter, 0.55 * up_height];
+  up_shoulder_left = [-0.6 * up_width, joint_bar_size, 0.55 * up_height];
+  up_shoulder_right = [0.6 * up_width, joint_bar_size, 0.55 * up_height];
   
-  up_opening_top_left = [-0.45 * up_width, 0.5 * up_inner_diameter, 0.85 * up_height];
-  up_opening_top_right = [0.45 * up_width, 0.5 * up_inner_diameter, 0.85 * up_height];
+  up_opening_top_left = [-0.45 * up_width, 0.5 * joint_bar_size, 0.85 * up_height];
+  up_opening_top_right = [0.45 * up_width, 0.5 * joint_bar_size, 0.85 * up_height];
   
-  up_top_left = [-0.4 * up_width, 0.5 * up_outer_diameter, up_height];
-  up_top_right = [0.4 * up_width, 0.5 * up_outer_diameter, up_height];
+  up_top_left = [-0.4 * up_width, 0.5 * previous_down_height, up_height];
+  up_top_right = [0.4 * up_width, 0.5 * previous_down_height, up_height];
   
-  up_bottom_left = [-0.4 * up_width, 0.5 * up_outer_diameter, 0];
-  up_bottom_right = [0.4 * up_width, 0.5 * up_outer_diameter, 0];
+  up_bottom_left = [-0.4 * up_width, 0.5 * previous_down_height, 0];
+  up_bottom_right = [0.4 * up_width, 0.5 * previous_down_height, 0];
   
-  down_offset = 0.5 * up_outer_diameter + length;
+  down_offset = 0.5 * previous_down_height + length;
   
   back_circle_tangent_point = find_circle_tangent_from_point(
     -down_offset, down_height * 0.5, down_height * 0.5,
-    -0.5 * up_outer_diameter, up_height);
-  
-  back_slope = (up_height - back_circle_tangent_point[1]) / (back_circle_tangent_point[0] + 0.5 * up_outer_diameter);
+    -0.5 * previous_down_height, up_height);
+    
+  back_slope = (up_height - back_circle_tangent_point[1]) / (back_circle_tangent_point[0] + 0.5 * previous_down_height);
   
   down_top_height = up_height + back_slope * (length + down_height * 0.5);
 
@@ -168,21 +169,21 @@ module segment_hull(
 }
 
 module segment_rounded(
-  up_width, up_height, up_inner_diameter, up_outer_diameter,
+  up_width, up_height, previous_down_height, joint_bar_size,
   length,
-  down_width, down_height, down_inner_diameter,
-  rounding)
+  down_width, down_height, joint_hook_width, next_joint_bar_size,
+  previous_rounding, rounding)
 {
-  down_offset = 0.5 * up_outer_diameter + length;
+  down_offset = 0.5 * previous_down_height + length;
 
   minkowski()
   {
     intersection()
     {
       segment_hull(
-        up_width, up_height, up_inner_diameter, up_outer_diameter,
+        up_width, up_height, previous_down_height + previous_rounding - rounding, joint_bar_size,
         length,
-        down_width, down_height, down_inner_diameter);
+        down_width, down_height, joint_hook_width, next_joint_bar_size);
 
       union()
       {
@@ -195,7 +196,7 @@ module segment_rounded(
         
         back_circle_tangent_point = find_circle_tangent_from_point(
           -down_offset, down_height * 0.5, down_height * 0.5,
-          -0.5 * up_outer_diameter, up_height);
+          -0.5 * previous_down_height, up_height);
         
         cube_size = down_height + down_offset + down_height;
   
@@ -208,56 +209,62 @@ module segment_rounded(
   }
 }
 
-module segment_with_up_cutout(
-  up_width, up_height, up_inner_diameter, up_outer_diameter,
-  length,
-  down_width, down_height, down_inner_diameter,
-  rounding)
+module up_cutout(
+  up_width, up_height, previous_down_height, joint_bar_size,
+  previous_rounding, rounding)
 {
+  translate([0, 0.5 * joint_bar_size - rounding, 0])
+  minkowski()
+  {
+    translate([-0.25 * up_width + 0.5 * joint_rounding, 0, 0.5 * up_height + previous_rounding - rounding])
+    rotate([0, 90, 0])
+    difference()
+    {
+      cylinder(
+        h = up_width * 0.5 - joint_rounding,
+        r = previous_down_height * 0.5 + joint_tolerance * 1.25, // TODO: why 1.25?
+        $fn = detail * 2.5);
+
+      cylinder(
+        h = up_width * 0.5 + joint_rounding,
+        r = joint_bar_size * 0.5 + joint_rounding,
+        $fn = detail * 1.5);
+    }
+    
+    sphere(
+      r = joint_rounding,
+      $fn = detail);
+  }
+}
+
+module apply_up_cutout(
+  up_width, up_height, previous_down_height, joint_bar_size,
+  length,
+  down_width, down_height, joint_hook_width, next_joint_bar_size,
+  previous_rounding, rounding)
+{
+
   difference()
   {
-    segment_rounded(
-      up_width, up_height, up_inner_diameter, up_outer_diameter,
-      length,
-      down_width, down_height, down_inner_diameter,
-      rounding);
-    
-    translate([0, up_inner_diameter - rounding, 0])
-    minkowski()
-    {
-      translate([-0.25 * up_width + 0.5 * joint_rounding, -rounding, 0.5 * up_height])
-      rotate([0, 90, 0])
-      difference()
-      {
-        cylinder(
-          h = up_width * 0.5 - joint_rounding,
-          r = up_outer_diameter * 0.5 - joint_rounding,
-          $fn = detail * 1.5);
+  children();
 
-        cylinder(
-          h = up_width * 0.5 + joint_rounding,
-          r = up_inner_diameter * 0.5 + joint_rounding,
-          $fn = detail * 1.5);
-      }
-      
-      sphere(
-        r = joint_rounding,
-        $fn = detail);
-    }
+    up_cutout(
+      up_width, up_height, previous_down_height, joint_bar_size,
+      previous_rounding, rounding);
   }
 }
 
 module down_cutout(
-  down_width, down_height, down_inner_diameter,
+  down_width, down_height, joint_hook_width, next_joint_bar_size,
   down_offset,
-  rounding)
+  previous_rounding, rounding)
 {
   union()
   {
     block_height = down_height;
     
-    top_y = -0.5*joint_rounding;
-    bottom_y = -0.5 * down_inner_diameter;
+    top_y = -0.5 * joint_rounding;
+    bottom_y = -0.5 * next_joint_bar_size;
     
     /*
     skew_amount = (top_y - bottom_y) / block_height;
@@ -315,27 +322,27 @@ module down_cutout(
     */
     
     large_cutout_radius = 0.75 * down_height;
-    
+
     minkowski()
     {
       difference()
       {
         hull()
         {
-          translate([-0.5 * (2 * down_width + 2), large_cutout_radius - down_inner_diameter * 0.5, down_height * 0.5 + down_inner_diameter * 0.3])
+          translate([-0.5 * (2 * down_width + 2), large_cutout_radius - next_joint_bar_size * 0.5, down_height * 0.5 + next_joint_bar_size * 0.3])
           rotate([0, 90, 0])
-          cylinder(h = 2 * down_width + 2, r = large_cutout_radius, $fn = detail * 4);
+          cylinder(h = 2 * down_width + 2, r = large_cutout_radius + joint_rounding, $fn = detail * 4);
 
-          translate([-0.5 * (2 * down_width + 2), large_cutout_radius - down_inner_diameter * 0.5, down_height * 0.5 - down_inner_diameter * 0.3])
+          translate([-0.5 * (2 * down_width + 2), large_cutout_radius - next_joint_bar_size * 0.5, down_height * 0.5 - next_joint_bar_size * 0.3])
           rotate([0, 90, 0])
-          cylinder(h = 2 * down_width + 2, r = large_cutout_radius, $fn = detail * 4);
+          cylinder(h = 2 * down_width + 2, r = large_cutout_radius + joint_rounding, $fn = detail * 4);
         }
         
-        translate([-1.5 * large_cutout_radius, down_inner_diameter + joint_rounding + 1, -1.5 * large_cutout_radius])
-        cube([large_cutout_radius * 3, 2 * down_height, large_cutout_radius * 3]);
+        translate([-1.5 * down_height, down_height + 1, -1.5 * large_cutout_radius])
+        cube([3 * down_height, 3 * down_height, 3 * down_height]);
         
         translate([0, 0, large_cutout_radius * 0.5])
-        cube([joint_hook_width + joint_rounding, large_cutout_radius * 2, 2 * down_height], center = true);
+        cube([joint_hook_width + joint_rounding, 2 * down_height, 3 * down_height], center = true);
       }
       
       sphere(
@@ -343,72 +350,170 @@ module down_cutout(
         $fn = detail);
     }
     
-    translate([0, 0, down_height * 0.5])
-    rotate([0, 90, 0])
-    cylinder(h = joint_hook_width + 2 * joint_rounding, r = down_inner_diameter * 0.5, center = true, $fn = detail * 5);
+    difference()
+    {
+      translate([0, 0, large_cutout_radius * 0.5])
+      cube([joint_hook_width - joint_rounding * 0.5, 2 * down_height, 3 * down_height], center = true);
+
+      minkowski()
+      {
+        difference()
+        {
+          translate([0, 0, large_cutout_radius * 0.5])
+          cube([joint_hook_width - 2 * joint_rounding, 2 * down_height, 3 * down_height], center = true);
+
+          translate([0, 0, down_height * 0.5])
+          rotate([0, 90, 0])
+          cylinder(h = joint_hook_width + 2 * joint_rounding, r = 0.5 * next_joint_bar_size + joint_tolerance, center = true, $fn = detail * 5);
+        }
+        
+        sphere(
+          r = joint_rounding,
+          $fn = detail - 3);
+      }
+    }
   }
 }
 
-module segment_with_down_cutout(
-  up_width, up_height, up_inner_diameter, up_outer_diameter,
+module apply_down_cutout(
+  up_width, up_height, previous_down_height, joint_bar_size,
   length,
-  down_width, down_height, down_inner_diameter,
-  rounding)
+  down_width, down_height, joint_hook_width, next_joint_bar_size,
+  previous_rounding, rounding,
+  segment)
 {
-  down_offset = 0.5 * up_outer_diameter + up_width + rounding;
+  down_offset = 0.5 * previous_down_height + up_width + rounding;
   
   difference()
   {
-    segment_with_up_cutout(
-      up_width, up_height, up_inner_diameter, up_outer_diameter,
-      length,
-      down_width, down_height, down_inner_diameter,
-      rounding);
+    children();
 
-    translate([0, up_outer_diameter * 0.5 + length, 0])
+    translate([0, previous_down_height * 0.5 + length, 0])
     down_cutout(
-      down_width, down_height, down_inner_diameter,
+      down_width, down_height, joint_hook_width, next_joint_bar_size,
       down_offset,
-      rounding);
+      previous_rounding, rounding);
   }
 }
 
+module head_segment(height, rounding)
+{
+  translate([0, -rounding, 0])
+  scale(height * 0.1)
+  translate([176, -72.5, 0])
+  rotate([0, 0, 90])
+  import("Snake Head.stl", convexity = 10, center = true);
+}
+
+module segment(
+  up_width, up_height, previous_down_height, joint_bar_size,
+  length,
+  down_width, down_height, joint_hook_width, next_joint_bar_size,
+  previous_rounding, rounding,
+  segment)
+{
+  if (segment == number_of_segments)
+  {
+    apply_up_cutout(
+      up_width, up_height, previous_down_height, joint_bar_size,
+      length,
+      down_width, down_height, joint_hook_width, next_joint_bar_size,
+      0, 0)
+    {
+      head_segment(previous_down_height, rounding);
+    }
+  }
+  else
+  {
+    translate([0, 0, rounding])
+    apply_down_cutout(
+      up_width, up_height, previous_down_height, joint_bar_size,
+      length,
+      down_width, down_height, joint_hook_width, next_joint_bar_size,
+      previous_rounding, rounding,
+      segment)
+    {
+      if (segment == 1)
+        segment_rounded(
+          up_width, up_height, previous_down_height, joint_bar_size,
+          length,
+          down_width, down_height, joint_hook_width, next_joint_bar_size,
+          previous_rounding, rounding);
+      else
+      {
+        apply_up_cutout(
+          up_width, up_height, previous_down_height, joint_bar_size,
+          length,
+          down_width, down_height, joint_hook_width, next_joint_bar_size,
+          previous_rounding, rounding)
+        {
+          segment_rounded(
+            up_width, up_height, previous_down_height, joint_bar_size,
+            length,
+            down_width, down_height, joint_hook_width, next_joint_bar_size,
+            previous_rounding, rounding);
+        }
+      }
+    }
+  }
+}
+
+base_length = 6;
+base_up_width = 5;
+base_up_height = 6;
+base_down_width = 7;
+base_down_height = 6;
+
+tail_length = base_length * 1.5;
+tail_up_width = base_up_width * 0.75;
+tail_up_height = base_up_height * 0.75;
+
+scale_change = 0.05;
+
 function get_factor(segment) = 
-  1 + segment * 0.15;
+  segment <= 1
+  ? 1
+  : (1 + scale_change) * get_factor(segment - 1);
 
 function get_length_y(segment) =
-  get_factor(segment) * 13;
+  (segment == 1 ? tail_length : base_length);
+
+function get_offset_difference_y(segment) =
+  get_factor(segment) * (get_length_y(segment) + 0.5) + 0.5 * get_factor(segment - 1) * base_down_height - get_factor(segment + 1);
 
 function get_offset_y(segment) =
   segment <= 1
   ? 0
-  : get_offset_y(segment - 1) + get_length_y(segment - 1);
+  : get_offset_y(segment - 1) + get_offset_difference_y(segment - 1);
 
-for (segment = [ 1 : 10 ])
+for (segment = [ 3 : number_of_segments ])
 {
+  previous_factor = get_factor(segment - 1);
   factor = get_factor(segment);
   next_factor = get_factor(segment + 1);
 
-  up_width = 7 * factor;
-  up_height = 7 * factor;
-  up_inner_diameter = 2 * factor;
-  up_outer_diameter = 10 * factor;
+  up_width = (segment == 1 ? tail_up_width : base_up_width) * factor;
+  up_height = (segment == 1 ? tail_up_height : base_up_height) * factor;
+  previous_down_height = base_down_height * previous_factor;
 
-  length = 8 * factor;
+  length = get_length_y(segment) * factor;
 
-  down_width = 10 * factor;
-  down_height = 7 * next_factor;
-  down_inner_diameter = 3.5 * factor;
-
+  down_width = base_down_width * factor;
+  down_height = base_down_height * next_factor;
+  joint_hook_width = base_joint_hook_width * factor;
+  joint_bar_size = base_joint_bar_size * factor;
+  next_joint_bar_size = base_joint_bar_size * next_factor;
+  
+  previous_rounding = previous_factor;
   rounding = factor;
 
   translate([0, get_offset_y(segment), 0])
-  segment_with_down_cutout(
-    up_width, up_height, up_inner_diameter, up_outer_diameter,
+  segment(
+    up_width, up_height, previous_down_height, joint_bar_size,
     length,
-    down_width, down_height, down_inner_diameter,
-    rounding);
+    down_width, down_height, joint_hook_width, next_joint_bar_size,
+    previous_rounding, rounding,
+    segment);
     
   echo(str("segment ", segment, " ends at ", get_offset_y(segment + 1)));
 }
-
