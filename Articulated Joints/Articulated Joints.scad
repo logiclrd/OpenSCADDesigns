@@ -1,10 +1,11 @@
-detail = $preview ? 10 : 10;
+detail = $preview ? 10 : 30;
 
 joint_tolerance = 1;
 joint_rounding = 0.5;
 base_joint_hook_width = 2;
 base_joint_bar_size = 3;
-number_of_segments = 3;
+number_of_segments = 23;
+head_extra_spacing = 2;
 
 function find_circle_tangent_from_point(circle_x, circle_y, circle_r, point_x, point_y) =
   // Define the tangent line as (y - point_y) = m * (x - point_x)
@@ -222,7 +223,7 @@ module up_cutout(
     {
       cylinder(
         h = up_width * 0.5 - joint_rounding,
-        r = previous_down_height * 0.5 + joint_tolerance * 1.25, // TODO: why 1.25?
+        r = previous_down_height * 0.5 + joint_tolerance + previous_rounding,
         $fn = detail * 2.5);
 
       cylinder(
@@ -246,7 +247,7 @@ module apply_up_cutout(
 
   difference()
   {
-  children();
+    children();
 
     up_cutout(
       up_width, up_height, previous_down_height, joint_bar_size,
@@ -257,16 +258,17 @@ module apply_up_cutout(
 module down_cutout(
   down_width, down_height, joint_hook_width, next_joint_bar_size,
   down_offset,
-  previous_rounding, rounding)
+  previous_rounding, rounding,
+  extra_spacing)
 {
   union()
   {
+    /*
     block_height = down_height;
     
     top_y = -0.5 * joint_rounding;
     bottom_y = -0.5 * next_joint_bar_size;
     
-    /*
     skew_amount = (top_y - bottom_y) / block_height;
     
     multmatrix(
@@ -327,6 +329,7 @@ module down_cutout(
     {
       difference()
       {
+        translate([0, -extra_spacing, 0])
         hull()
         {
           translate([-0.5 * (2 * down_width + 2), large_cutout_radius - next_joint_bar_size * 0.5, down_height * 0.5 + next_joint_bar_size * 0.3])
@@ -384,6 +387,8 @@ module apply_down_cutout(
 {
   down_offset = 0.5 * previous_down_height + up_width + rounding;
   
+  extra_spacing = segment == (number_of_segments - 1) ? head_extra_spacing : 0;
+  
   difference()
   {
     children();
@@ -392,14 +397,15 @@ module apply_down_cutout(
     down_cutout(
       down_width, down_height, joint_hook_width, next_joint_bar_size,
       down_offset,
-      previous_rounding, rounding);
+      previous_rounding, rounding,
+      extra_spacing);
   }
 }
 
 module head_segment(height, rounding)
 {
-  translate([0, -rounding, 0])
-  scale(height * 0.1)
+  translate([0, -2 * rounding, -rounding])
+  scale(height * 0.15)
   translate([176, -72.5, 0])
   rotate([0, 0, 90])
   import("Snake Head.stl", convexity = 10, center = true);
@@ -414,11 +420,12 @@ module segment(
 {
   if (segment == number_of_segments)
   {
+    translate([0, 0, rounding])
     apply_up_cutout(
       up_width, up_height, previous_down_height, joint_bar_size,
       length,
       down_width, down_height, joint_hook_width, next_joint_bar_size,
-      0, 0)
+      previous_rounding, rounding)
     {
       head_segment(previous_down_height, rounding);
     }
@@ -462,7 +469,7 @@ base_length = 6;
 base_up_width = 5;
 base_up_height = 6;
 base_down_width = 7;
-base_down_height = 6;
+base_down_height = 6.25;
 
 tail_length = base_length * 1.5;
 tail_up_width = base_up_width * 0.75;
@@ -486,7 +493,11 @@ function get_offset_y(segment) =
   ? 0
   : get_offset_y(segment - 1) + get_offset_difference_y(segment - 1);
 
-for (segment = [ 3 : number_of_segments ])
+//difference()
+//{
+//  union()
+//  {
+for (segment = [ 1 : number_of_segments ])
 {
   previous_factor = get_factor(segment - 1);
   factor = get_factor(segment);
@@ -499,7 +510,7 @@ for (segment = [ 3 : number_of_segments ])
   length = get_length_y(segment) * factor;
 
   down_width = base_down_width * factor;
-  down_height = base_down_height * next_factor;
+  down_height = base_down_height * factor;
   joint_hook_width = base_joint_hook_width * factor;
   joint_bar_size = base_joint_bar_size * factor;
   next_joint_bar_size = base_joint_bar_size * next_factor;
@@ -517,3 +528,8 @@ for (segment = [ 3 : number_of_segments ])
     
   echo(str("segment ", segment, " ends at ", get_offset_y(segment + 1)));
 }
+//  }
+//
+//  translate([0, 0, -500])
+//  cube(1000);
+//}
