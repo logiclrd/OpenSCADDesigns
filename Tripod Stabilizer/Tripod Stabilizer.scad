@@ -56,7 +56,7 @@ module arm()
 {
   difference()
   {
-    translate([0, radius_mm / 2, 0]) cube([arm_width_mm, radius_inch * 25.4, 4], center = true);
+    translate([0, radius_mm / 2, 0]) cube([arm_width_mm, radius_inch * 25.4, thickness_mm], center = true);
 
     translate([-0.5 * arm_width_mm + corner_radius_mm, radius_mm - corner_radius_mm, 0])
     outer_corner();
