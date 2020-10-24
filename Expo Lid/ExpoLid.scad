@@ -9,7 +9,7 @@ inner_height = 29;
 bottom_diameter = 14;
 top_outer_diameter = 17.5;
 inner_taper_height = 11;
-inner_diameter = 9.1;
+inner_diameter = 8.75;
 taper_exponent = 2.5;
 vent_width = 1.5;
 vent_depth = 1;
@@ -17,7 +17,8 @@ rib_count = 3;
 rib_full_bridge_height = 13;
 rib_unbridged_depth = 1.8;
 rib_top_offset = 0.8;
-top_attachment_diameter = 10;
+top_attachment_diameter = 9.25;
+top_attachment_taper_amount = 0.72;
 
 /*
 
@@ -97,8 +98,18 @@ module inner_shell_top()
       
       union()
       {
-        translate([0, 0, outer_height])
-        cylinder(inner_height - outer_height + wall_thickness, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter);
+        difference()
+        {
+          translate([0, 0, outer_height])
+          cylinder(inner_height - outer_height + wall_thickness, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter);
+          
+          translate([0, 0, inner_height - 1 + wall_thickness])
+          difference()
+          {
+            cylinder(1, bottom_diameter * 0.5, bottom_diameter * 0.5);
+            cylinder(1, top_attachment_diameter * 0.5, top_attachment_diameter * 0.5 - top_attachment_taper_amount);
+          }
+        }
         
         cylinder(outer_height, 0.5 * bottom_diameter, 0.5 * bottom_diameter);
       }
