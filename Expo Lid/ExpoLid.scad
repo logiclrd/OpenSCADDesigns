@@ -17,6 +17,7 @@ rib_count = 3;
 rib_full_bridge_height = 13;
 rib_unbridged_depth = 1.8;
 rib_top_offset = 0.8;
+top_attachment_diameter = 10;
 
 /*
 
@@ -83,11 +84,39 @@ module outer_shell_swoop()
 
 module inner_shell_top()
 {
-  translate([0, 0, inner_taper_height])
-  difference()
+  union()
   {
-    cylinder(inner_height - inner_taper_height + wall_thickness, inner_diameter * 0.5 + wall_thickness, inner_diameter * 0.5 + wall_thickness);
-    cylinder(inner_height - inner_taper_height, inner_diameter * 0.5, inner_diameter * 0.5);
+    intersection()
+    {
+      translate([0, 0, inner_taper_height])
+      difference()
+      {
+        cylinder(inner_height - inner_taper_height + wall_thickness, inner_diameter * 0.5 + wall_thickness, inner_diameter * 0.5 + wall_thickness);
+        cylinder(inner_height - inner_taper_height, inner_diameter * 0.5, inner_diameter * 0.5);
+      }
+      
+      union()
+      {
+        translate([0, 0, outer_height])
+        cylinder(inner_height - outer_height + wall_thickness, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter);
+        
+        cylinder(outer_height, 0.5 * bottom_diameter, 0.5 * bottom_diameter);
+      }
+    }
+
+    translate([0, 0, outer_height - 1])
+    difference()
+    {
+      cylinder(inner_height - outer_height + 1, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter);
+      cylinder(inner_height - outer_height + 1, 0.5 * top_attachment_diameter - wall_thickness, 0.5 * top_attachment_diameter - wall_thickness);
+    }
+
+    translate([0, 0, outer_height - 2])
+    difference()
+    {
+      cylinder(1, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter);
+      cylinder(1, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter - wall_thickness);
+    }
   }
 }
 
