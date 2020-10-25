@@ -94,21 +94,21 @@ module inner_shell_top()
       translate([0, 0, inner_taper_height])
       difference()
       {
-        cylinder(inner_height - inner_taper_height + wall_thickness, inner_diameter * 0.5 + wall_thickness, inner_diameter * 0.5 + wall_thickness);
-        cylinder(inner_height - inner_taper_height, inner_diameter * 0.5, inner_diameter * 0.5);
+        cylinder(inner_height - inner_taper_height, inner_diameter * 0.5 + wall_thickness, inner_diameter * 0.5 + wall_thickness);
+        cylinder(inner_height - inner_taper_height - wall_thickness, inner_diameter * 0.5, inner_diameter * 0.5);
       }
-      
+
       union()
       {
         difference()
         {
           translate([0, 0, outer_height])
-          cylinder(inner_height - outer_height + wall_thickness, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter);
+          cylinder(inner_height - outer_height, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter);
           
-          translate([0, 0, inner_height])
+          translate([0, 0, inner_height - wall_thickness])
           difference()
           {
-            cylinder(wall_thickness, bottom_diameter * 0.5, bottom_diameter * 0.5);
+            cylinder(wall_thickness + bug_workaround, bottom_diameter * 0.5, bottom_diameter * 0.5);
             cylinder(wall_thickness, top_attachment_diameter * 0.5, top_attachment_diameter * 0.5 - wall_thickness);
           }
         }
@@ -116,12 +116,12 @@ module inner_shell_top()
         cylinder(outer_height, 0.5 * bottom_diameter, 0.5 * bottom_diameter);
       }
     }
-    
+
     cap_outer_diameter = top_attachment_diameter - wall_thickness * 2;
     cap_inner_diameter = max_bridge_diameter;
     bridge_avoidance_amount = (cap_outer_diameter - cap_inner_diameter) * 0.5;
 
-    translate([0, 0, inner_height - bridge_avoidance_amount])
+    translate([0, 0, inner_height - wall_thickness - bridge_avoidance_amount])
     difference()
     {
       cylinder(bridge_avoidance_amount, top_attachment_diameter * 0.5, top_attachment_diameter * 0.5);
@@ -131,8 +131,8 @@ module inner_shell_top()
     translate([0, 0, outer_height - 1])
     difference()
     {
-      cylinder(inner_height - outer_height + 1, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter);
-      cylinder(inner_height - outer_height + 1, 0.5 * top_attachment_diameter - wall_thickness, 0.5 * top_attachment_diameter - wall_thickness);
+      cylinder(inner_height - wall_thickness - outer_height + 1, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter);
+      cylinder(inner_height - wall_thickness - outer_height + 1, 0.5 * top_attachment_diameter - wall_thickness, 0.5 * top_attachment_diameter - wall_thickness);
     }
 
     translate([0, 0, outer_height - 1 - top_attachment_taper_height])
@@ -144,7 +144,7 @@ module inner_shell_top()
     
     if (bug_workaround > 0)
     {
-      translate([0, 0, inner_height - 0.5 * bug_workaround])
+      translate([0, 0, inner_height - wall_thickness - 0.5 * bug_workaround])
       cylinder(bug_workaround, top_attachment_diameter * 0.5 - 0.5 * wall_thickness, top_attachment_diameter * 0.5 - 0.5 * wall_thickness);
     }
   }
