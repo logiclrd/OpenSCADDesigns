@@ -20,6 +20,7 @@ rib_top_offset = 0.8;
 top_attachment_diameter = 9;
 top_attachment_taper_height = 1.25;
 max_bridge_diameter = 2.5;
+bug_workaround = 0.05;
 
 /*
 
@@ -139,6 +140,12 @@ module inner_shell_top()
     {
       cylinder(top_attachment_taper_height, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter);
       cylinder(top_attachment_taper_height, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter - wall_thickness);
+    }
+    
+    if (bug_workaround > 0)
+    {
+      translate([0, 0, inner_height - 0.5 * bug_workaround])
+      cylinder(bug_workaround, top_attachment_diameter * 0.5 - 0.5 * wall_thickness, top_attachment_diameter * 0.5 - 0.5 * wall_thickness);
     }
   }
 }
