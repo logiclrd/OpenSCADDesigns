@@ -19,6 +19,7 @@ rib_unbridged_depth = 1.8;
 rib_top_offset = 0.8;
 top_attachment_diameter = 9;
 top_attachment_taper_height = 1.25;
+max_bridge_diameter = 2.5;
 
 /*
 
@@ -103,16 +104,27 @@ module inner_shell_top()
           translate([0, 0, outer_height])
           cylinder(inner_height - outer_height + wall_thickness, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter);
           
-          translate([0, 0, inner_height - 1 + wall_thickness])
+          translate([0, 0, inner_height])
           difference()
           {
-            cylinder(1, bottom_diameter * 0.5, bottom_diameter * 0.5);
-            cylinder(1, inner_diameter * 0.5, top_attachment_diameter * 0.5 - wall_thickness);
+            cylinder(wall_thickness, bottom_diameter * 0.5, bottom_diameter * 0.5);
+            cylinder(wall_thickness, top_attachment_diameter * 0.5, top_attachment_diameter * 0.5 - wall_thickness);
           }
         }
         
         cylinder(outer_height, 0.5 * bottom_diameter, 0.5 * bottom_diameter);
       }
+    }
+    
+    cap_outer_diameter = top_attachment_diameter - wall_thickness * 2;
+    cap_inner_diameter = max_bridge_diameter;
+    bridge_avoidance_amount = (cap_outer_diameter - cap_inner_diameter) * 0.5;
+
+    translate([0, 0, inner_height - bridge_avoidance_amount])
+    difference()
+    {
+      cylinder(bridge_avoidance_amount, top_attachment_diameter * 0.5, top_attachment_diameter * 0.5);
+      cylinder(bridge_avoidance_amount, cap_outer_diameter * 0.5, cap_inner_diameter * 0.5);
     }
 
     translate([0, 0, outer_height - 1])
@@ -297,6 +309,9 @@ module ribs()
   }
 }
 
+//difference()
+//{
+
 union()
 {
   outer_shell();
@@ -305,3 +320,7 @@ union()
   inner_shell_bottom_with_vents();
   ribs();
 }
+
+//translate([-500, 0, 0])
+//cube(1000);
+//}
