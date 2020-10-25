@@ -17,8 +17,9 @@ rib_count = 3;
 rib_full_bridge_height = 13;
 rib_unbridged_depth = 1.8;
 rib_top_offset = 0.8;
-top_attachment_diameter = 9;
-top_attachment_taper_height = 1.25;
+top_attachment_diameter = 8.95;
+top_attachment_inside_taper_height = 1.25;
+top_attachment_outside_taper_height = 0.6;
 max_bridge_diameter = 2.5;
 bug_workaround = 0.05;
 
@@ -105,11 +106,11 @@ module inner_shell_top()
           translate([0, 0, outer_height])
           cylinder(inner_height - outer_height, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter);
           
-          translate([0, 0, inner_height - wall_thickness])
+          translate([0, 0, inner_height - top_attachment_outside_taper_height])
           difference()
           {
             cylinder(wall_thickness + bug_workaround, bottom_diameter * 0.5, bottom_diameter * 0.5);
-            cylinder(wall_thickness, top_attachment_diameter * 0.5, top_attachment_diameter * 0.5 - wall_thickness);
+            cylinder(wall_thickness, top_attachment_diameter * 0.5, top_attachment_diameter * 0.5 - top_attachment_outside_taper_height * 2);
           }
         }
         
@@ -135,11 +136,11 @@ module inner_shell_top()
       cylinder(inner_height - wall_thickness - outer_height + 1, 0.5 * top_attachment_diameter - wall_thickness, 0.5 * top_attachment_diameter - wall_thickness);
     }
 
-    translate([0, 0, outer_height - 1 - top_attachment_taper_height])
+    translate([0, 0, outer_height - 1 - top_attachment_inside_taper_height])
     difference()
     {
-      cylinder(top_attachment_taper_height, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter);
-      cylinder(top_attachment_taper_height, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter - wall_thickness);
+      cylinder(top_attachment_inside_taper_height, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter);
+      cylinder(top_attachment_inside_taper_height, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter - wall_thickness);
     }
     
     if (bug_workaround > 0)
