@@ -17,8 +17,8 @@ rib_count = 3;
 rib_full_bridge_height = 13;
 rib_unbridged_depth = 1.8;
 rib_top_offset = 0.8;
-top_attachment_diameter = 9.25;
-top_attachment_taper_amount = 0.72;
+top_attachment_diameter = 8.75;
+top_attachment_taper_height = 1.25;
 
 /*
 
@@ -107,7 +107,7 @@ module inner_shell_top()
           difference()
           {
             cylinder(1, bottom_diameter * 0.5, bottom_diameter * 0.5);
-            cylinder(1, top_attachment_diameter * 0.5, top_attachment_diameter * 0.5 - top_attachment_taper_amount);
+            cylinder(1, inner_diameter * 0.5, top_attachment_diameter * 0.5 - wall_thickness);
           }
         }
         
@@ -122,11 +122,11 @@ module inner_shell_top()
       cylinder(inner_height - outer_height + 1, 0.5 * top_attachment_diameter - wall_thickness, 0.5 * top_attachment_diameter - wall_thickness);
     }
 
-    translate([0, 0, outer_height - 2])
+    translate([0, 0, outer_height - 1 - top_attachment_taper_height])
     difference()
     {
-      cylinder(1, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter);
-      cylinder(1, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter - wall_thickness);
+      cylinder(top_attachment_taper_height, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter);
+      cylinder(top_attachment_taper_height, 0.5 * top_attachment_diameter, 0.5 * top_attachment_diameter - wall_thickness);
     }
   }
 }
