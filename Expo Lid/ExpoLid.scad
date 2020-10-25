@@ -17,7 +17,7 @@ rib_count = 3;
 rib_full_bridge_height = 13;
 rib_unbridged_depth = 1.8;
 rib_top_offset = 0.8;
-top_attachment_diameter = 8.75;
+top_attachment_diameter = 9;
 top_attachment_taper_height = 1.25;
 
 /*
