@@ -1,4 +1,5 @@
-square_size_mm = 40;
+base_size_mm = 350;
+square_size_mm = 41;
 edge_bevel_width_mm = 10;
 edge_bevel_height_mm = 4;
 base_height_mm = 15;
@@ -10,7 +11,6 @@ base_tile_join_islands_height_mm = 3;
 outer_wall_tile_gap_height_mm = 3;
 
 board_surface_size_mm = square_size_mm * 8;
-base_size_mm = board_surface_size_mm + 2 * edge_bevel_width_mm;
 
 module square()
 {
