@@ -1,3 +1,7 @@
+base = true;
+black = true;
+white = true;
+
 base_size_mm = 350;
 square_size_mm = 41;
 edge_bevel_width_mm = 10;
@@ -176,16 +180,26 @@ module outer_wall()
   }
 }
 
-union()
+if (base)
 {
-  difference()
+  union()
   {
-    base();
-    base_tiling_pattern();
+    difference()
+    {
+      base();
+      base_tiling_pattern();
+    }
+    
+    outer_wall();
   }
-  
-  outer_wall();
 }
 
-color([0.3, 0.3, 0.3]) black_squares();
-color([0.95, 0.95, 0.95]) white_squares();
+if (black)
+{
+  color([0.3, 0.3, 0.3]) black_squares();
+}
+
+if (white)
+{
+  color([0.95, 0.95, 0.95]) white_squares();
+}
