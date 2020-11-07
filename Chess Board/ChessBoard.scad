@@ -6,6 +6,7 @@ square_height_mm = 2;
 base_tile_size_mm = 48;
 base_tile_height_mm = 8;
 base_tile_edge_thickness_mm = 1.5;
+base_tile_join_islands_height_mm = 3;
 outer_wall_tile_gap_height_mm = 3;
 
 board_surface_size_mm = square_size_mm * 8;
@@ -106,12 +107,27 @@ module base_tile()
   circle_radius_mm = 0.5 * base_tile_size_mm / cos(22.5);
   
   translate([0, 0, -1])
-  rotate([0, 0, 22.5])
   difference()
   {
-    cylinder(base_tile_height_mm + 1, circle_radius_mm + 0.5 * base_tile_edge_thickness_mm, circle_radius_mm + 0.5 * base_tile_edge_thickness_mm, $fn = 8);
-    translate([0, 0, -1])
-    cylinder(base_tile_height_mm + 3, circle_radius_mm - 0.5 * base_tile_edge_thickness_mm, circle_radius_mm - 0.5 * base_tile_edge_thickness_mm, $fn = 8);
+    rotate([0, 0, 22.5])
+    difference()
+    {
+      cylinder(base_tile_height_mm + 1, circle_radius_mm + 0.5 * base_tile_edge_thickness_mm, circle_radius_mm + 0.5 * base_tile_edge_thickness_mm, $fn = 8);
+      translate([0, 0, -1])
+      cylinder(base_tile_height_mm + 3, circle_radius_mm - 0.5 * base_tile_edge_thickness_mm, circle_radius_mm - 0.5 * base_tile_edge_thickness_mm, $fn = 8);
+    }
+    
+    for (edge = [ 0 : 7 ])
+    {
+      rotate([0, 0, 45 * edge])
+      {
+        translate([-3 * base_tile_edge_thickness_mm, base_tile_size_mm * 0.5, 0.5 * base_tile_height_mm + base_tile_height_mm - base_tile_join_islands_height_mm + 1])
+        cube([base_tile_edge_thickness_mm, 2 * base_tile_edge_thickness_mm, base_tile_height_mm], center = true);
+
+        translate([+3 * base_tile_edge_thickness_mm, base_tile_size_mm * 0.5, 0.5 * base_tile_height_mm + base_tile_height_mm - base_tile_join_islands_height_mm + 1])
+        cube([base_tile_edge_thickness_mm, 2 * base_tile_edge_thickness_mm, base_tile_height_mm], center = true);
+      }
+    }
   }
 }
 
@@ -156,7 +172,7 @@ module outer_wall()
   difference()
   {
     cube([base_size_mm, base_size_mm, outer_wall_height], center = true);
-c    cube([base_size_mm - 2 * base_tile_edge_thickness_mm, base_size_mm - 2 * base_tile_edge_thickness_mm, outer_wall_height + 2], center = true);
+    cube([base_size_mm - 2 * base_tile_edge_thickness_mm, base_size_mm - 2 * base_tile_edge_thickness_mm, outer_wall_height + 2], center = true);
   }
 }
 
