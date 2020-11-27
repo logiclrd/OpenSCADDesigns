@@ -1,6 +1,6 @@
 include_mockups = true;
 
-$fn = 60;
+$fn = 80;
 
 wall_thickness = 2;
 inlet_width = 30;
@@ -12,8 +12,6 @@ aetrium_width = 47;
 aetrium_depth = 52;
 aetrium_height = 85;
 aetrium_corner_radius = 10;
-duct_width = 20;
-duct_height = 44;
 ceiling_support_blade_thickness = 0.6;
 ceiling_support_blade_max_spacing = 4;
 
@@ -60,6 +58,8 @@ manifold_vent_z_offset = 1;
 manifold_vent_count = 30;
 
 manifold_vent_radius = 0.5 * manifold_vent_diameter;
+
+manifold_aetrium_connection_segments = $fn * 0.75;
 
 module aetrium_ceiling_outer_wall()
 {
@@ -230,6 +230,7 @@ module aetrium_body()
 
 module aetrium_inlet_cutout()
 {
+  // Slight angle overtop of the fan in the hopes that it'll bridge okay
   translate([-0.5 * aetrium_width - fan_width + inlet_width - wall_thickness * 2, -0.5 * aetrium_depth + 0.25, fan_height - fan_lip_height - 1000])
   intersection()
   {
@@ -249,20 +250,36 @@ module aetrium_inlet_cutout()
        [0, 0, 0, 1]])
     cube([fan_width, aetrium_depth, 1000]);
   }
-  
+
+  // Remove far wall up to fan height
   translate([-0.5 * fan_width - 0.5 * aetrium_width + wall_thickness + 0.5, inlet_depth - 0.5 * aetrium_depth + 0.25, -fan_lip_height])
   cube([fan_width, aetrium_depth, fan_height]);
   
+  // Cut out hole for air intake
   translate([-0.5 * fan_width + 2 * wall_thickness + 0.5, 0.5 * wall_thickness - 0.5 * aetrium_depth, fan_height - fan_outlet_distance_from_center])
   rotate([90, 0, 0])
   cylinder(2 * wall_thickness, fan_intake_radius, fan_intake_radius);
   
+  // Reduce angle at top of air intake cutout
   translate([-0.5 * fan_width + wall_thickness, -0.5 * wall_thickness - 0.5 * aetrium_depth, fan_height - fan_outlet_distance_from_center + fan_intake_radius / sqrt(2)])
   rotate([0, 45, 0])
   cube([fan_intake_radius + wall_thickness + 1 * sqrt(2), 2 * wall_thickness, fan_intake_radius + wall_thickness + 1 * sqrt(2)], center = true);
   
+  // Remove bottom part of circle surrounding air intake cutout
   translate([-0.5 * fan_width + 2 * wall_thickness + 0.5 * fan_intake_radius + 0.5, -0.5 * wall_thickness - 0.5 * aetrium_depth, fan_height - fan_outlet_distance_from_center - 0.5 * fan_intake_radius])
   cube([fan_intake_radius, 2 * wall_thickness, fan_intake_radius], center = true);
+
+  // Reduce angle at bottom of air intake cutout
+  aetrium_outlet_width = aetrium_width - inlet_width - wall_thickness - 0.5;
+  aetrium_outlet_x = aetrium_width * 0.5 - aetrium_outlet_width - wall_thickness;
+  
+  fan_cutout_right_x = -0.5 * fan_width + 2 * wall_thickness + fan_intake_radius + 0.5;
+
+  translate([0, 0, aetrium_outlet_x - fan_cutout_right_x])
+  translate([fan_cutout_right_x, 0, aetrium_corner_radius + wall_thickness])
+  rotate([0, 225, 0])
+  translate([-50, -0.5 * aetrium_depth - 0.5 * wall_thickness, 50])
+  cube([100, 2 * wall_thickness, 100], center = true);
 }
 
 module aetrium_inlet()
@@ -708,8 +725,8 @@ module aetrium()
   
   aetrium_inlet();
   
-  //if (!$preview)
-  //  aetrium_ceiling_supports();
+  if (!$preview)
+    aetrium_ceiling_supports();
 }
 
 module manifold()
@@ -721,6 +738,7 @@ module manifold()
     {
       difference()
       {
+        // Main ring, outer shell
         minkowski()
         {
           translate([0, 0, manifold_rounding_radius + manifold_z])
@@ -729,6 +747,7 @@ module manifold()
           sphere(manifold_rounding_radius);
         }
 
+        // Main ring, inner shell
         difference()
         {
           minkowski()
@@ -739,10 +758,12 @@ module manifold()
             sphere(manifold_rounding_radius - 0.5 * wall_thickness);
           }
 
+          // Inner wall
           translate([0, 0, manifold_z])
           cylinder(18, manifold_radius - 5 + wall_thickness, manifold_radius - 5 + wall_thickness);
         }
         
+        // Inner space
         translate([0, 0, manifold_z])
         cylinder(18, manifold_radius - 5, manifold_radius - 5);
       }
@@ -754,6 +775,24 @@ module manifold()
       
         translate([0, 0, -1])
         cylinder(5, manifold_radius - 5 + 0.5 * wall_thickness, manifold_radius - 5 + 0.5 * wall_thickness);
+      }
+      
+      // Bottom bevel (avoid shallower than 45 degree angle)
+      translate([0, 0, manifold_z])
+      difference()
+      {
+        cylinder(manifold_rounding_radius * (1 - 1 / sqrt(2)), manifold_radius + manifold_rounding_radius * (sqrt(2) - 1), manifold_radius + manifold_rounding_radius / sqrt(2));
+
+        minkowski()
+        {
+          translate([0, 0, manifold_rounding_radius])
+          cylinder(manifold_height - 2 * manifold_rounding_radius, manifold_radius, manifold_radius);
+
+          sphere(manifold_rounding_radius);
+        }
+        
+        translate([0, 0, -1])
+        cylinder(manifold_rounding_radius * (1 - 1 / sqrt(2)) + 2, manifold_radius, manifold_radius);
       }
     }
     
@@ -805,27 +844,67 @@ module manifold_inlet_adaptor()
   {
     difference()
     {
-      intersection()
+      union()
       {
+        intersection()
+        {
+          difference()
+          {
+            // Cuboid with all rounded edges, outer wall
+            translate([0.5 * manifold_radius, 0, 0.5 * manifold_height])
+            minkowski()
+            {
+              cube([manifold_radius, manifold_radius * 2, manifold_height - 2 * manifold_rounding_radius], center = true);
+              sphere(manifold_rounding_radius);
+            }
+
+            // Inner wall
+            translate([0.5 * manifold_radius, 0, 0.5 * manifold_height])
+            minkowski()
+            {
+              cube([manifold_radius, manifold_radius * 2, manifold_height - 2 * manifold_rounding_radius], center = true);
+              sphere(manifold_rounding_radius - 0.5 * wall_thickness);
+            }
+          }
+          
+          // Intersect down to chop off the ends
+          translate([0.5 * manifold_radius, 0, 0.5 * manifold_height])
+          cube([manifold_radius, manifold_radius * 2 + manifold_rounding_radius * 2, manifold_height], center = true);
+        }
+        
+        // height: manifold_rounding_radius * (1 - 1 / sqrt(2))
+        // bottom radius: manifold_radius + manifold_rounding_radius * (sqrt(2) - 1)
+        // top radius: manifold_radius + manifold_rounding_radius / sqrt(2)
+
         difference()
         {
+          union()
+          {
+            // Close bottom edge bevel
+            translate([0, -(manifold_radius + manifold_rounding_radius * (sqrt(2) - 1)), 0])
+            rotate([-45, 0, 0])
+            translate([0.5 * manifold_radius, -0.5 * manifold_rounding_radius * (sqrt(2) - 1), 0.5 * wall_thickness])
+            cube([manifold_radius, manifold_rounding_radius * (sqrt(2) - 1), wall_thickness], center = true);
+
+            // Far bottom edge bevel
+            translate([0, manifold_radius + manifold_rounding_radius * (sqrt(2) - 1), 0])
+            rotate([45, 0, 0])
+            translate([0.5 * manifold_radius, 0.5 * manifold_rounding_radius * (sqrt(2) - 1), 0.5 * wall_thickness])
+            cube([manifold_radius, manifold_rounding_radius * (sqrt(2) - 1), wall_thickness], center = true);
+            
+            // Complete bottom edge
+            translate([0.5 * manifold_radius, 0, 0.25 * wall_thickness])
+            cube([manifold_radius, 2 * (manifold_radius + manifold_rounding_radius * (sqrt(2) - 1)), 0.5 * wall_thickness], center = true);
+          }
+          
+          // Cuboid with all rounded edges, outer wall
           translate([0.5 * manifold_radius, 0, 0.5 * manifold_height])
           minkowski()
           {
             cube([manifold_radius, manifold_radius * 2, manifold_height - 2 * manifold_rounding_radius], center = true);
             sphere(manifold_rounding_radius);
           }
-
-          translate([0.5 * manifold_radius, 0, 0.5 * manifold_height])
-          minkowski()
-          {
-            cube([manifold_radius, manifold_radius * 2, manifold_height - 2 * manifold_rounding_radius], center = true);
-            sphere(manifold_rounding_radius - 0.5 * wall_thickness);
-          }
         }
-        
-        translate([0.5 * manifold_radius, 0, 0.5 * manifold_height])
-        cube([manifold_radius, manifold_radius * 2 + manifold_rounding_radius * 2, manifold_height], center = true);
       }
       
       translate([0, 0, -1])
@@ -834,55 +913,318 @@ module manifold_inlet_adaptor()
   }
 }
 
-module manifold_inlet_segment(inter_segment_angle)
-{
-  intersection()
-  {
-    difference()
-    {
-      translate([0.5 * manifold_radius, 0, 0.5 * manifold_height])
-      minkowski()
-      {
-        cube([manifold_radius, manifold_radius * 2, manifold_height - 2 * manifold_rounding_radius], center = true);
-        sphere(manifold_rounding_radius);
-      }
+function bezier1d(t, P0, P1, P2, P3)
+  = P0 * pow(1 - t, 3)
+  + P1 * 3 * pow(1 - t, 2) * t
+  + P2 * 3 * (1 - t) * t * t
+  + P3 * pow(t, 3);
 
-      translate([0.5 * manifold_radius, 0, 0.5 * manifold_height])
-      minkowski()
-      {
-        cube([manifold_radius, manifold_radius * 2, manifold_height - 2 * manifold_rounding_radius], center = true);
-        sphere(manifold_rounding_radius - 0.5 * wall_thickness);
-      }
-    }
+function bezier3d(t, P0, P1, P2, P3) =
+  [
+    bezier1d(t, P0[0], P1[0], P2[0], P3[0]),
+    bezier1d(t, P0[1], P1[1], P2[1], P3[1]),
+    bezier1d(t, P0[2], P1[2], P2[2], P3[2])
+  ];
+
+function sum_point_axis(points, axis, skip = 0)
+  = points[skip][axis]
+  + (skip >= len(points) - 1 ? 0 : sum_point_axis(points, axis, skip + 1));
+
+function average_point(points)
+  = [for (axis = [0 : len(points[0]) - 1]) sum_point_axis(points, axis) / len(points)];
+
+// The manifold/aetrium connection takes manifold point mx, my, mz
+// and aetrium point ax, ay, az, and does a bezier spline defined by
+// the control points:
+//
+//  P0 = mx, my, mz
+//  P1 = ax, my, mz
+//  P2 = ax, ay, mz
+//  P3 = ax, ay, az
+
+module manifold_aetrium_connection_hull(manifold_points, aetrium_points)
+{
+  // Assumes manifold_points and aetrium_points are, each, coplanar and convex.
+  
+  band_count = manifold_aetrium_connection_segments;
+  band_length = len(manifold_points);
+  
+  manifold_cap_center = average_point(manifold_points);
+  aetrium_cap_center = average_point(aetrium_points);
+  
+  polyhedron(
+    points =
+    [
+      for (band_index = [0 : band_count])
+        let (t = band_index / band_count)
+          for (point_index = [0 : band_length - 1])
+            let (p0 = manifold_points[point_index])
+            let (p3 = aetrium_points[point_index])
+            let (p1 = [p3[0], p0[1], p0[2]])
+            let (p2 = [p3[0], p3[1], p0[2]])
+              bezier3d(t, p0, p1, p2, p3),
+
+      manifold_cap_center,
+      aetrium_cap_center
+    ],
+    faces =
+    [
+      // Curve, made up of bands
+      for (band_index = [0 : band_count - 1])
+        let (band_start = band_index * band_length)
+          for (point_index = [0 : band_length - 1])
+            let (next_point_index = (point_index + 1) % band_length)
+              [
+                band_start + point_index,
+                band_start + next_point_index,
+                band_start + band_length + next_point_index,
+                band_start + band_length + point_index
+              ],
+      
+      // End caps
+      let (manifold_cap_center_index = (band_count + 1) * band_length)
+        for (point_index = [0 : band_length - 1])
+          let (next_point_index = (point_index + 1) % band_length)
+            [next_point_index, point_index, manifold_cap_center_index],
+      let (aetrium_cap_center_index = (band_count + 1) * band_length + 1)
+      let (aetrium_last_ring_start = band_count * band_length)
+        for (point_index = [0 : band_length - 1])
+          let (next_point_index = (point_index + 1) % band_length)
+            [aetrium_last_ring_start + point_index, aetrium_last_ring_start + next_point_index, aetrium_cap_center_index]
+    ]);
+}
+
+module polyline(pts)
+{
+  for (i = [1 : len(pts) - 1])
+    hull()
+    {
+      translate(pts[i - 1]) sphere(.5, $fn = 6);
+      translate(pts[i]) sphere(.5, $fn = 6);
+    };
+}
+
+module manifold_aetrium_connection(hollow = true)
+{
+  manifold_inlet_x = filament_path_x + manifold_radius;
+  manifold_inlet_near_y = filament_path_y - manifold_radius - manifold_rounding_radius;
+  manifold_inlet_far_y = filament_path_y + manifold_radius + manifold_rounding_radius;
+  manifold_inlet_top_z = manifold_z + heater_block_base_z + manifold_height;
+  manifold_inlet_bottom_z = manifold_z + heater_block_base_z;
+  
+  aetrium_outlet_width = aetrium_width - inlet_width - wall_thickness - 0.5;
+  
+  aetrium_outlet_z = aetrium_corner_radius + wall_thickness;
+  aetrium_outlet_near_y = -0.5 * aetrium_depth;
+  aetrium_outlet_far_y = 0.5 * aetrium_depth;
+  aetrium_outlet_left_x = 0.5 * aetrium_width - aetrium_outlet_width;
+  aetrium_outlet_right_x = 0.5 * aetrium_width;
+  
+  // It is very important that the points in these arrays match up, both in
+  // count and semantically.
+  
+  manifold_y_straight_edge_length =
+    (manifold_inlet_top_z - manifold_rounding_radius) -
+    (manifold_inlet_bottom_z + manifold_rounding_radius);
+  
+  manifold_inlet_inner_contour =
+    [
+      [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius, manifold_inlet_top_z - 0.5 * wall_thickness],
+      for (i = [1 : $fn / 4])
+        let (angle = (i - 0.5) * 90 / ($fn / 4))
+          [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.5 * wall_thickness), manifold_inlet_top_z - manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.5 * wall_thickness)],
+      [manifold_inlet_x, manifold_inlet_far_y - 0.5 * wall_thickness, manifold_inlet_top_z - manifold_rounding_radius],
+      [manifold_inlet_x, manifold_inlet_far_y - 0.5 * wall_thickness, manifold_inlet_bottom_z + manifold_rounding_radius],
+      for (i = [$fn / 4 + 1 : $fn * 2 / 4])
+        let (angle = (i - 0.5) * 90 / ($fn / 4))
+          [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.5 * wall_thickness), manifold_inlet_bottom_z + manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.5 * wall_thickness)],
+      [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius, manifold_inlet_bottom_z + 0.5 * wall_thickness],
+      [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius, manifold_inlet_bottom_z + 0.5 * wall_thickness],
+      for (i = [$fn * 2 / 4 + 1 : $fn * 3 / 4])
+        let (angle = (i - 0.5) * 90 / ($fn / 4))
+          [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.5 * wall_thickness), manifold_inlet_bottom_z + manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.5 * wall_thickness)],
+      [manifold_inlet_x, manifold_inlet_near_y + 0.5 * wall_thickness, manifold_inlet_bottom_z + manifold_rounding_radius],
+      [manifold_inlet_x, manifold_inlet_near_y + 0.5 * wall_thickness, manifold_inlet_top_z - manifold_rounding_radius],
+      for (i = [$fn * 3 / 4 + 1 : $fn * 4 / 4])
+        let (angle = (i - 0.5) * 90 / ($fn / 4))
+          [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.5 * wall_thickness), manifold_inlet_top_z - manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.5 * wall_thickness)],
+      [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius, manifold_inlet_top_z - 0.5 * wall_thickness],
+    ];
+      
+  manifold_inlet_outer_contour =
+    [
+      [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius, manifold_inlet_top_z],
+      for (i = [1 : $fn / 4])
+        let (angle = (i - 0.5) * 90 / ($fn / 4))
+          [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius + sin(angle) * manifold_rounding_radius, manifold_inlet_top_z - manifold_rounding_radius + cos(angle) * manifold_rounding_radius],
+      [manifold_inlet_x, manifold_inlet_far_y, manifold_inlet_top_z - manifold_rounding_radius],
+      [manifold_inlet_x, manifold_inlet_far_y, manifold_inlet_bottom_z + manifold_rounding_radius],
+      for (i = [$fn / 4 + 1 : $fn * 2 / 4])
+        let (angle = (i - 0.5) * 90 / ($fn / 4))
+          [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius + sin(angle) * manifold_rounding_radius, manifold_inlet_bottom_z + manifold_rounding_radius + cos(angle) * manifold_rounding_radius],
+      [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius, manifold_inlet_bottom_z],
+      [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius, manifold_inlet_bottom_z],
+      for (i = [$fn * 2 / 4 + 1 : $fn * 3 / 4])
+        let (angle = (i - 0.5) * 90 / ($fn / 4))
+          [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius + sin(angle) * manifold_rounding_radius, manifold_inlet_bottom_z + manifold_rounding_radius + cos(angle) * manifold_rounding_radius],
+      [manifold_inlet_x, manifold_inlet_near_y, manifold_inlet_bottom_z + manifold_rounding_radius],
+      [manifold_inlet_x, manifold_inlet_near_y, manifold_inlet_top_z - manifold_rounding_radius],
+      for (i = [$fn * 3 / 4 + 1 : $fn * 4 / 4])
+        let (angle = (i - 0.5) * 90 / ($fn / 4))
+          [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius + sin(angle) * manifold_rounding_radius, manifold_inlet_top_z - manifold_rounding_radius + cos(angle) * manifold_rounding_radius],
+      [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius, manifold_inlet_top_z]
+    ];
+      
+  aetrium_sharp_corner_length = (aetrium_outlet_width - aetrium_corner_radius) * 0.5;
+  
+  aetrium_outlet_inner_contour =
+    [
+      for (i = [-1 : $fn / 4])
+        let (offset_x = max(0, i - $fn / 8) / ($fn / 8))
+        let (offset_y = max(0, $fn / 8 - i) / ($fn / 8))
+          [aetrium_outlet_left_x + offset_x * aetrium_sharp_corner_length, aetrium_outlet_far_y - offset_y * aetrium_sharp_corner_length, aetrium_outlet_z],
+
+      [aetrium_outlet_right_x - aetrium_corner_radius, aetrium_outlet_far_y, aetrium_outlet_z],
+      for (i = [$fn / 4 + 1 : $fn * 2 / 4])
+        let (angle = (i - 0.5) * 90 / ($fn / 4))
+          [aetrium_outlet_right_x - aetrium_corner_radius - cos(angle) * aetrium_corner_radius, aetrium_outlet_far_y - aetrium_corner_radius + sin(angle) * aetrium_corner_radius, aetrium_outlet_z],
+      [aetrium_outlet_right_x, aetrium_outlet_far_y - aetrium_corner_radius, aetrium_outlet_z],
+      [aetrium_outlet_right_x, aetrium_outlet_near_y + aetrium_corner_radius, aetrium_outlet_z],
+      for (i = [$fn * 2 / 4 + 1 : $fn * 3 / 4])
+        let (angle = (i - 0.5) * 90 / ($fn / 4))
+          [aetrium_outlet_right_x - aetrium_corner_radius - cos(angle) * aetrium_corner_radius, aetrium_outlet_near_y + aetrium_corner_radius + sin(angle) * aetrium_corner_radius, aetrium_outlet_z],
+      [aetrium_outlet_right_x - aetrium_corner_radius, aetrium_outlet_near_y, aetrium_outlet_z],
+
+      for (i = [0 : $fn / 4 + 1])
+        let (offset_x = max(0, $fn / 8 - i) / ($fn / 8))
+        let (offset_y = max(0, i - $fn / 8) / ($fn / 8))
+          [aetrium_outlet_left_x + offset_x * aetrium_sharp_corner_length, aetrium_outlet_near_y + offset_y * aetrium_sharp_corner_length, aetrium_outlet_z]
+    ];
+  
+  aetrium_outlet_outer_contour =
+    [
+      for (i = [-1 : $fn / 4])
+        let (offset_x = max(0, i - $fn / 8) / ($fn / 8))
+        let (offset_y = max(0, $fn / 8 - i) / ($fn / 8))
+          [aetrium_outlet_left_x + offset_x * (aetrium_sharp_corner_length + wall_thickness) - wall_thickness, aetrium_outlet_far_y - offset_y * (aetrium_sharp_corner_length + wall_thickness) + wall_thickness, aetrium_outlet_z],
+
+      [aetrium_outlet_right_x - aetrium_corner_radius, aetrium_outlet_far_y + wall_thickness, aetrium_outlet_z],
+      for (i = [$fn / 4 + 1 : $fn * 2 / 4])
+        let (angle = (i - 0.5) * 90 / ($fn / 4))
+          [aetrium_outlet_right_x - aetrium_corner_radius - cos(angle) * (aetrium_corner_radius + wall_thickness), aetrium_outlet_far_y - aetrium_corner_radius + sin(angle) * (aetrium_corner_radius + wall_thickness), aetrium_outlet_z],
+      [aetrium_outlet_right_x + wall_thickness, aetrium_outlet_far_y - aetrium_corner_radius, aetrium_outlet_z],
+      [aetrium_outlet_right_x + wall_thickness, aetrium_outlet_near_y + aetrium_corner_radius, aetrium_outlet_z],
+      for (i = [$fn * 2 / 4 + 1 : $fn * 3 / 4])
+        let (angle = (i - 0.5) * 90 / ($fn / 4))
+          [aetrium_outlet_right_x - aetrium_corner_radius - cos(angle) * (aetrium_corner_radius + wall_thickness), aetrium_outlet_near_y + aetrium_corner_radius + sin(angle) * (aetrium_corner_radius + wall_thickness), aetrium_outlet_z],
+      [aetrium_outlet_right_x - aetrium_corner_radius, aetrium_outlet_near_y - wall_thickness, aetrium_outlet_z],
+
+      for (i = [0 : $fn / 4 + 1])
+        let (offset_x = max(0, $fn / 8 - i) / ($fn / 8))
+        let (offset_y = max(0, i - $fn / 8) / ($fn / 8))
+          [aetrium_outlet_left_x + offset_x * (aetrium_sharp_corner_length + wall_thickness) - wall_thickness, aetrium_outlet_near_y + offset_y * (aetrium_sharp_corner_length + wall_thickness) - wall_thickness, aetrium_outlet_z]
+    ];
+  
+  difference()
+  {
+    manifold_aetrium_connection_hull(manifold_inlet_outer_contour, aetrium_outlet_outer_contour);
     
-    // TODO: tilt this cube one way and then the other to cut off each end at an angle so they will join nicely
-    translate([0.5 * manifold_radius, 0, 0.5 * manifold_height])
-    cube([manifold_radius, manifold_radius * 2 + manifold_rounding_radius * 2, manifold_height], center = true);
-    translate([0.5 * manifold_radius, 0, 0.5 * manifold_height])
-    cube([manifold_radius, manifold_radius * 2 + manifold_rounding_radius * 2, manifold_height], center = true);
+    if (hollow)
+    {
+      manifold_aetrium_connection_hull(manifold_inlet_inner_contour, aetrium_outlet_inner_contour);
+    }
   }
 }
 
-module manifold_inlet()
+module manifold_aetrium_connection_support()
 {
-  manifold_inlet_adaptor();
+  manifold_inlet_x = filament_path_x + manifold_radius;
+  aetrium_outlet_max_x = aetrium_width * 0.5 + wall_thickness;
   
-  translate([filament_path_x, filament_path_y, manifold_z + heater_block_base_z])
-  {
-    segment_count = $fn / 4;
+  aetrium_outlet_width = aetrium_width - inlet_width - wall_thickness - 0.5;
+  aetrium_outlet_x = aetrium_width * 0.5 - aetrium_outlet_width;
+  aetrium_outlet_z = aetrium_corner_radius + wall_thickness;
+  
+  support_width = aetrium_outlet_max_x - manifold_inlet_x;
+  support_height = aetrium_outlet_z - manifold_z - heater_block_base_z;
+  
+  bevel_width = manifold_rounding_radius * (sqrt(2) - 1);
+  bevel_height = bevel_width;
 
-    inter_segment_angle = 90 / segment_count;
-    for (segment = [1 : segment_count - 1])
+  difference()
+  {
+    translate([0, filament_path_y, manifold_z + heater_block_base_z])
+    union()
     {
-      segment_angle = segment * inter_segment_angle;
+      // Close bottom edge bevel
+      translate([manifold_inlet_x, -(manifold_radius + manifold_rounding_radius * (sqrt(2) - 1)), 0])
+      rotate([-45, 0, 0])
+      translate([0.5 * support_width, -0.5 * bevel_width, 0.5 * bevel_height])
+      cube([support_width, bevel_width, bevel_height], center = true);
+
+      // Far bottom edge bevel
+      translate([manifold_inlet_x, manifold_radius + manifold_rounding_radius * (sqrt(2) - 1), 0])
+      rotate([45, 0, 0])
+      translate([0.5 * support_width, 0.5 * bevel_width, 0.5 * bevel_height])
+      cube([support_width, bevel_width, bevel_height], center = true);
       
-      // TODO: figure out the correct bend to smoothly go 90 degrees and be
-      //       lined up with the inner wall of the aetrium outlet
-      // manifold_inlet_segment will need a segment_length parameter
-      //translate([
-      //rotate([0, segment_angle, 0])
-      //manifold_inlet_segment(inter_segment_angle);
+      // Right edge bevel
+      translate([aetrium_outlet_max_x, 0, 0])
+      rotate([0, 45, 0])
+      translate([-0.5 * bevel_width, 0, 0.5 * bevel_height])
+      cube([bevel_width, 2 * (manifold_radius + manifold_rounding_radius * (sqrt(2) - 1)), bevel_height], center = true);
+
+      intersection()
+      {
+        translate([aetrium_outlet_max_x, 0, 0])
+        rotate([0, 45, 0])
+        translate([-0.5 * bevel_width, 0, 0.5 * bevel_height])
+        cube([bevel_width, 2 * (manifold_radius + manifold_rounding_radius), bevel_height], center = true);
+        
+        union()
+        {
+          // Close bottom edge bevel
+          translate([manifold_inlet_x + 2 * bevel_width, -(manifold_radius + manifold_rounding_radius * (sqrt(2) - 1)), 0])
+          rotate([-45, 0, 0])
+          translate([0.5 * support_width, -0.5 * bevel_width, 0.5 * bevel_height])
+          cube([support_width, bevel_width, bevel_height], center = true);
+
+          // Far bottom edge bevel
+          translate([manifold_inlet_x + 2 * bevel_width, manifold_radius + manifold_rounding_radius * (sqrt(2) - 1), 0])
+          rotate([45, 0, 0])
+          translate([0.5 * support_width, 0.5 * bevel_width, 0.5 * bevel_height])
+          cube([support_width, bevel_width, bevel_height], center = true);
+        }
+      }
+      
+      // Complete bottom edge
+      translate([manifold_inlet_x + 0.5 * support_width, 0, 0.5 * bevel_height])
+      cube([support_width, 2 * (manifold_radius + manifold_rounding_radius * (sqrt(2) - 1)), bevel_height], center = true);
+      
+      // Fill vertically
+      translate([manifold_inlet_x + 0.5 * support_width, 0, 0.5 * (manifold_height - bevel_height)])
+      cube([support_width, 2 * (manifold_radius + bevel_width), manifold_height - bevel_height], center = true);
+      
+      difference()
+      {
+        translate([0.5 * aetrium_outlet_width + aetrium_outlet_x + wall_thickness, 0, 0.5 * (support_height - bevel_height) + bevel_height])
+        cube([aetrium_outlet_width, 2 * (manifold_radius + bevel_width), support_height - bevel_height], center = true);
+        
+        rotate([0, 0, 45])
+        translate([aetrium_outlet_max_x + support_height * tan(15), 0, 0])
+        rotate([0, -15, 0])
+        translate([500, 0, 500])
+        cube(1000, center = true);
+
+        rotate([0, 0, -45])
+        translate([aetrium_outlet_max_x + support_height * tan(15), 0, 0])
+        rotate([0, -15, 0])
+        translate([500, 0, 500])
+        cube(1000, center = true);
+      }
     }
+    
+    manifold_aetrium_connection(hollow = false);
   }
 }
 
@@ -894,7 +1236,11 @@ difference()
   manifold_inlet_cutaway();
 }
 
-manifold_inlet();
+manifold_inlet_adaptor();
+
+manifold_aetrium_connection();
+
+manifold_aetrium_connection_support();
 
 if (include_mockups)
 {
