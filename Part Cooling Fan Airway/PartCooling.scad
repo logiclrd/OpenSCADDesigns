@@ -1,4 +1,4 @@
-include_mockups = true;
+include_mockups = $preview;
 
 $fn = 80;
 
@@ -1079,23 +1079,19 @@ module manifold_aetrium_connection(hollow = true)
   
   aetrium_outlet_inner_contour =
     [
-      for (i = [-1 : $fn / 4])
+      for (i = [-2 : $fn / 4])
         let (offset_x = max(0, i - $fn / 8) / ($fn / 8))
         let (offset_y = max(0, $fn / 8 - i) / ($fn / 8))
           [aetrium_outlet_left_x + offset_x * aetrium_sharp_corner_length, aetrium_outlet_far_y - offset_y * aetrium_sharp_corner_length, aetrium_outlet_z],
 
-      [aetrium_outlet_right_x - aetrium_corner_radius, aetrium_outlet_far_y, aetrium_outlet_z],
-      for (i = [$fn / 4 + 1 : $fn * 2 / 4])
-        let (angle = (i - 0.5) * 90 / ($fn / 4))
+      for (i = [$fn / 4 : $fn * 2 / 4])
+        let (angle = i - 0.5 * 90 / ($fn / 4))
           [aetrium_outlet_right_x - aetrium_corner_radius - cos(angle) * aetrium_corner_radius, aetrium_outlet_far_y - aetrium_corner_radius + sin(angle) * aetrium_corner_radius, aetrium_outlet_z],
-      [aetrium_outlet_right_x, aetrium_outlet_far_y - aetrium_corner_radius, aetrium_outlet_z],
-      [aetrium_outlet_right_x, aetrium_outlet_near_y + aetrium_corner_radius, aetrium_outlet_z],
-      for (i = [$fn * 2 / 4 + 1 : $fn * 3 / 4])
-        let (angle = (i - 0.5) * 90 / ($fn / 4))
+      for (i = [$fn * 2 / 4 : $fn * 3 / 4])
+        let (angle = i - 0.5 * 90 / ($fn / 4))
           [aetrium_outlet_right_x - aetrium_corner_radius - cos(angle) * aetrium_corner_radius, aetrium_outlet_near_y + aetrium_corner_radius + sin(angle) * aetrium_corner_radius, aetrium_outlet_z],
-      [aetrium_outlet_right_x - aetrium_corner_radius, aetrium_outlet_near_y, aetrium_outlet_z],
 
-      for (i = [0 : $fn / 4 + 1])
+      for (i = [0 : $fn / 4 + 2])
         let (offset_x = max(0, $fn / 8 - i) / ($fn / 8))
         let (offset_y = max(0, i - $fn / 8) / ($fn / 8))
           [aetrium_outlet_left_x + offset_x * aetrium_sharp_corner_length, aetrium_outlet_near_y + offset_y * aetrium_sharp_corner_length, aetrium_outlet_z]
@@ -1103,23 +1099,19 @@ module manifold_aetrium_connection(hollow = true)
   
   aetrium_outlet_outer_contour =
     [
-      for (i = [-1 : $fn / 4])
+      for (i = [-2 : $fn / 4])
         let (offset_x = max(0, i - $fn / 8) / ($fn / 8))
         let (offset_y = max(0, $fn / 8 - i) / ($fn / 8))
           [aetrium_outlet_left_x + offset_x * (aetrium_sharp_corner_length + wall_thickness) - wall_thickness, aetrium_outlet_far_y - offset_y * (aetrium_sharp_corner_length + wall_thickness) + wall_thickness, aetrium_outlet_z],
 
-      [aetrium_outlet_right_x - aetrium_corner_radius, aetrium_outlet_far_y + wall_thickness, aetrium_outlet_z],
-      for (i = [$fn / 4 + 1 : $fn * 2 / 4])
-        let (angle = (i - 0.5) * 90 / ($fn / 4))
+      for (i = [$fn / 4 : $fn * 2 / 4])
+        let (angle = i * 90 / ($fn / 4))
           [aetrium_outlet_right_x - aetrium_corner_radius - cos(angle) * (aetrium_corner_radius + wall_thickness), aetrium_outlet_far_y - aetrium_corner_radius + sin(angle) * (aetrium_corner_radius + wall_thickness), aetrium_outlet_z],
-      [aetrium_outlet_right_x + wall_thickness, aetrium_outlet_far_y - aetrium_corner_radius, aetrium_outlet_z],
-      [aetrium_outlet_right_x + wall_thickness, aetrium_outlet_near_y + aetrium_corner_radius, aetrium_outlet_z],
-      for (i = [$fn * 2 / 4 + 1 : $fn * 3 / 4])
-        let (angle = (i - 0.5) * 90 / ($fn / 4))
+      for (i = [$fn * 2 / 4 : $fn * 3 / 4])
+        let (angle = i * 90 / ($fn / 4))
           [aetrium_outlet_right_x - aetrium_corner_radius - cos(angle) * (aetrium_corner_radius + wall_thickness), aetrium_outlet_near_y + aetrium_corner_radius + sin(angle) * (aetrium_corner_radius + wall_thickness), aetrium_outlet_z],
-      [aetrium_outlet_right_x - aetrium_corner_radius, aetrium_outlet_near_y - wall_thickness, aetrium_outlet_z],
 
-      for (i = [0 : $fn / 4 + 1])
+      for (i = [0 : $fn / 4 + 2])
         let (offset_x = max(0, $fn / 8 - i) / ($fn / 8))
         let (offset_y = max(0, i - $fn / 8) / ($fn / 8))
           [aetrium_outlet_left_x + offset_x * (aetrium_sharp_corner_length + wall_thickness) - wall_thickness, aetrium_outlet_near_y + offset_y * (aetrium_sharp_corner_length + wall_thickness) - wall_thickness, aetrium_outlet_z]
