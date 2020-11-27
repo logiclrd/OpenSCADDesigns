@@ -1071,7 +1071,7 @@ module manifold_aetrium_connection(hollow = true)
           [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius + sin(angle) * manifold_rounding_radius, manifold_inlet_top_z - manifold_rounding_radius + cos(angle) * manifold_rounding_radius],
       [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius, manifold_inlet_top_z]
     ];
-      
+  
   aetrium_sharp_corner_length = (aetrium_outlet_width - aetrium_corner_radius) * 0.5;
   
   aetrium_outlet_inner_contour =
@@ -1082,10 +1082,10 @@ module manifold_aetrium_connection(hollow = true)
           [aetrium_outlet_left_x + offset_x * aetrium_sharp_corner_length, aetrium_outlet_far_y - offset_y * aetrium_sharp_corner_length, aetrium_outlet_z],
 
       for (i = [$fn / 4 : $fn * 2 / 4])
-        let (angle = i - 0.5 * 90 / ($fn / 4))
+        let (angle = (i - 0.5) * 90 / ($fn / 4))
           [aetrium_outlet_right_x - aetrium_corner_radius - cos(angle) * aetrium_corner_radius, aetrium_outlet_far_y - aetrium_corner_radius + sin(angle) * aetrium_corner_radius, aetrium_outlet_z],
       for (i = [$fn * 2 / 4 : $fn * 3 / 4])
-        let (angle = i - 0.5 * 90 / ($fn / 4))
+        let (angle = (i - 0.5) * 90 / ($fn / 4))
           [aetrium_outlet_right_x - aetrium_corner_radius - cos(angle) * aetrium_corner_radius, aetrium_outlet_near_y + aetrium_corner_radius + sin(angle) * aetrium_corner_radius, aetrium_outlet_z],
 
       for (i = [0 : $fn / 4 + 2])
@@ -1261,20 +1261,20 @@ difference()
 
 manifold_inlet_adaptor(hollow = true);
 
-manifold_aetrium_connection();
+
+manifold_aetrium_connection(hollow = true);
 
 manifold_aetrium_connection_support();
 
 intersection()
 {
   manifold_ceiling_supports();
-  manifold_inlet_adaptor(hollow = false);
-}
 
-intersection()
-{
-  manifold_ceiling_supports();
-  manifold_aetrium_connection(hollow = false);
+  union()
+  {
+    manifold_inlet_adaptor(hollow = false);
+    manifold_aetrium_connection(hollow = false);
+  }
 }
 
 if (include_mockups)
