@@ -1,7 +1,6 @@
 include_mockups = $preview;
 
 $fn = 80;
-
 wall_thickness = 2;
 inlet_width = 30;
 inlet_depth = 28.5;
@@ -229,6 +228,19 @@ module aetrium_body()
     aetrium_body_outer_wall();
     aetrium_body_inner_wall();
   }
+
+  // Extend bottom edge of air intake cutout
+  aetrium_outlet_width = aetrium_width - inlet_width - wall_thickness - 0.5;
+  aetrium_outlet_x = aetrium_width * 0.5 - aetrium_outlet_width - wall_thickness;
+  
+  cutaway_right_edge_x = fan_intake_radius - 0.5 * fan_width + 2 * wall_thickness + 0.5;
+
+  tab_width = aetrium_outlet_x - cutaway_right_edge_x;
+  tab_extension = tab_width * 2;
+  tab_height = fan_height - fan_outlet_distance_from_center + tab_extension;
+  
+  translate([cutaway_right_edge_x + 0.5 * tab_width, -0.5 * aetrium_depth - 0.5 * wall_thickness, 0.5 * (tab_height - tab_extension)])
+  cube([tab_width, wall_thickness, tab_height], center = true);
 }
 
 module aetrium_inlet_cutout()
@@ -272,17 +284,24 @@ module aetrium_inlet_cutout()
   translate([-0.5 * fan_width + 2 * wall_thickness + 0.5 * fan_intake_radius + 0.5, -0.5 * wall_thickness - 0.5 * aetrium_depth, fan_height - fan_outlet_distance_from_center - 0.5 * fan_intake_radius])
   cube([fan_intake_radius, 2 * wall_thickness, fan_intake_radius], center = true);
 
-  // Reduce angle at bottom of air intake cutout
   aetrium_outlet_width = aetrium_width - inlet_width - wall_thickness - 0.5;
   aetrium_outlet_x = aetrium_width * 0.5 - aetrium_outlet_width - wall_thickness;
   
+  cutaway_right_edge_x = fan_intake_radius - 0.5 * fan_width + 2 * wall_thickness + 0.5;
+  
+  // Reduce angle at bottom of air intake cutout
   fan_cutout_right_x = -0.5 * fan_width + 2 * wall_thickness + fan_intake_radius + 0.5;
 
-  translate([0, 0, aetrium_outlet_x - fan_cutout_right_x])
-  translate([fan_cutout_right_x, 0, aetrium_corner_radius + wall_thickness])
+  translate([cutaway_right_edge_x, 0, 0])
   rotate([0, 225, 0])
   translate([-50, -0.5 * aetrium_depth - 0.5 * wall_thickness, 50])
   cube([100, 2 * wall_thickness, 100], center = true);
+
+  // Screw hole
+  translate([-27.5 + 2 * wall_thickness + 0.25, wall_thickness + 0.25, fan_height - fan_outlet_distance_from_center])
+  translate([23, -2 * wall_thickness, -22])
+  rotate([90, 0, 0])
+  cylinder(fan_depth + 2, 2.75, 2.75);
 }
 
 module aetrium_inlet()
@@ -1260,7 +1279,6 @@ difference()
 }
 
 manifold_inlet_adaptor(hollow = true);
-
 
 manifold_aetrium_connection(hollow = true);
 
