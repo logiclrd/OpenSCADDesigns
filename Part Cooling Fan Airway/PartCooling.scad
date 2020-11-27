@@ -56,6 +56,9 @@ manifold_z = -2;
 manifold_vent_diameter = 1.8;
 manifold_vent_z_offset = 1;
 manifold_vent_count = 30;
+manifold_ceiling_support_radius = 0.4;
+manifold_ceiling_support_spacing = 4;
+manifold_ceiling_support_rotation = 0;
 
 manifold_vent_radius = 0.5 * manifold_vent_diameter;
 
@@ -294,15 +297,6 @@ module aetrium_inlet()
       translate([fan_tab_height - 4, fan_depth - fan_tab_width - fan_tab_distance_from_back_face, -aetrium_corner_radius - fan_outlet_tab_distance_from_top + 0.1])
       cube([4, fan_tab_width + 0.5, fan_height]);
     }
-    
-    translate([inlet_width - 0.5 * aetrium_width, -0.5 * aetrium_depth + inlet_depth + 0.25, fan_height + 0.25])
-    multmatrix(
-      [[1, 0, 0, 0],
-       [0, 1, 0, 0],
-       [-(aetrium_height - aetrium_corner_radius - fan_height) / (aetrium_width - inlet_width), 0, 1, 0],
-       [0, 0, 0, 1]])
-    translate([0, -500, 0])
-    cube([1000, 1000, 1000]);
   }
 
   difference()
@@ -833,7 +827,7 @@ module manifold_inlet_cutaway()
   }
 }
 
-module manifold_inlet_adaptor()
+module manifold_inlet_adaptor(hollow = true)
 {
   // This is the piece that builds out the rounded outer wall in a straight
   // line instead of following the curve, including the floor and ceiling,
@@ -859,11 +853,14 @@ module manifold_inlet_adaptor()
             }
 
             // Inner wall
-            translate([0.5 * manifold_radius, 0, 0.5 * manifold_height])
-            minkowski()
+            if (hollow)
             {
-              cube([manifold_radius, manifold_radius * 2, manifold_height - 2 * manifold_rounding_radius], center = true);
-              sphere(manifold_rounding_radius - 0.5 * wall_thickness);
+              translate([0.5 * manifold_radius, 0, 0.5 * manifold_height])
+              minkowski()
+              {
+                cube([manifold_radius, manifold_radius * 2, manifold_height - 2 * manifold_rounding_radius], center = true);
+                sphere(manifold_rounding_radius - 0.5 * wall_thickness);
+              }
             }
           }
           
@@ -1220,6 +1217,40 @@ module manifold_aetrium_connection_support()
   }
 }
 
+module manifold_ceiling_supports()
+{
+  translate([filament_path_x, filament_path_y, manifold_z + heater_block_base_z])
+  {
+    support_count = 2 * ceil(manifold_radius / manifold_ceiling_support_spacing);
+    
+    ca = cos(manifold_ceiling_support_rotation);
+    sa = sin(manifold_ceiling_support_rotation);
+    
+    for (xi = [-support_count : support_count])
+      for (yi = [-support_count : support_count])
+      {
+        ox = xi * manifold_ceiling_support_spacing * 2 / sqrt(3);
+        oy = (yi + (((xi % 2) == 1) ? 1 / tan(60) : 0)) * manifold_ceiling_support_spacing;
+
+        x = ox * ca + oy * sa;
+        y = ox * sa - oy * ca;
+        
+        d = sqrt(x * x + y * y);
+        
+        if ((d > manifold_radius)
+         && (x > 0)
+         && (x < manifold_radius + manifold_rounding_radius - 1)
+         && (y > -manifold_radius - manifold_rounding_radius)
+         && (y < manifold_radius + manifold_rounding_radius))
+        {
+          translate([x, y, 0])
+          cylinder(manifold_height + 100, manifold_ceiling_support_radius, manifold_ceiling_support_radius);
+        }
+      }
+  }
+}
+
+
 aetrium();
 
 difference()
@@ -1228,11 +1259,23 @@ difference()
   manifold_inlet_cutaway();
 }
 
-manifold_inlet_adaptor();
+manifold_inlet_adaptor(hollow = true);
 
 manifold_aetrium_connection();
 
 manifold_aetrium_connection_support();
+
+intersection()
+{
+  manifold_ceiling_supports();
+  manifold_inlet_adaptor(hollow = false);
+}
+
+intersection()
+{
+  manifold_ceiling_supports();
+  manifold_aetrium_connection(hollow = false);
+}
 
 if (include_mockups)
 {
