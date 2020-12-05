@@ -23,6 +23,8 @@ fan_tab_height = 1.5;
 fan_tab_distance_from_back_face = 12;
 fan_outlet_tab_distance_from_top = 4;
 
+inlet_tolerance = 0.2;
+
 mounting_bracket_width = 43;
 mounting_bracket_depth = 38;
 mounting_bracket_height = 11;
@@ -246,10 +248,10 @@ module aetrium_body()
 module aetrium_inlet_cutout()
 {
   // Slight angle overtop of the fan in the hopes that it'll bridge okay
-  translate([-0.5 * aetrium_width - fan_width + inlet_width - wall_thickness * 2, -0.5 * aetrium_depth + 0.25, fan_height - fan_lip_height - 1000])
+  translate([-0.5 * aetrium_width - fan_width + inlet_width - wall_thickness * 2, -0.5 * aetrium_depth + inlet_tolerance, fan_height - fan_lip_height - 1000])
   intersection()
   {
-    translate([0, aetrium_depth, 0])
+    translate([0, aetrium_depth, -0.5 * wall_thickness])
     multmatrix(
       [[1, 0, 0, 0],
        [0, 1, 0, 0],
@@ -267,9 +269,31 @@ module aetrium_inlet_cutout()
   }
 
   // Remove far wall up to fan height
-  translate([-0.5 * fan_width - 0.5 * aetrium_width + wall_thickness + 0.5, inlet_depth - 0.5 * aetrium_depth + 0.25, -fan_lip_height])
-  cube([fan_width, aetrium_depth, fan_height]);
-  
+  difference()
+  {
+    aetrium_body_outer_wall();
+    
+    translate([-1000 - 0.5 * aetrium_width + inlet_width + 0.5, -0.5 * aetrium_depth + inlet_depth + inlet_tolerance, aetrium_corner_radius + aetrium_height - 56])
+    translate([1000, 0, 0])
+    multmatrix(
+      [[-1, 0, 0, 0],
+       [0, 1, 0, 0],
+       [0, 0, 1, 0],
+       [0, 0, 0, 1]])
+    multmatrix(
+      [[1, 0, 0, 0],
+       [0, 1, 0, 0],
+       [0.6, 0.6, 1, 0],
+       [0, 0, 0, 1]])
+    cube([1000, 1000, 1000]);
+
+    translate([-0.5 * aetrium_width + inlet_width + 0.5, -500, 0])
+    cube([1000, 1000, 1000]);
+
+    translate([-500, -1000 - 0.5 * aetrium_depth + inlet_depth + inlet_tolerance, 0])
+    cube([1000, 1000, 1000]);
+  }
+
   // Cut out hole for air intake
   translate([-0.5 * fan_width + 2 * wall_thickness + 0.5, 0.5 * wall_thickness - 0.5 * aetrium_depth, fan_height - fan_outlet_distance_from_center])
   rotate([90, 0, 0])
@@ -306,16 +330,14 @@ module aetrium_inlet_cutout()
 
 module aetrium_inlet()
 {
+  // Wall separating intake side from outlet side (YZ plane at X = right edge of inlet)
+  translate([-0.5 * aetrium_width + 0.5 * fan_width + wall_thickness + 0.5, -0.5 * aetrium_depth, aetrium_corner_radius + wall_thickness])
   difference()
   {
-    translate([-0.5 * aetrium_width + 0.5 * fan_width + wall_thickness + 0.5, -0.5 * aetrium_depth, aetrium_corner_radius + wall_thickness])
-    difference()
-    {
-      cube([wall_thickness, aetrium_depth, fan_height - aetrium_corner_radius - wall_thickness]);
-      
-      translate([fan_tab_height - 4, fan_depth - fan_tab_width - fan_tab_distance_from_back_face, -aetrium_corner_radius - fan_outlet_tab_distance_from_top + 0.1])
-      cube([4, fan_tab_width + 0.5, fan_height]);
-    }
+    cube([wall_thickness, aetrium_depth, fan_height - aetrium_corner_radius - wall_thickness]);
+    
+    translate([fan_tab_height - 4, fan_depth - fan_tab_width - fan_tab_distance_from_back_face, -aetrium_corner_radius - fan_outlet_tab_distance_from_top + 0.1])
+    cube([4, fan_tab_width + 0.5, fan_height]);
   }
 
   difference()
@@ -324,10 +346,9 @@ module aetrium_inlet()
     {
       aetrium_body_outer_wall();
     
-      translate([-0.5 * aetrium_width - aetrium_width + fan_width * 0.5 + wall_thickness * 2 + 0.5, 0.25, 0])
-      cube([aetrium_width, aetrium_depth, aetrium_height]);
-
-      translate([-1000 - 0.5 * aetrium_width + inlet_width + 0.5, -0.5 * aetrium_depth + inlet_depth + 0.25, aetrium_corner_radius])
+      // Taper for outer wall next to fan (bottom surface)
+      // TODO: Too lazy to figure out where -56 comes from. :-(
+      translate([-1000 - 0.5 * aetrium_width + inlet_width + 0.5, -0.5 * aetrium_depth + inlet_depth + inlet_tolerance, aetrium_corner_radius + aetrium_height - 56])
       translate([1000, 0, 0])
       multmatrix(
         [[-1, 0, 0, 0],
@@ -342,7 +363,8 @@ module aetrium_inlet()
       cube([1000, 1000, 1000]);
     }
     
-    translate([0, -0.5 * aetrium_depth + inlet_depth + 0.25, fan_height])
+    // Taper for inner wall next to fan (top surface)
+    translate([0, -0.5 * aetrium_depth + inlet_depth + inlet_tolerance, fan_height])
     multmatrix(
       [[1, 0, 0, 0],
        [0, 1, 0, 0],
@@ -351,7 +373,7 @@ module aetrium_inlet()
     translate([-500, 0, 0])
     cube([1000, 1000, 1000]);
     
-    translate([inlet_width - 0.5 * aetrium_width, -0.5 * aetrium_depth + inlet_depth + 0.25, fan_height + 0.25])
+    translate([inlet_width - 0.5 * aetrium_width, -0.5 * aetrium_depth + inlet_depth + inlet_tolerance, fan_height + 0.25])
     multmatrix(
       [[1, 0, 0, 0],
        [0, 1, 0, 0],
@@ -359,6 +381,24 @@ module aetrium_inlet()
        [0, 0, 0, 1]])
     translate([-500, 0, 0])
     cube([1000, 1000, 1000]);
+  }
+  
+  // Back wall of inlet path (along XZ plane, with Y = back wall of inlet)
+  difference()
+  {
+    translate([-0.5 * aetrium_width - wall_thickness, -0.5 * aetrium_depth + inlet_depth - wall_thickness + inlet_tolerance, aetrium_corner_radius + wall_thickness])
+    cube([inlet_width + wall_thickness + 0.5, wall_thickness, aetrium_height - fan_height + fan_outlet_distance_from_center - wall_thickness]);
+    
+    translate([-0.5 * aetrium_width - wall_thickness * 1.5, 0, fan_height - fan_lip_height - aetrium_height + wall_thickness])
+    multmatrix(
+      [[1, 0, 0, 0],
+       [0, 1, 0, 0],
+       [-1, 0, 1, 0],
+       [0, 0, 0, 1]])
+    cube([inlet_width + 2 * wall_thickness + 0.5, 2 * wall_thickness, aetrium_height]);
+
+    translate([-0.5 * aetrium_width, -0.5 * aetrium_depth + inlet_depth - wall_thickness + inlet_tolerance, fan_height])
+    cube([inlet_width + wall_thickness + 0.5, wall_thickness, aetrium_height - fan_height]);
   }
 }
 
