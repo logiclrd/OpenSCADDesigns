@@ -44,7 +44,7 @@ heat_sink_bracket_height = 42.7 - 26;
 heater_block_width = 16;
 heater_block_depth = 23;
 heater_block_height = 11.5;
-heater_block_base_z = -57;
+heater_block_base_z = -58;
 
 nozzle_hex_height = 3;
 nozzle_tip_height = 2;
@@ -222,7 +222,7 @@ module hot_end_mockup()
   
   // Mounting bracket
   // width: 43
-  translate([0.5 * mounting_bracket_width - mounting_bracket_filament_path_x, mounting_bracket_filament_path_y - 0.5 * mounting_bracket_depth, 57 - 0.5 * mounting_bracket_height])
+  translate([0.5 * mounting_bracket_width - mounting_bracket_filament_path_x, mounting_bracket_filament_path_y - 0.5 * mounting_bracket_depth, -heater_block_base_z - 0.5 * mounting_bracket_height])
   union()
   {
     difference()
