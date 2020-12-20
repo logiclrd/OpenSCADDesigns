@@ -4,8 +4,8 @@ $fn = $preview ? 24 : 80;
 wall_thickness = 2;
 inlet_width = 30;
 inlet_depth = 28.5;
-inlet_offset_x = 4;
-fan_width = 57;
+inlet_offset_x = 5;
+fan_width = 55;
 fan_height = 58;
 fan_depth = 28;
 
@@ -42,6 +42,14 @@ mounting_bracket_height = 11;
 mounting_bracket_filament_path_x = 20;
 mounting_bracket_filament_path_y = 19;
 
+x_axis_beam_near_y = -mounting_bracket_filament_path_y + mounting_bracket_depth + mount_plate_depth + 4;
+
+belt_thickness = 6;
+
+belt_y = 0.5 * mount_plate_depth - mounting_bracket_filament_path_y + mounting_bracket_depth;
+right_belt_z = mount_plate_top_z + 3 - 12;
+left_belt_z = mount_plate_top_z + 3 - 4;
+
 heat_sink_height = 26;
 heat_sink_radius = 0.5 * 22.3;
 heat_sink_bracket_radius = 0.5 * 16;
@@ -56,6 +64,12 @@ nozzle_hex_height = 3;
 nozzle_tip_height = 2;
 
 nozzle_height = nozzle_hex_height + nozzle_tip_height;
+
+connection_taper_height = 7;
+connection_taper_offset = -3;
+connection_top_z = right_belt_z + connection_taper_height;
+
+inlet_height = 0.5 * fan_height;
 
 manifold_radius = heater_block_depth;
 manifold_rounding_radius = 5;
@@ -368,32 +382,38 @@ module mount_plate()
   {
     difference()
     {
+      // Plate
       translate([0, 0, -mount_plate_height * 0.5])
       cube([mount_plate_width, mount_plate_depth, mount_plate_height], center = true);
       
+      // Top-right belt groove
       translate([mount_plate_width * 0.5 - 7.5, 0, -10])
       cube([4, mount_plate_depth + 1, 22], center = true);
       
+      // Bottom-right cutaway
       translate([mount_plate_width * 0.5 - 6, 0, 4.5 - mount_plate_height])
       cube([14, mount_plate_depth + 1, 11], center = true);
       
-      // x offset 4.5
-      
+      // Top-left belt groove
       translate([2 - mount_plate_width * 0.5 + 4.5, 0, -5.5])
       cube([4, mount_plate_depth + 1, 13], center = true);
       
+      // Bottom-left cutaway
       translate([9.5 - mount_plate_width * 0.5, 0, 4.5 - mount_plate_height])
       cube([21, mount_plate_depth + 1, 11], center = true);
     }
     
+    // Round top corners
     translate([0, 0, -mount_plate_height * 0.5])
     union()
     {
+      // Rectangle that covers the mount plate entirely except for the corners
       cube([mount_plate_width - 2 * mount_plate_corner_round, mount_plate_depth + 1, mount_plate_height + 1], center = true);
 
       translate([0, 0, -mount_plate_corner_round])
       cube([mount_plate_width + 1, mount_plate_depth + 1, mount_plate_height + 1], center = true);
       
+      // Rounded corner bits
       translate([-0.5 * mount_plate_width + mount_plate_corner_round, 0, 0.5 * mount_plate_height - mount_plate_corner_round])
       rotate([90, 0, 0])
       cylinder(mount_plate_depth + 1, mount_plate_corner_round, mount_plate_corner_round, center = true);
@@ -408,7 +428,7 @@ module mount_plate()
 module x_axis_beam()
 {
   // bottom of beam is 48 below top of mount plate and 4 mm behind it
-  translate([0, 10 - mounting_bracket_filament_path_y + mounting_bracket_depth + mount_plate_depth + 4, mount_plate_top_z - 10 - 48])
+  translate([0, 10 + x_axis_beam_near_y, mount_plate_top_z - 10 - 48])
   difference()
   {
     cube([420, 20, 20], center = true);
@@ -441,7 +461,19 @@ module x_axis_beam()
 
 module belts()
 {
-  // TODO
+  // Right belt
+  translate([100 + 0.5 * mount_plate_width + mounting_bracket_filament_path_x - 0.5 * mounting_bracket_width - 15, -0.5 + 0.75 + belt_y, right_belt_z - belt_thickness])
+  cube([200, 1.5, 6], center = true);
+
+  translate([15 + 0.5 * mount_plate_width + mounting_bracket_filament_path_x - 0.5 * mounting_bracket_width - 15, -2.5 + 0.5 * (mount_plate_depth + 2) + belt_y, right_belt_z - belt_thickness])
+  cube([30, mount_plate_depth + 2, 6], center = true);
+
+  // Left belt
+  translate([-100 - 0.5 * mount_plate_width + mounting_bracket_filament_path_x - 0.5 * mounting_bracket_width - 5, -0.5 + 0.75 + belt_y, left_belt_z - belt_thickness])
+  cube([200, 1.5, 6], center = true);
+
+  translate([-15 - 0.5 * mount_plate_width + mounting_bracket_filament_path_x - 0.5 * mounting_bracket_width - 3, -2.5 + 0.5 * (mount_plate_depth + 2) + belt_y, left_belt_z - belt_thickness])
+  cube([30, mount_plate_depth + 2, 6], center = true);
 }
 
 module manifold_outer_shell()
@@ -774,9 +806,9 @@ module manifold_inlet_connection(hollow = true)
   manifold_inlet_top_z = manifold_z + heater_block_base_z + manifold_height;
   manifold_inlet_bottom_z = manifold_z + heater_block_base_z;
   
-  inlet_z = wall_thickness;
+  inlet_z = connection_top_z;
   inlet_near_y = -0.5 * fan_width - wall_thickness - fan_tab_height;
-  inlet_far_y = 0.5 * fan_width + wall_thickness;
+  inlet_far_y = belt_y - 4;
   inlet_left_x = mounting_bracket_width - mounting_bracket_filament_path_x + inlet_offset_x;
   inlet_right_x = inlet_left_x + wall_thickness + fan_depth + wall_thickness;
   
@@ -1033,34 +1065,24 @@ module inlet()
 {
   union()
   {
-    translate([mounting_bracket_width - mounting_bracket_filament_path_x + inlet_offset_x, 0, 0])
-    translate([fan_depth * 0.5 + wall_thickness, 0, fan_height * 0.5 + wall_thickness])
+    translate([mounting_bracket_width - mounting_bracket_filament_path_x + inlet_offset_x, 0, connection_taper_offset])
+    translate([fan_depth * 0.5 + wall_thickness, 0, fan_height * 0.5 + connection_top_z])
     difference()
     {
       // Outer shell
-      translate([0, -0.5 * fan_tab_height, 0])
-      cube([fan_depth + wall_thickness * 2, fan_width + wall_thickness * 2 + fan_tab_height, fan_height], center = true);
+      translate([0, -0.5 * fan_tab_height, -0.5 * inlet_height])
+      cube([fan_depth + wall_thickness * 2, fan_width + wall_thickness * 2 + fan_tab_height, inlet_height], center = true);
       // Inner shell
-      cube([fan_depth + inlet_tolerance * 2, fan_width + inlet_tolerance * 2, fan_height + 1], center = true);
+      translate([0, 0, -0.5 * inlet_height])
+      cube([fan_depth + inlet_tolerance * 2, fan_width + inlet_tolerance * 2, inlet_height + 1], center = true);
       
       // Air inlet
       translate([fan_depth * 0.5 - wall_thickness * 0.5, fan_intake_offset_x, fan_intake_offset_y])
       rotate([0, 90, 0])
       cylinder(wall_thickness * 2, fan_intake_radius, fan_intake_radius);
       
-      // Prevent slope in top half of air inlet from dropping below 45 degrees.
-      difference()
-      {
-        translate([fan_depth * 0.5 + wall_thickness * 0.5, fan_intake_offset_x, fan_intake_offset_y])
-        rotate([45, 0, 0])
-        cube([wall_thickness * 2, fan_intake_radius * 2, fan_intake_radius * 2], center = true);
-        
-        translate([fan_depth * 0.5 + wall_thickness, fan_intake_offset_x, fan_intake_offset_y - fan_intake_radius * 1.5 + fan_intake_radius / sqrt(2)])
-        cube([wall_thickness * 3, fan_intake_radius * 2 * sqrt(2), fan_intake_radius * 3], center = true);
-      }
-      
       // Gap for fan tab
-      translate([-0.5 * fan_tab_width, -0.5 * fan_width - inlet_tolerance - fan_tab_height, -0.5 * fan_height + fan_outlet_tab_distance_from_top])
+      translate([-0.5 * fan_tab_width - 1, -0.5 * fan_width - inlet_tolerance - fan_tab_height, -0.5 * fan_height + fan_outlet_tab_distance_from_top])
       cube([fan_tab_width, fan_tab_height + 1, fan_height - fan_outlet_tab_distance_from_top + 1]);
       
       // Screw holes
@@ -1071,11 +1093,44 @@ module inlet()
         cylinder(fan_depth + wall_thickness * 3, 0.5 * fan_screw_hole_diameter + inlet_tolerance, 0.5 * fan_screw_hole_diameter + inlet_tolerance);
       }
     }
+
+    // Taper for overhang
+    inlet_near_y = -0.5 * fan_width - wall_thickness - fan_tab_height;
+    inlet_far_y = belt_y - 4;
+    
+    taper_width = fan_depth + wall_thickness * 2;
+    taper_depth = fan_width + wall_thickness * 2 + fan_tab_height - (inlet_far_y - inlet_near_y);
+    taper_height = connection_taper_height;
+    
+    translate([0, 0, connection_taper_offset])
+    difference()
+    {
+      translate([0.5 * taper_width + mounting_bracket_width - mounting_bracket_filament_path_x + inlet_offset_x, inlet_near_y + fan_width + wall_thickness * 2 + fan_tab_height - taper_depth, connection_top_z - 0.5 * taper_height])
+      multmatrix(
+        [[1, 0, 0, 0],
+         [0, 1, 0, 0],
+         [0, connection_taper_height / taper_depth, 1, 0],
+         [0, 0, 0, 1]])
+      translate([0, 0.5 * taper_depth, 0])
+      cube([taper_width, taper_depth, taper_height], center = true);
+      
+      taper_angle = atan2(connection_taper_height, taper_depth);
+      taper_vertical_thickness = wall_thickness / cos(taper_angle);
+      
+      translate([0.5 * taper_width + mounting_bracket_width - mounting_bracket_filament_path_x + inlet_offset_x, inlet_near_y + fan_width + wall_thickness * 2 + fan_tab_height - taper_depth, connection_top_z - 0.5 * taper_height + taper_vertical_thickness])
+      multmatrix(
+        [[1, 0, 0, 0],
+         [0, 1, 0, 0],
+         [0, connection_taper_height / taper_depth, 1, 0],
+         [0, 0, 0, 1]])
+      translate([0, 0.5 * taper_depth, 0])
+      cube([taper_width - 2 * wall_thickness, taper_depth, taper_height], center = true);
+    }
     
     if (include_mockups)
     {
       color([0.4, 0.4, 0.7])
-      translate([0.5 * fan_depth + mounting_bracket_width - mounting_bracket_filament_path_x + wall_thickness + inlet_offset_x, 0, 0.5 * fan_height + wall_thickness])
+      translate([0.5 * fan_depth + mounting_bracket_width - mounting_bracket_filament_path_x + wall_thickness + inlet_offset_x, 0, 0.5 * fan_height + connection_top_z + connection_taper_offset])
       rotate([90, 180, 90])
       fan_mockup();
     }
