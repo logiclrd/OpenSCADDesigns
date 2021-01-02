@@ -544,7 +544,7 @@ module manifold_inner_shell()
       translate([0, 0, manifold_rounding_radius + manifold_z])
       cylinder(manifold_height - 2 * manifold_rounding_radius, manifold_radius, manifold_radius);
 
-      sphere(manifold_rounding_radius - 0.5 * wall_thickness);
+      sphere(manifold_rounding_radius - 0.75 * wall_thickness);
     }
 
     // Inner wall
