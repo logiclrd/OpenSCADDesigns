@@ -615,10 +615,8 @@ module manifold_inner_shell()
     }
 
     // Inner wall
-    inner_wall_thickness = wall_thickness / sin(atan2(18, manifold_radius_top_difference));
-    
     translate([0, 0, manifold_z])
-    cylinder(18, manifold_radius - 5 + wall_thickness, manifold_radius - 5 + wall_thickness + manifold_radius_top_difference);
+    cylinder(18, manifold_radius - 5 + wall_thickness * 1.5, manifold_radius - 5 + wall_thickness * 1.5 + manifold_radius_top_difference);
   }
 }
 
@@ -1138,6 +1136,8 @@ module mounting_clips()
       manifold_outer_shell();
       
       manifold_inlet_connection(hollow = false);
+      
+      manifold_inlet_adaptor(hollow = false);
     }
     
     peg_radius = 0.5 * mounting_bracket_fan_attachment_hole_diameter - 2 * mounting_bracket_fan_attachment_hole_tolerance;
