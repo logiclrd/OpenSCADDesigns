@@ -47,13 +47,13 @@ mounting_bracket_fan_attachment_narrow_width = 19.7;
 mounting_bracket_fan_attachment_depth = 3;
 mounting_bracket_fan_attachment_wide_width = 26.6;
 mounting_bracket_fan_attachment_wide_height = 19;
-mounting_bracket_fan_attachment_hole_diameter = 3.39;
+mounting_bracket_fan_attachment_hole_diameter = 3.29;
 mounting_bracket_fan_attachment_hole_tolerance = 0.03;
 
 mounting_bracket_fan_attachment_holes =
   [
     [4.637, mounting_bracket_fan_attachment_height - 1.888 - 1.695],
-    [mounting_bracket_fan_attachment_narrow_width - 3.37 - 1.695, 15.412]
+    [mounting_bracket_fan_attachment_narrow_width - 3.37 - 1.695, 15.812]
   ];
 
 x_axis_beam_near_y = -mounting_bracket_filament_path_y + mounting_bracket_depth + mount_plate_depth + 4;
