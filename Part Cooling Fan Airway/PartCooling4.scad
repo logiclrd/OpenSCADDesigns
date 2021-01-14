@@ -1075,18 +1075,18 @@ module mounting_clips()
         translate([-0.5 * mounting_clip_depth + 0.5 * mounting_clip_tab_depth, 0, 0.5 * mounting_clip_tab_height + mounting_clip_lock_height + 2])
         cube([mounting_clip_depth + mounting_clip_tab_depth, mounting_clip_width, 1], center = true);
 
-        translate([mounting_bracket_width + inlet_offset_x - mounting_clip_depth - mounting_clip_tab_depth, 0, 0])
+        translate([mounting_bracket_width + inlet_offset_x - mounting_clip_depth - mounting_clip_tab_depth, -0.5 * mounting_clip_width, 0])
         cube([mounting_clip_depth + mounting_clip_tab_depth, mounting_clip_width, mounting_clip_tab_height]);
 
-        translate([mounting_bracket_width + inlet_offset_x - mounting_clip_depth - mounting_clip_tab_depth, 0, mounting_clip_tab_height])
+        translate([mounting_bracket_width + inlet_offset_x - mounting_clip_depth - mounting_clip_tab_depth, -0.5 * mounting_clip_width, mounting_clip_tab_height])
         cube([mounting_clip_tab_depth, mounting_clip_width, mounting_clip_lock_height]);
 
-        translate([mounting_bracket_width + inlet_offset_x - mounting_clip_depth - mounting_clip_tab_depth, 0, mounting_clip_tab_height + mounting_clip_lock_height])
+        translate([mounting_bracket_width + inlet_offset_x - mounting_clip_depth - mounting_clip_tab_depth, -0.5 * mounting_clip_width, mounting_clip_tab_height + mounting_clip_lock_height])
         cube([mounting_clip_tab_depth + 1.5, mounting_clip_width, 1]);
 
         difference()
         {
-          translate([mounting_bracket_width + inlet_offset_x - mounting_clip_depth, 0, -mounting_clip_depth])
+          translate([mounting_bracket_width + inlet_offset_x - mounting_clip_depth, -0.5 * mounting_clip_width, -mounting_clip_depth])
           multmatrix(
             [[1, 0, -1, mounting_clip_depth],
              [0, 1, 0, 0],
@@ -1094,7 +1094,7 @@ module mounting_clips()
              [0, 0, 0, 1]])
           cube([mounting_clip_depth, mounting_clip_width, mounting_clip_depth]);
 
-          translate([mounting_bracket_width + inlet_offset_x, 0, -mounting_clip_depth])
+          translate([mounting_bracket_width + inlet_offset_x, -0.5 * mounting_clip_width, -mounting_clip_depth])
           cube([mounting_clip_depth, mounting_clip_width, mounting_clip_depth]);
         }
       }
