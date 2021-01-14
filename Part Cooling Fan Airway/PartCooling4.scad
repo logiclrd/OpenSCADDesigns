@@ -1,4 +1,5 @@
 include_mockups = $preview;
+manifold_cutaway = false; //$preview;
 
 $fn = $preview ? 24 : 80;
 
@@ -97,7 +98,7 @@ manifold_vent_diameter = 1.8;
 manifold_vent_z_offset = 1;
 manifold_vent_count = 30;
 manifold_ceiling_support_radius = 0.4;
-manifold_ceiling_support_spacing = 4;
+manifold_ceiling_support_spacing = 4.125;
 manifold_ceiling_support_rotation = 0;
 
 manifold_vent_radius = 0.5 * manifold_vent_diameter;
@@ -739,7 +740,7 @@ module manifold_inlet_adaptor(hollow = true)
               minkowski()
               {
                 cube([manifold_radius, manifold_radius * 2, manifold_height - 2 * manifold_rounding_radius], center = true);
-                sphere(manifold_rounding_radius - 0.5 * wall_thickness);
+                sphere(manifold_rounding_radius - 0.75 * wall_thickness);
               }
             }
           }
@@ -937,26 +938,26 @@ module manifold_inlet_connection(hollow = true)
   
   manifold_inlet_inner_contour =
     [
-      [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius, manifold_inlet_top_z - 0.5 * wall_thickness],
+      [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius, manifold_inlet_top_z - 0.75 * wall_thickness],
       for (i = [1 : $fn / 4])
         let (angle = (i - 0.5) * 90 / ($fn / 4))
-          [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.5 * wall_thickness), manifold_inlet_top_z - manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.5 * wall_thickness)],
-      [manifold_inlet_x, manifold_inlet_far_y - 0.5 * wall_thickness, manifold_inlet_top_z - manifold_rounding_radius],
-      [manifold_inlet_x, manifold_inlet_far_y - 0.5 * wall_thickness, manifold_inlet_bottom_z + manifold_rounding_radius],
+          [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.75 * wall_thickness), manifold_inlet_top_z - manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.75 * wall_thickness)],
+      [manifold_inlet_x, manifold_inlet_far_y - 0.75 * wall_thickness, manifold_inlet_top_z - manifold_rounding_radius],
+      [manifold_inlet_x, manifold_inlet_far_y - 0.75 * wall_thickness, manifold_inlet_bottom_z + manifold_rounding_radius],
       for (i = [$fn / 4 + 1 : $fn * 2 / 4])
         let (angle = (i - 0.5) * 90 / ($fn / 4))
-          [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.5 * wall_thickness), manifold_inlet_bottom_z + manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.5 * wall_thickness)],
-      [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius, manifold_inlet_bottom_z + 0.5 * wall_thickness],
-      [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius, manifold_inlet_bottom_z + 0.5 * wall_thickness],
+          [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.75 * wall_thickness), manifold_inlet_bottom_z + manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.75 * wall_thickness)],
+      [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius, manifold_inlet_bottom_z + 0.75 * wall_thickness],
+      [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius, manifold_inlet_bottom_z + 0.75 * wall_thickness],
       for (i = [$fn * 2 / 4 + 1 : $fn * 3 / 4])
         let (angle = (i - 0.5) * 90 / ($fn / 4))
-          [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.5 * wall_thickness), manifold_inlet_bottom_z + manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.5 * wall_thickness)],
-      [manifold_inlet_x, manifold_inlet_near_y + 0.5 * wall_thickness, manifold_inlet_bottom_z + manifold_rounding_radius],
-      [manifold_inlet_x, manifold_inlet_near_y + 0.5 * wall_thickness, manifold_inlet_top_z - manifold_rounding_radius],
+          [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.75 * wall_thickness), manifold_inlet_bottom_z + manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.75 * wall_thickness)],
+      [manifold_inlet_x, manifold_inlet_near_y + 0.75 * wall_thickness, manifold_inlet_bottom_z + manifold_rounding_radius],
+      [manifold_inlet_x, manifold_inlet_near_y + 0.75 * wall_thickness, manifold_inlet_top_z - manifold_rounding_radius],
       for (i = [$fn * 3 / 4 + 1 : $fn * 4 / 4])
         let (angle = (i - 0.5) * 90 / ($fn / 4))
-          [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.5 * wall_thickness), manifold_inlet_top_z - manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.5 * wall_thickness)],
-      [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius, manifold_inlet_top_z - 0.5 * wall_thickness],
+          [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.75 * wall_thickness), manifold_inlet_top_z - manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.75 * wall_thickness)],
+      [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius, manifold_inlet_top_z - 0.75 * wall_thickness],
     ];
       
   manifold_inlet_outer_contour =
@@ -1330,7 +1331,13 @@ module part()
   mounting_clips();
 }
 
-part();
+difference()
+{
+  part();
+  
+  if (manifold_cutaway)
+    cube([100, 100, 110], center = true);
+}
 
 if (include_mockups)
 {
