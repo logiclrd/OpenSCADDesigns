@@ -1,5 +1,6 @@
 include_mockups = $preview;
-manifold_cutaway = false; //$preview;
+part_cutaway = true;//$preview;
+see_into_manifold = false;//$preview;
 
 $fn = $preview ? 24 : 80;
 
@@ -91,6 +92,7 @@ inlet_height = 0.5 * fan_height;
 
 manifold_radius = heater_block_depth + 2;
 manifold_radius_top_difference = 3;
+manifold_inner_space_radius = manifold_radius - 5;
 manifold_rounding_radius = 5;
 manifold_height = 15;
 manifold_z = -2;
@@ -623,7 +625,23 @@ module manifold_inner_shell()
 module manifold_inner_space()
 {
   translate([0, 0, manifold_z])
-  cylinder(18, manifold_radius - 5, manifold_radius - 5 + manifold_radius_top_difference);
+  cylinder(18, manifold_inner_space_radius, manifold_inner_space_radius + manifold_radius_top_difference);
+}
+
+module manifold_vents()
+{
+  vent_pitch = 90 - asin((nozzle_height + manifold_z + manifold_vent_z_offset) / (manifold_radius - manifold_rounding_radius));
+  vent_length = 2 + sqrt(manifold_z * manifold_z + manifold_radius * manifold_radius);
+
+  for (vent_index = [1 : manifold_vent_count])
+  {
+    vent_angle = vent_index * 360 / manifold_vent_count;
+    
+    translate([0, 0, heater_block_base_z - nozzle_height])
+    rotate([0, 0, vent_angle])
+    rotate([0, vent_pitch, 0])
+    cylinder(vent_length, manifold_vent_radius, manifold_vent_radius);
+  }
 }
 
 module manifold()
@@ -669,26 +687,14 @@ module manifold()
       }
     }
     
-    /*
-    if ($preview)
+    if (see_into_manifold)
     {
-      translate([0, 0, -5])
+      translate([0, -50, 0])
       cube(100);
     }
-    */
-  
-    vent_pitch = 90 - asin((nozzle_height + manifold_z + manifold_vent_z_offset) / (manifold_radius - manifold_rounding_radius));
-    vent_length = 1 + sqrt(manifold_z * manifold_z + manifold_radius * manifold_radius);
-  
-    for (vent_index = [1 : manifold_vent_count])
-    {
-      vent_angle = vent_index * 360 / manifold_vent_count;
-      
-      translate([0, 0, -nozzle_height])
-      rotate([0, 0, vent_angle])
-      rotate([0, vent_pitch, 0])
-      cylinder(vent_length, manifold_vent_radius, manifold_vent_radius);
-    }
+    
+    translate([0, 0, -heater_block_base_z])
+    manifold_vents();
   }
 }
 
@@ -713,16 +719,68 @@ module manifold_inlet_adaptor(hollow = true)
   // so that the profile of the inlet is 2 dimensional as a starting point
   // for making the segments that make up the 90 degree bend up toward the
   // bottom of the inlet.
-  translate([0, 0, manifold_z + heater_block_base_z])
+  difference()
   {
-    difference()
+    translate([0, 0, manifold_z + heater_block_base_z])
     {
-      union()
+      difference()
       {
-        intersection()
+        union()
         {
+          intersection()
+          {
+            difference()
+            {
+              // Cuboid with all rounded edges, outer wall
+              translate([0.5 * manifold_radius, 0, 0.5 * manifold_height])
+              minkowski()
+              {
+                cube([manifold_radius, manifold_radius * 2, manifold_height - 2 * manifold_rounding_radius], center = true);
+                sphere(manifold_rounding_radius);
+              }
+
+              // Inner wall
+              if (hollow)
+              {
+                translate([0.5 * manifold_radius, 0, 0.5 * manifold_height])
+                minkowski()
+                {
+                  cube([manifold_radius, manifold_radius * 2, manifold_height - 2 * manifold_rounding_radius], center = true);
+                  sphere(manifold_rounding_radius - 0.75 * wall_thickness);
+                }
+              }
+            }
+            
+            // Intersect down to chop off the ends
+            translate([0.5 * manifold_radius, 0, 0.5 * manifold_height])
+            cube([manifold_radius, manifold_radius * 2 + manifold_rounding_radius * 2, manifold_height], center = true);
+          }
+          
+          // height: manifold_rounding_radius * (1 - 1 / sqrt(2))
+          // bottom radius: manifold_radius + manifold_rounding_radius * (sqrt(2) - 1)
+          // top radius: manifold_radius + manifold_rounding_radius / sqrt(2)
+
           difference()
           {
+            union()
+            {
+              // Close bottom edge bevel
+              translate([0, -(manifold_radius + manifold_rounding_radius * (sqrt(2) - 1)), 0])
+              rotate([-45, 0, 0])
+              translate([0.5 * manifold_radius, -0.5 * manifold_rounding_radius * (sqrt(2) - 1), 0.5 * wall_thickness])
+              cube([manifold_radius, manifold_rounding_radius * (sqrt(2) - 1), wall_thickness], center = true);
+
+              // Far bottom edge bevel
+              translate([0, manifold_radius + manifold_rounding_radius * (sqrt(2) - 1), 0])
+              rotate([45, 0, 0])
+              translate([0.5 * manifold_radius, 0.5 * manifold_rounding_radius * (sqrt(2) - 1), 0.5 * wall_thickness])
+              cube([manifold_radius, manifold_rounding_radius * (sqrt(2) - 1), wall_thickness], center = true);
+              
+              // Complete bottom edge
+              translate([0.5 * manifold_radius, 0, 0.25 * wall_thickness])
+              cube([manifold_radius, 2 * (manifold_radius + manifold_rounding_radius * (sqrt(2) - 1)), 0.5 * wall_thickness], center = true);
+            }
+            
             // Cuboid with all rounded edges, outer wall
             translate([0.5 * manifold_radius, 0, 0.5 * manifold_height])
             minkowski()
@@ -730,67 +788,25 @@ module manifold_inlet_adaptor(hollow = true)
               cube([manifold_radius, manifold_radius * 2, manifold_height - 2 * manifold_rounding_radius], center = true);
               sphere(manifold_rounding_radius);
             }
-
-            // Inner wall
-            if (hollow)
-            {
-              translate([0.5 * manifold_radius, 0, 0.5 * manifold_height])
-              minkowski()
-              {
-                cube([manifold_radius, manifold_radius * 2, manifold_height - 2 * manifold_rounding_radius], center = true);
-                sphere(manifold_rounding_radius - 0.75 * wall_thickness);
-              }
-            }
           }
-          
-          // Intersect down to chop off the ends
-          translate([0.5 * manifold_radius, 0, 0.5 * manifold_height])
-          cube([manifold_radius, manifold_radius * 2 + manifold_rounding_radius * 2, manifold_height], center = true);
         }
         
-        // height: manifold_rounding_radius * (1 - 1 / sqrt(2))
-        // bottom radius: manifold_radius + manifold_rounding_radius * (sqrt(2) - 1)
-        // top radius: manifold_radius + manifold_rounding_radius / sqrt(2)
-
-        difference()
-        {
-          union()
-          {
-            // Close bottom edge bevel
-            translate([0, -(manifold_radius + manifold_rounding_radius * (sqrt(2) - 1)), 0])
-            rotate([-45, 0, 0])
-            translate([0.5 * manifold_radius, -0.5 * manifold_rounding_radius * (sqrt(2) - 1), 0.5 * wall_thickness])
-            cube([manifold_radius, manifold_rounding_radius * (sqrt(2) - 1), wall_thickness], center = true);
-
-            // Far bottom edge bevel
-            translate([0, manifold_radius + manifold_rounding_radius * (sqrt(2) - 1), 0])
-            rotate([45, 0, 0])
-            translate([0.5 * manifold_radius, 0.5 * manifold_rounding_radius * (sqrt(2) - 1), 0.5 * wall_thickness])
-            cube([manifold_radius, manifold_rounding_radius * (sqrt(2) - 1), wall_thickness], center = true);
-            
-            // Complete bottom edge
-            translate([0.5 * manifold_radius, 0, 0.25 * wall_thickness])
-            cube([manifold_radius, 2 * (manifold_radius + manifold_rounding_radius * (sqrt(2) - 1)), 0.5 * wall_thickness], center = true);
-          }
-          
-          // Cuboid with all rounded edges, outer wall
-          translate([0.5 * manifold_radius, 0, 0.5 * manifold_height])
-          minkowski()
-          {
-            cube([manifold_radius, manifold_radius * 2, manifold_height - 2 * manifold_rounding_radius], center = true);
-            sphere(manifold_rounding_radius);
-          }
-        }
+        translate([0, 0, -1])
+        cylinder(manifold_height + 2, manifold_radius, manifold_radius);
       }
-      
-      translate([0, 0, -1])
-      cylinder(manifold_height + 2, manifold_radius, manifold_radius);
     }
+
+    if (hollow)
+      manifold_vents();
   }
 }
 
 module manifold_ceiling_supports()
 {
+  vent_pitch = 90 - asin((nozzle_height + manifold_z + manifold_vent_z_offset) / (manifold_radius - manifold_rounding_radius));
+  vent_length = 2 + sqrt(manifold_z * manifold_z + manifold_radius * manifold_radius);
+  vent_projected_length = vent_length * sin(vent_pitch);
+  
   translate([0, 0, manifold_z + heater_block_base_z])
   {
     support_count = 2 * ceil(manifold_radius / manifold_ceiling_support_spacing);
@@ -809,7 +825,7 @@ module manifold_ceiling_supports()
         
         d = sqrt(x * x + y * y);
         
-        if ((d > manifold_radius)
+        if ((d > vent_projected_length)
          && (x > 0)
          && (x < manifold_radius + manifold_rounding_radius - 1)
          && (y > -manifold_radius - manifold_rounding_radius)
@@ -1340,8 +1356,8 @@ difference()
 {
   part();
   
-  if (manifold_cutaway)
-    cube([100, 100, 110], center = true);
+  if (part_cutaway)
+    cube([100, 100, 94], center = true);
 }
 
 if (include_mockups)
