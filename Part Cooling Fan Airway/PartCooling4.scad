@@ -1,4 +1,4 @@
-include_mockups = false; // $preview;
+include_mockups = $preview;
 
 $fn = $preview ? 24 : 80;
 
@@ -73,6 +73,9 @@ heater_block_width = 16;
 heater_block_depth = 23;
 heater_block_height = 11.5;
 heater_block_base_z = -58;
+heater_cartridge_protrusion = 3.6;
+heater_cartridge_wire_diameter = 1.8;
+sock_wall_thickness = 1.4;
 
 nozzle_hex_height = 3;
 nozzle_tip_height = 2;
@@ -85,7 +88,7 @@ connection_top_z = right_belt_z + connection_taper_height;
 
 inlet_height = 0.5 * fan_height;
 
-manifold_radius = heater_block_depth;
+manifold_radius = heater_block_depth + 2;
 manifold_radius_top_difference = 3;
 manifold_rounding_radius = 5;
 manifold_height = 15;
@@ -105,7 +108,7 @@ mounting_clip_width = 6;
 mounting_clip_depth = 3.5;
 mounting_clip_tab_depth = 4;
 mounting_clip_tab_height = 4;
-mounting_clip_lock_height = 2;
+mounting_clip_lock_height = 4;
 
 module fan_mockup()
 {
@@ -302,7 +305,7 @@ module hot_end_mockup()
   // width: 43
   color([0.1, 0.6, 0.6])
   mounting_bracket();
-  
+
   // Heat sink
   color([0.9, 0.9, 0.9])
   {
@@ -391,7 +394,7 @@ module hot_end_mockup()
   color([0.9, 0.9, 0.9])
   translate([0, 0, heater_block_height - 1])
   cylinder(4, 1.24, 1.24);
-  
+
   // Heater block & cartridge
   color([0.7, 0.7, 0.7])
   translate([0, 8 - 0.5 * heater_block_depth, 0.5 * heater_block_height])
@@ -406,10 +409,73 @@ module hot_end_mockup()
     
     translate([0.5 * heater_block_width, -0.5 * heater_block_depth + 8.5, 4 - 0.5 * heater_block_height])
     rotate([0, -90, 0])
-    cylinder(21, 3, 3);
+    cylinder(heater_block_width + heater_cartridge_protrusion, 3, 3);
     
     translate([0, 0.5 * heater_block_depth - 19.5, -1.75 - 0.5 * heater_block_height])
     cylinder(1.75, 2.5, 2.5);
+  }
+  
+  color([1, 0, 0])
+  translate([-0.5 * heater_block_width - heater_cartridge_protrusion - 0.5 * heater_cartridge_wire_diameter, 16.5 - heater_block_depth, 0])
+  rotate([0, -10, 0])
+  union()
+  {
+    translate([0.5, 0.5 * heater_cartridge_wire_diameter, 3])
+    cylinder(10, heater_cartridge_wire_diameter * 0.5, heater_cartridge_wire_diameter * 0.5);
+    
+    translate([0.5, -0.5 * heater_cartridge_wire_diameter, 3])
+    cylinder(10, heater_cartridge_wire_diameter * 0.5, heater_cartridge_wire_diameter * 0.5);
+  }
+  
+  // Sock
+  color([0, 0.7, 0.7])
+  translate([0, 8 - 0.5 * heater_block_depth, 0.5 * heater_block_height])
+  difference()
+  {
+    union()
+    {
+      cube([heater_block_width + 2 * sock_wall_thickness, heater_block_depth + 2 * sock_wall_thickness, heater_block_height + 2 * sock_wall_thickness], center = true);
+
+      translate([0, 0.5 * heater_block_depth - 8, -0.5 * heater_block_height - sock_wall_thickness - 0.8])
+      cylinder(1, 5.45, 5.45);
+    }
+    
+    cube([heater_block_width, heater_block_depth, heater_block_height], center = true);
+    
+    translate([0, 0.5 * heater_block_depth - 8, -0.5 * heater_block_height - sock_wall_thickness - 1])
+    cylinder(2, 4, 4);
+
+    translate([0, 0.5 * heater_block_depth - 19.5, -0.5 * heater_block_height - sock_wall_thickness - 1])
+    cylinder(2, 2.6, 2.6);
+
+    translate([0.5 * heater_block_width + 1.5 * sock_wall_thickness, -0.5 * heater_block_depth + 8.5, 4 - 0.5 * heater_block_height])
+    rotate([0, -90, 0])
+    cylinder(heater_block_width + 3 * sock_wall_thickness, 3, 3);
+    
+    translate([0, -0.5 * heater_block_depth + 8.5, 4 - 0.5 * heater_block_height + 0.5 * heater_block_height + sock_wall_thickness])
+    cube([heater_block_width + 3 * sock_wall_thickness, 6, heater_block_height + 2 * sock_wall_thickness], center = true);
+
+    translate([0.5 * heater_block_width + 1.5 * sock_wall_thickness, 0.5 * heater_block_depth - 1.35, 4 - 0.5 * heater_block_height])
+    rotate([0, -90, 0])
+    cylinder(heater_block_width + 3 * sock_wall_thickness, 1.25, 1.25);
+    
+    translate([0, 0.5 * heater_block_depth - 1.35, 4 + 1.25])
+    cube([heater_block_width + 3 * sock_wall_thickness, 2.5, heater_block_height + 2 * sock_wall_thickness], center = true);
+    
+    translate([0, 0, 0.5 * heater_block_height])
+    cube([heater_block_width - 2, heater_block_depth - 2, heater_block_height], center = true);
+    
+    translate([-0.5 * heater_block_width - sock_wall_thickness + 1, -0.5 * heater_block_depth, 0.5 * heater_block_height + sock_wall_thickness - 0.01])
+    cube([3, 12, 2 * sock_wall_thickness], center = true);
+    translate([0.5 * heater_block_width + sock_wall_thickness - 1, -0.5 * heater_block_depth, 0.5 * heater_block_height + sock_wall_thickness - 0.01])
+    cube([3, 12, 2 * sock_wall_thickness], center = true);
+    translate([0, -0.5 * heater_block_depth, 0.5 * heater_block_height + sock_wall_thickness - 0.01])
+    cube([3, 12, 2 * sock_wall_thickness], center = true);
+
+    translate([-0.5 * heater_block_width - sock_wall_thickness + 1, 0.5 * heater_block_depth, 0.5 * heater_block_height + sock_wall_thickness - 0.01])
+    cube([3, 3, 2 * sock_wall_thickness], center = true);
+    translate([0.5 * heater_block_width + sock_wall_thickness - 1, 0.5 * heater_block_depth, 0.5 * heater_block_height + sock_wall_thickness - 0.01])
+    cube([3, 3, 2 * sock_wall_thickness], center = true);
   }
   
   // Nozzle
@@ -476,7 +542,7 @@ module mount_plate()
 module x_axis_beam()
 {
   // bottom of beam is 48 below top of mount plate and 4 mm behind it
-  translate([0, 10 + x_axis_beam_near_y, mount_plate_top_z - 10 - 48])
+  translate([0, 10 + x_axis_beam_near_y, -10 - 4.8])
   difference()
   {
     cube([420, 20, 20], center = true);
@@ -1000,12 +1066,38 @@ module mounting_clips()
       {
         translate([-0.5 * mounting_clip_depth, 0, -0.5 * support_height])
         cube([mounting_clip_depth, mounting_clip_width, support_height], center = true);
-        
+
         translate([-0.5 * mounting_clip_depth + 0.5 * mounting_clip_tab_depth, 0, 0.5 * mounting_clip_tab_height])
         cube([mounting_clip_depth + mounting_clip_tab_depth, mounting_clip_width, mounting_clip_tab_height], center = true);
 
         translate([0.5 * mounting_clip_tab_depth, 0, 0.5 * mounting_clip_lock_height + mounting_clip_tab_height])
         cube([mounting_clip_tab_depth, mounting_clip_width, mounting_clip_lock_height], center = true);
+
+        translate([-0.5 * mounting_clip_depth + 0.5 * mounting_clip_tab_depth, 0, 0.5 * mounting_clip_tab_height + mounting_clip_lock_height + 2])
+        cube([mounting_clip_depth + mounting_clip_tab_depth, mounting_clip_width, 1], center = true);
+
+        translate([mounting_bracket_width + inlet_offset_x - mounting_clip_depth - mounting_clip_tab_depth, 0, 0])
+        cube([mounting_clip_depth + mounting_clip_tab_depth, mounting_clip_width, mounting_clip_tab_height]);
+
+        translate([mounting_bracket_width + inlet_offset_x - mounting_clip_depth - mounting_clip_tab_depth, 0, mounting_clip_tab_height])
+        cube([mounting_clip_tab_depth, mounting_clip_width, mounting_clip_lock_height]);
+
+        translate([mounting_bracket_width + inlet_offset_x - mounting_clip_depth - mounting_clip_tab_depth, 0, mounting_clip_tab_height + mounting_clip_lock_height])
+        cube([mounting_clip_tab_depth + 1.5, mounting_clip_width, 1]);
+
+        difference()
+        {
+          translate([mounting_bracket_width + inlet_offset_x - mounting_clip_depth, 0, -mounting_clip_depth])
+          multmatrix(
+            [[1, 0, -1, mounting_clip_depth],
+             [0, 1, 0, 0],
+             [0, 0, 1, 0],
+             [0, 0, 0, 1]])
+          cube([mounting_clip_depth, mounting_clip_width, mounting_clip_depth]);
+
+          translate([mounting_bracket_width + inlet_offset_x, 0, -mounting_clip_depth])
+          cube([mounting_clip_depth, mounting_clip_width, mounting_clip_depth]);
+        }
       }
       
       translate([0, 0, heater_block_base_z])
