@@ -49,8 +49,8 @@ mounting_bracket_fan_attachment_narrow_width = 19.7;
 mounting_bracket_fan_attachment_depth = 3;
 mounting_bracket_fan_attachment_wide_width = 26.6;
 mounting_bracket_fan_attachment_wide_height = 19;
-mounting_bracket_fan_attachment_hole_diameter = 3.29;
-mounting_bracket_fan_attachment_hole_tolerance = 0.03;
+mounting_bracket_fan_attachment_hole_diameter = 3.39; // measured, adjust tolerance
+mounting_bracket_fan_attachment_hole_tolerance = 0.08;
 
 mounting_bracket_fan_attachment_holes =
   [
