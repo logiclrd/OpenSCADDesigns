@@ -618,7 +618,7 @@ module manifold_inner_shell()
 
     // Inner wall
     translate([0, 0, manifold_z])
-    cylinder(18, manifold_radius - 5 + wall_thickness * 1.5, manifold_radius - 5 + wall_thickness * 1.5 + manifold_radius_top_difference);
+    cylinder(18, manifold_radius - 5 + wall_thickness, manifold_radius - 5 + wall_thickness + manifold_radius_top_difference);
   }
 }
 
@@ -665,7 +665,7 @@ module manifold()
         cylinder(3, manifold_radius, manifold_radius - 5 + wall_thickness);
       
         translate([0, 0, -1])
-        cylinder(5, manifold_radius - 5 + 0.5 * wall_thickness, manifold_radius - 5 + 0.5 * wall_thickness + manifold_radius_top_difference);
+        cylinder(5, manifold_radius - 5, manifold_radius - 5 + manifold_radius_top_difference);
       }
       
       // Bottom bevel (avoid shallower than 45 degree angle)
