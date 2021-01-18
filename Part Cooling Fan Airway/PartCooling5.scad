@@ -2,7 +2,8 @@ include_mockups = false;//$preview;
 part_cutaway = false;//$preview;
 see_into_manifold = false;//$preview;
 
-$fn = $preview ? 24 : 80;
+// $fn must be divisible by 6 and by 8 for best results
+$fn = $preview ? 24 : 96;
 
 wall_thickness = 2;
 inlet_width = 30;
@@ -108,6 +109,8 @@ manifold_vent_radius_start = 0.5 * manifold_vent_diameter_start;
 manifold_vent_radius_end = 0.5 * manifold_vent_diameter_end;
 
 manifold_inlet_connection_segments = $fn * 0.75;
+manifold_inlet_z_straight_edge_subdivision = $fn / 6;
+manifold_inlet_tension = 5;
 
 mounting_clip_width = 6;
 mounting_clip_depth = 3.5;
@@ -887,7 +890,7 @@ module manifold_inlet_connection_hull(manifold_points, inlet_points)
           for (point_index = [0 : band_length - 1])
             let (p0 = manifold_points[point_index])
             let (p3 = inlet_points[point_index])
-            let (p1 = [p3[0], p0[1], p0[2]])
+            let (p1 = [p3[0] + manifold_inlet_tension, p0[1], p0[2]])
             let (p2 = [p3[0], p3[1], p0[2]])
               bezier3d(t, p0, p1, p2, p3),
 
@@ -935,7 +938,7 @@ module manifold_inlet_connection_profile(manifold_points, inlet_points, bottom_z
         for (point_index = [0 : band_length - 1])
           let (p0 = manifold_points[point_index])
           let (p3 = inlet_points[point_index])
-          let (p1 = [p3[0], p0[1], p0[2]])
+          let (p1 = [p3[0] + manifold_inlet_tension, p0[1], p0[2]])
           let (p2 = [p3[0], p3[1], p0[2]])
             bezier3d(t, p0, p1, p2, p3),
   ];
@@ -951,30 +954,51 @@ module manifold_inlet_connection_profile(manifold_points, inlet_points, bottom_z
           let (pt2 = points[band_start + next_point_index])
           let (pt3 = points[band_start + band_length + next_point_index])
           let (pt4 = points[band_start + band_length + point_index])
+          {
             polyhedron(
               points =
               [
                 [pt1[0], pt1[1], bottom_z],
                 [pt2[0], pt2[1], bottom_z],
                 [pt3[0], pt3[1], bottom_z],
-                [pt4[0], pt4[1], bottom_z],
 
                 [pt1[0], pt1[1], pt1[2]],
                 [pt2[0], pt2[1], pt2[2]],
                 [pt3[0], pt3[1], pt3[2]],
-                [pt4[0], pt4[1], pt4[2]],
               ],
-              
+
               faces =
               [
-                [0, 1, 2, 3],
-                [7, 6, 5, 4],
+                [0, 1, 2],
+                [5, 4, 3],
 
-                [0, 4, 5, 1],
-                [1, 5, 6, 2],
-                [2, 6, 7, 3],
-                [3, 7, 4, 0]
+                [0, 3, 4, 1],
+                [1, 4, 5, 2],
+                [2, 5, 3, 0]
               ]);
+
+            polyhedron(
+              points =
+              [
+                [pt1[0], pt1[1], bottom_z],
+                [pt3[0], pt3[1], bottom_z],
+                [pt4[0], pt4[1], bottom_z],
+
+                [pt1[0], pt1[1], pt1[2]],
+                [pt3[0], pt3[1], pt3[2]],
+                [pt4[0], pt4[1], pt4[2]],
+              ],
+
+              faces =
+              [
+                [0, 1, 2],
+                [5, 4, 3],
+
+                [0, 3, 4, 1],
+                [1, 4, 5, 2],
+                [2, 5, 3, 0]
+              ]);
+          }
     }
   }
 }
@@ -1005,120 +1029,177 @@ module manifold_inlet_connection_render(hollow, profile)
   
   // It is very important that the points in these arrays match up, both in
   // count and semantically.
-  
-  manifold_y_straight_edge_length =
+
+  manifold_z_straight_edge_length =
     (manifold_inlet_top_z - manifold_rounding_radius) -
     (manifold_inlet_bottom_z + manifold_rounding_radius);
-  
+
+  epsilon = $preview ? 0.01 : 0;
+
   manifold_inlet_inner_contour =
     [
-      [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius, manifold_inlet_top_z - 0.75 * wall_thickness],
+      // Far top corner
+      [manifold_inlet_x - epsilon, manifold_inlet_far_y - manifold_rounding_radius, manifold_inlet_top_z - 0.75 * wall_thickness],
       for (i = [1 : $fn / 4])
         let (angle = (i - 0.5) * 90 / ($fn / 4))
-          [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.75 * wall_thickness), manifold_inlet_top_z - manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.75 * wall_thickness)],
-      [manifold_inlet_x, manifold_inlet_far_y - 0.75 * wall_thickness, manifold_inlet_top_z - manifold_rounding_radius],
-      [manifold_inlet_x, manifold_inlet_far_y - 0.75 * wall_thickness, manifold_inlet_bottom_z + manifold_rounding_radius],
+          [manifold_inlet_x - epsilon, manifold_inlet_far_y - manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.75 * wall_thickness), manifold_inlet_top_z - manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.75 * wall_thickness)],
+      [manifold_inlet_x - epsilon, manifold_inlet_far_y - 0.75 * wall_thickness, manifold_inlet_top_z - manifold_rounding_radius],
+      // Far vertical edge
+      for (i = [1 : manifold_inlet_z_straight_edge_subdivision - 1])
+        [manifold_inlet_x - epsilon, manifold_inlet_far_y - 0.75 * wall_thickness, manifold_inlet_top_z - manifold_rounding_radius - i * manifold_z_straight_edge_length / manifold_inlet_z_straight_edge_subdivision],
+      // Far bottom corner
+      [manifold_inlet_x - epsilon, manifold_inlet_far_y - 0.75 * wall_thickness, manifold_inlet_bottom_z + manifold_rounding_radius],
       for (i = [$fn / 4 + 1 : $fn * 2 / 4])
         let (angle = (i - 0.5) * 90 / ($fn / 4))
-          [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.75 * wall_thickness), manifold_inlet_bottom_z + manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.75 * wall_thickness)],
-      [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius, manifold_inlet_bottom_z + 0.75 * wall_thickness],
-      [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius, manifold_inlet_bottom_z + 0.75 * wall_thickness],
+          [manifold_inlet_x - epsilon, manifold_inlet_far_y - manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.75 * wall_thickness), manifold_inlet_bottom_z + manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.75 * wall_thickness)],
+      [manifold_inlet_x - epsilon, manifold_inlet_far_y - manifold_rounding_radius, manifold_inlet_bottom_z + 0.75 * wall_thickness],
+      // Near bottom corner
+      [manifold_inlet_x - epsilon, manifold_inlet_near_y + manifold_rounding_radius, manifold_inlet_bottom_z + 0.75 * wall_thickness],
       for (i = [$fn * 2 / 4 + 1 : $fn * 3 / 4])
         let (angle = (i - 0.5) * 90 / ($fn / 4))
-          [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.75 * wall_thickness), manifold_inlet_bottom_z + manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.75 * wall_thickness)],
-      [manifold_inlet_x, manifold_inlet_near_y + 0.75 * wall_thickness, manifold_inlet_bottom_z + manifold_rounding_radius],
-      [manifold_inlet_x, manifold_inlet_near_y + 0.75 * wall_thickness, manifold_inlet_top_z - manifold_rounding_radius],
+          [manifold_inlet_x - epsilon, manifold_inlet_near_y + manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.75 * wall_thickness), manifold_inlet_bottom_z + manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.75 * wall_thickness)],
+      [manifold_inlet_x - epsilon, manifold_inlet_near_y + 0.75 * wall_thickness, manifold_inlet_bottom_z + manifold_rounding_radius],
+      // Near vertical edge
+      for (i = [1 : manifold_inlet_z_straight_edge_subdivision - 1])
+        [manifold_inlet_x - epsilon, manifold_inlet_near_y + 0.75 * wall_thickness, manifold_inlet_bottom_z + manifold_rounding_radius + i * manifold_z_straight_edge_length / manifold_inlet_z_straight_edge_subdivision],
+      // Near top corner
+      [manifold_inlet_x - epsilon, manifold_inlet_near_y + 0.75 * wall_thickness, manifold_inlet_top_z - manifold_rounding_radius],
       for (i = [$fn * 3 / 4 + 1 : $fn * 4 / 4])
         let (angle = (i - 0.5) * 90 / ($fn / 4))
-          [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.75 * wall_thickness), manifold_inlet_top_z - manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.75 * wall_thickness)],
-      [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius, manifold_inlet_top_z - 0.75 * wall_thickness],
+          [manifold_inlet_x - epsilon, manifold_inlet_near_y + manifold_rounding_radius + sin(angle) * (manifold_rounding_radius - 0.75 * wall_thickness), manifold_inlet_top_z - manifold_rounding_radius + cos(angle) * (manifold_rounding_radius - 0.75 * wall_thickness)],
+      [manifold_inlet_x - epsilon, manifold_inlet_near_y + manifold_rounding_radius, manifold_inlet_top_z - 0.75 * wall_thickness],
     ];
-      
+
   manifold_inlet_outer_contour =
     [
+      // Far top corner
       [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius, manifold_inlet_top_z],
       for (i = [1 : $fn / 4])
         let (angle = (i - 0.5) * 90 / ($fn / 4))
           [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius + sin(angle) * manifold_rounding_radius, manifold_inlet_top_z - manifold_rounding_radius + cos(angle) * manifold_rounding_radius],
       [manifold_inlet_x, manifold_inlet_far_y, manifold_inlet_top_z - manifold_rounding_radius],
+      // Far vertical edge
+      for (i = [1 : manifold_inlet_z_straight_edge_subdivision - 1])
+        [manifold_inlet_x, manifold_inlet_far_y, manifold_inlet_top_z - manifold_rounding_radius - i * manifold_z_straight_edge_length / manifold_inlet_z_straight_edge_subdivision],
+      // Far bottom corner
       [manifold_inlet_x, manifold_inlet_far_y, manifold_inlet_bottom_z + manifold_rounding_radius],
       for (i = [$fn / 4 + 1 : $fn * 2 / 4])
         let (angle = (i - 0.5) * 90 / ($fn / 4))
           [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius + sin(angle) * manifold_rounding_radius, manifold_inlet_bottom_z + manifold_rounding_radius + cos(angle) * manifold_rounding_radius],
       [manifold_inlet_x, manifold_inlet_far_y - manifold_rounding_radius, manifold_inlet_bottom_z],
+      // Near bottom corner
       [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius, manifold_inlet_bottom_z],
       for (i = [$fn * 2 / 4 + 1 : $fn * 3 / 4])
         let (angle = (i - 0.5) * 90 / ($fn / 4))
           [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius + sin(angle) * manifold_rounding_radius, manifold_inlet_bottom_z + manifold_rounding_radius + cos(angle) * manifold_rounding_radius],
       [manifold_inlet_x, manifold_inlet_near_y, manifold_inlet_bottom_z + manifold_rounding_radius],
+      // Near vertical edge
+      for (i = [1 : manifold_inlet_z_straight_edge_subdivision - 1])
+        [manifold_inlet_x, manifold_inlet_near_y, manifold_inlet_bottom_z + manifold_rounding_radius + i * manifold_z_straight_edge_length / manifold_inlet_z_straight_edge_subdivision],
+      // Near top corner
       [manifold_inlet_x, manifold_inlet_near_y, manifold_inlet_top_z - manifold_rounding_radius],
       for (i = [$fn * 3 / 4 + 1 : $fn * 4 / 4])
         let (angle = (i - 0.5) * 90 / ($fn / 4))
           [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius + sin(angle) * manifold_rounding_radius, manifold_inlet_top_z - manifold_rounding_radius + cos(angle) * manifold_rounding_radius],
       [manifold_inlet_x, manifold_inlet_near_y + manifold_rounding_radius, manifold_inlet_top_z]
     ];
-  
-  sharp_corner_length = fan_depth * 0.4;
-  
+
+  points_per_corner = $fn / 4 + 2;
+  points_per_corner_on_front_and_back_face = points_per_corner / 2 + 1;
+  points_per_corner_on_side_face = points_per_corner / 2;
+
+  segment_count_x = 2 * (points_per_corner_on_front_and_back_face - 1) + manifold_inlet_z_straight_edge_subdivision;
+  segment_count_y = points_per_corner_on_side_face - 1;
+
+  segment_size_x = (inlet_right_x - inlet_left_x) / segment_count_x;
+  segment_size_x_inner = ((inlet_right_x - wall_thickness) - (inlet_left_x + wall_thickness)) / segment_count_x;
+
+  segment_size_y = fan_depth * 0.4 / segment_count_y;
+  segment_size_y_inner = segment_size_y - (wall_thickness + inlet_tolerance) / segment_count_y;
+
   inlet_inner_contour =
     [
+      // Far left corner
       for (i = [0 : $fn / 4 + 1])
         let (j = i)
-        let (offset_x = max(0, j - $fn / 8) / ($fn / 8))
-        let (offset_y = max(0, $fn / 8 - j) / ($fn / 8))
-          [inlet_left_x + wall_thickness - inlet_tolerance + offset_x * sharp_corner_length, inlet_far_y - wall_thickness + inlet_tolerance - offset_y * sharp_corner_length, inlet_z],
+        let (seg_x = max(0, j - $fn / 8))
+        let (seg_y = max(0, $fn / 8 - j))
+          [inlet_left_x + wall_thickness + seg_x * segment_size_x_inner, inlet_far_y - wall_thickness + inlet_tolerance - seg_y * segment_size_y_inner, inlet_z + epsilon],
 
-      for (i = [$fn / 4 - 1: $fn * 2 / 4])
+      // Intermediate far face
+      for (i = [1 : manifold_inlet_z_straight_edge_subdivision - 1])
+        [inlet_left_x + wall_thickness + (i + points_per_corner_on_front_and_back_face - 1) * segment_size_x_inner, inlet_far_y - wall_thickness + inlet_tolerance, inlet_z + epsilon],
+
+      // Far right corner
+      for (i = [$fn / 4: $fn * 2 / 4 + 1])
         let (j = i - $fn / 4 - 1)
-        let (offset_x = max(0, $fn / 8 - j) / ($fn / 8))
-        let (offset_y = max(0, j - $fn / 8) / ($fn / 8))
-          [inlet_right_x - wall_thickness + inlet_tolerance - offset_x * sharp_corner_length, inlet_far_y - wall_thickness + inlet_tolerance - offset_y * sharp_corner_length, inlet_z],
+        let (seg_x = max(0, $fn / 8 - j))
+        let (seg_y = max(0, j - $fn / 8))
+          [inlet_right_x - wall_thickness - seg_x * segment_size_x_inner, inlet_far_y - wall_thickness + inlet_tolerance - seg_y * segment_size_y_inner, inlet_z + epsilon],
 
+      // Near right corner
       for (i = [$fn * 2 / 4 : $fn * 3 / 4 + 1])
         let (j = i - $fn * 2 / 4)
-        let (offset_x = max(0, j - $fn / 8) / ($fn / 8))
-        let (offset_y = max(0, $fn / 8 - j) / ($fn / 8))
-          [inlet_right_x - wall_thickness + inlet_tolerance - offset_x * sharp_corner_length, inlet_near_y + wall_thickness - inlet_tolerance + fan_tab_height + offset_y * sharp_corner_length, inlet_z],
+        let (seg_x = max(0, j - $fn / 8))
+        let (seg_y = max(0, $fn / 8 - j))
+          [inlet_right_x - wall_thickness - seg_x * segment_size_x_inner, inlet_near_y + wall_thickness - inlet_tolerance + fan_tab_height + seg_y * segment_size_y_inner, inlet_z + epsilon],
 
-      for (i = [$fn * 3 / 4 - 1: $fn * 4 / 4])
+      // Intermediate near face
+      for (i = [1 : manifold_inlet_z_straight_edge_subdivision - 1])
+        [inlet_right_x - wall_thickness - (i + points_per_corner_on_front_and_back_face - 1) * segment_size_x_inner, inlet_near_y + wall_thickness - inlet_tolerance + fan_tab_height, inlet_z + epsilon],
+
+      // Near left corner
+      for (i = [$fn * 3 / 4: $fn * 4 / 4 + 1])
         let (j = i - $fn * 3 / 4 - 1)
-        let (offset_x = max(0, $fn / 8 - j) / ($fn / 8))
-        let (offset_y = max(0, j - $fn / 8) / ($fn / 8))
-          [inlet_left_x + wall_thickness - inlet_tolerance + offset_x * sharp_corner_length, inlet_near_y + wall_thickness - inlet_tolerance + fan_tab_height + offset_y * sharp_corner_length, inlet_z]
+        let (seg_x = max(0, $fn / 8 - j))
+        let (seg_y = max(0, j - $fn / 8))
+          [inlet_left_x + wall_thickness + seg_x * segment_size_x_inner, inlet_near_y + wall_thickness - inlet_tolerance + fan_tab_height + seg_y * segment_size_y_inner, inlet_z + epsilon]
     ];
-  
+
   inlet_outer_contour =
     [
+      // Far left corner
       for (i = [0 : $fn / 4 + 1])
         let (j = i)
-        let (offset_x = max(0, j - $fn / 8) / ($fn / 8))
-        let (offset_y = max(0, $fn / 8 - j) / ($fn / 8))
-          [inlet_left_x + offset_x * sharp_corner_length, inlet_far_y - offset_y * sharp_corner_length, inlet_z],
+        let (seg_x = max(0, j - $fn / 8))
+        let (seg_y = max(0, $fn / 8 - j))
+          [inlet_left_x + seg_x * segment_size_x, inlet_far_y - seg_y * segment_size_y, inlet_z],
 
-      for (i = [$fn / 4 - 1: $fn * 2 / 4])
+      // Intermediate far face
+      for (i = [1 : manifold_inlet_z_straight_edge_subdivision - 1])
+        [inlet_left_x + (i + points_per_corner_on_front_and_back_face - 1) * segment_size_x, inlet_far_y, inlet_z],
+
+      // Far right corner
+      for (i = [$fn / 4: $fn * 2 / 4 + 1])
         let (j = i - $fn / 4 - 1)
-        let (offset_x = max(0, $fn / 8 - j) / ($fn / 8))
-        let (offset_y = max(0, j - $fn / 8) / ($fn / 8))
-          [inlet_right_x - offset_x * sharp_corner_length, inlet_far_y - offset_y * sharp_corner_length, inlet_z],
+        let (seg_x = max(0, $fn / 8 - j))
+        let (seg_y = max(0, j - $fn / 8))
+          [inlet_right_x - seg_x * segment_size_x, inlet_far_y - seg_y * segment_size_y, inlet_z],
 
+      // Near right corner
       for (i = [$fn * 2 / 4 : $fn * 3 / 4 + 1])
         let (j = i - $fn * 2 / 4)
-        let (offset_x = max(0, j - $fn / 8) / ($fn / 8))
-        let (offset_y = max(0, $fn / 8 - j) / ($fn / 8))
-          [inlet_right_x - offset_x * sharp_corner_length, inlet_near_y + offset_y * sharp_corner_length, inlet_z],
+        let (seg_x = max(0, j - $fn / 8))
+        let (seg_y = max(0, $fn / 8 - j))
+          [inlet_right_x - seg_x * segment_size_x, inlet_near_y + fan_tab_height + seg_y * segment_size_y, inlet_z],
 
-      for (i = [$fn * 3 / 4 - 1: $fn * 4 / 4])
+      // Intermediate near face
+      for (i = [1 : manifold_inlet_z_straight_edge_subdivision - 1])
+        [inlet_right_x - (i + points_per_corner_on_front_and_back_face - 1) * segment_size_x, inlet_near_y + fan_tab_height, inlet_z],
+
+      // Near left corner
+      for (i = [$fn * 3 / 4: $fn * 4 / 4 + 1])
         let (j = i - $fn * 3 / 4 - 1)
-        let (offset_x = max(0, $fn / 8 - j) / ($fn / 8))
-        let (offset_y = max(0, j - $fn / 8) / ($fn / 8))
-          [inlet_left_x + offset_x * sharp_corner_length, inlet_near_y + offset_y * sharp_corner_length, inlet_z]
+        let (seg_x = max(0, $fn / 8 - j))
+        let (seg_y = max(0, j - $fn / 8))
+          [inlet_left_x + seg_x * segment_size_x, inlet_near_y + fan_tab_height + seg_y * segment_size_y, inlet_z]
     ];
-  
-  difference()
+
+  if (profile)
+    manifold_inlet_connection_profile(manifold_inlet_outer_contour, inlet_outer_contour, -100, 100);
+  else
   {
-    if (profile)
-      manifold_inlet_connection_profile(manifold_inlet_outer_contour, inlet_outer_contour, -100, 100);
-    else
+    difference()
     {
       manifold_inlet_connection_hull(manifold_inlet_outer_contour, inlet_outer_contour);
 
@@ -1168,9 +1249,11 @@ module mounting_clips()
           cube([mounting_clip_depth + mounting_clip_tab_depth, mounting_clip_width, 1]);
 
           // Right clip, attached to inlet
+          right_clip_attachment_x = inlet_offset_x + manifold_inlet_tension / 15;
+
           difference()
           {
-            translate([mounting_bracket_width + inlet_offset_x - mounting_clip_depth, 0, -mounting_clip_depth])
+            translate([mounting_bracket_width + right_clip_attachment_x - mounting_clip_depth, 0, -mounting_clip_depth])
             multmatrix(
               [[1, 0, -1, mounting_clip_depth],
                [0, 1, 0, 0],
@@ -1178,17 +1261,17 @@ module mounting_clips()
                [0, 0, 0, 1]])
             cube([mounting_clip_depth, mounting_clip_width, mounting_clip_depth]);
 
-            translate([mounting_bracket_width + inlet_offset_x, 0, -mounting_clip_depth])
+            translate([mounting_bracket_width + right_clip_attachment_x, 0, -mounting_clip_depth])
             cube([mounting_clip_depth, mounting_clip_width, mounting_clip_depth]);
           }
 
-          translate([mounting_bracket_width + inlet_offset_x - mounting_clip_depth - mounting_clip_tab_depth, 0, 0])
+          translate([mounting_bracket_width + right_clip_attachment_x - mounting_clip_depth - mounting_clip_tab_depth, 0, 0])
           cube([mounting_clip_depth + mounting_clip_tab_depth, mounting_clip_width, mounting_clip_tab_height]);
 
-          translate([mounting_bracket_width + inlet_offset_x - mounting_clip_depth - mounting_clip_tab_depth, 0, mounting_clip_tab_height])
+          translate([mounting_bracket_width + right_clip_attachment_x - mounting_clip_depth - mounting_clip_tab_depth, 0, mounting_clip_tab_height])
           cube([mounting_clip_tab_depth, mounting_clip_width, mounting_clip_lock_height]);
 
-          translate([mounting_bracket_width + inlet_offset_x - mounting_clip_depth - mounting_clip_tab_depth, 0, mounting_clip_tab_height + mounting_clip_lock_height])
+          translate([mounting_bracket_width + right_clip_attachment_x - mounting_clip_depth - mounting_clip_tab_depth, 0, mounting_clip_tab_height + mounting_clip_lock_height])
           cube([mounting_clip_tab_depth + 1.5, mounting_clip_width, 1]);
         }
       }
