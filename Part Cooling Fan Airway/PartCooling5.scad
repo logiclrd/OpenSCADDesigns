@@ -637,7 +637,7 @@ module manifold_inner_space()
 module manifold_vents()
 {
   vent_pitch = 90 - asin((nozzle_height + manifold_z + manifold_vent_z_offset) / (manifold_radius - manifold_rounding_radius));
-  vent_length = 2 + sqrt(manifold_z * manifold_z + manifold_radius * manifold_radius);
+  vent_length = 1.5 + sqrt(manifold_z * manifold_z + manifold_radius * manifold_radius);
 
   for (vent_index = [1 : manifold_vent_count])
   {
@@ -668,10 +668,10 @@ module manifold()
       translate([0, 0, manifold_z + 0.5 * wall_thickness])
       difference()
       {
-        cylinder(3, manifold_radius, manifold_inner_space_radius + wall_thickness);
+        cylinder(3, manifold_radius, manifold_inner_space_radius + manifold_wall_thickness);
       
         translate([0, 0, -1])
-        cylinder(5, manifold_inner_space_radius, manifold_inner_space_radius + manifold_radius_top_difference);
+        cylinder(5, manifold_inner_space_radius, manifold_inner_space_radius + manifold_radius_top_difference - 0.5 * manifold_wall_thickness);
       }
       
       // Bottom bevel (avoid shallower than 45 degree angle)
