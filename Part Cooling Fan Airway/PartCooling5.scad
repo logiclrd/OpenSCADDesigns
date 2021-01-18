@@ -925,6 +925,62 @@ module manifold_inlet_connection_hull(manifold_points, inlet_points)
     ]);
 }
 
+function point_pair_product_sum(point_list, index = 0)
+  = let (next_index = (index + 1) % len(point_list))
+    let (x1 = point_list[index][0])
+    let (y1 = point_list[index][1])
+    let (x2 = point_list[next_index][0])
+    let (y2 = point_list[next_index][1])
+      (x1*y2 - y1*x2) + ((next_index > 0) ? point_pair_product_sum(point_list, next_index) : 0);
+
+function polygon2d_area(projected_polygon)
+  = abs(point_pair_product_sum(projected_polygon) / 2);
+
+module drop_column(pt1, pt2, pt3, bottom_z)
+{
+  // If any of the points is directly on the line between the other two, then the
+  // column will have no area at all, and this will cause problems for CGAL. To
+  // test for this, we calculate the area of the projection against the XY plane,
+  // and don't bother dropping columns with extremely small areas.
+  projected_polygon =
+    [
+      [pt1[0], pt1[1]],
+      [pt2[0], pt2[1]],
+      [pt3[0], pt3[1]]
+    ];
+
+  minimum_projected_polygon_area = 0.0000000001;
+
+  area = polygon2d_area(projected_polygon);
+
+  if (area < minimum_projected_polygon_area)
+    echo(str("Skipped dropping column from vertical polygon (measured area as ", area, ")"));
+  else
+  {
+    polyhedron(
+      points =
+      [
+        [pt1[0], pt1[1], bottom_z],
+        [pt2[0], pt2[1], bottom_z],
+        [pt3[0], pt3[1], bottom_z],
+
+        [pt1[0], pt1[1], pt1[2]],
+        [pt2[0], pt2[1], pt2[2]],
+        [pt3[0], pt3[1], pt3[2]],
+      ],
+
+      faces =
+      [
+        [0, 1, 2],
+        [5, 4, 3],
+
+        [0, 3, 4, 1],
+        [1, 4, 5, 2],
+        [2, 5, 3, 0]
+      ]);
+  }
+}
+
 module manifold_inlet_connection_profile(manifold_points, inlet_points, bottom_z, top_z)
 {
   // Assumes manifold_points and inlet_points are, each, coplanar and convex.
@@ -956,49 +1012,8 @@ module manifold_inlet_connection_profile(manifold_points, inlet_points, bottom_z
           let (pt3 = points[band_start + band_length + next_point_index])
           let (pt4 = points[band_start + band_length + point_index])
           {
-            polyhedron(
-              points =
-              [
-                [pt1[0], pt1[1], bottom_z],
-                [pt2[0], pt2[1], bottom_z],
-                [pt3[0], pt3[1], bottom_z],
-
-                [pt1[0], pt1[1], pt1[2]],
-                [pt2[0], pt2[1], pt2[2]],
-                [pt3[0], pt3[1], pt3[2]],
-              ],
-
-              faces =
-              [
-                [0, 1, 2],
-                [5, 4, 3],
-
-                [0, 3, 4, 1],
-                [1, 4, 5, 2],
-                [2, 5, 3, 0]
-              ]);
-
-            polyhedron(
-              points =
-              [
-                [pt1[0], pt1[1], bottom_z],
-                [pt3[0], pt3[1], bottom_z],
-                [pt4[0], pt4[1], bottom_z],
-
-                [pt1[0], pt1[1], pt1[2]],
-                [pt3[0], pt3[1], pt3[2]],
-                [pt4[0], pt4[1], pt4[2]],
-              ],
-
-              faces =
-              [
-                [0, 1, 2],
-                [5, 4, 3],
-
-                [0, 3, 4, 1],
-                [1, 4, 5, 2],
-                [2, 5, 3, 0]
-              ]);
+            drop_column(pt1, pt2, pt3, bottom_z);
+            drop_column(pt1, pt3, pt4, bottom_z);
           }
     }
   }
@@ -1360,7 +1375,7 @@ module manifold_inlet_connection_support()
       rotate([45, 0, 0])
       translate([0.5 * support_width, 0.5 * bevel_width, 0.5 * bevel_height])
       cube([support_width, bevel_width, bevel_height], center = true);
-      
+
       // Right edge bevel
       translate([inlet_right_x, 0, 0])
       rotate([0, 45, 0])
@@ -1373,7 +1388,7 @@ module manifold_inlet_connection_support()
         rotate([0, 45, 0])
         translate([-0.5 * bevel_width, 0, 0.5 * bevel_height])
         cube([bevel_width, 2 * (manifold_radius + manifold_rounding_radius), bevel_height], center = true);
-        
+
         union()
         {
           // Close bottom edge bevel
@@ -1389,7 +1404,7 @@ module manifold_inlet_connection_support()
           cube([support_width, bevel_width, bevel_height], center = true);
         }
       }
-      
+
       // Complete bottom edge
       translate([manifold_inlet_x + 0.5 * support_width, 0, 0.5 * bevel_height])
       cube([support_width, 2 * (manifold_radius + manifold_rounding_radius * (sqrt(2) - 1)), bevel_height], center = true);
