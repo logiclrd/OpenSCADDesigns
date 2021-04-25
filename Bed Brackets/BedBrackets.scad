@@ -68,5 +68,5 @@ module bar(bar_length, interface_side)
 
 bar(depth, 1);
 
-translate([thickness + 2, 0, 0])
+translate([thickness + 6, 0, 0])
 bar(width, -1);
