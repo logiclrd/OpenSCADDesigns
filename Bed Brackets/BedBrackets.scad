@@ -1,5 +1,5 @@
-depth = 400;
-width = 399;
+depth = 401;
+width = 401;
 
 thickness = 15;
 height = 10;
