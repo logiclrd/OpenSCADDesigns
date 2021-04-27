@@ -1,7 +1,7 @@
-depth = 401;
-width = 401;
+depth = 402;
+width = 402;
 
-thickness = 15;
+thickness = 20;
 height = 10;
 
 total_bed_height = 11;
