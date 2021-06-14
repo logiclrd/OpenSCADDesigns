@@ -104,9 +104,10 @@ module bar(bar_length, interface_side, crossing_offset)
         translate([0, translation, 0])
         {
           translate([0, 0, height * 0.25 * interface_side])
-          cylinder(height * 0.5, 1.52 * thickness, 1.52 * thickness, center = true);
+          cylinder(height * 0.5004, 1.52 * thickness, 1.52 * thickness, center = true, $fn = 120);
           
-          cylinder(height * 2, 0.5 * screw_hole_diameter, 0.5 * screw_hole_diameter, center = true, $fn = 20);
+          rotate([0, 0, 45 + 45 * interface_side])
+          cube([14, 12, height * 2], center = true);
         }
       }
     }
