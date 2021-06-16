@@ -18,7 +18,7 @@ screw_hole_diameter = 12;
 
 screw_diameter = 3;
 
-module bar(bar_length, interface_side, crossing_offset)
+module bar(bar_length, interface_side, crossing_offset, remove_outside_curved_wall)
 {
   translate([0, 0, height * 0.5])
   union()
@@ -28,6 +28,7 @@ module bar(bar_length, interface_side, crossing_offset)
       // rounding:
       // * middle circle diameter = 3 * thickness
       // * corner circles diameter = 3 * thickness
+      
       intersection()
       {
         union()
@@ -107,7 +108,37 @@ module bar(bar_length, interface_side, crossing_offset)
           cylinder(height * 0.5004, 1.52 * thickness, 1.52 * thickness, center = true, $fn = 120);
           
           rotate([0, 0, 45 + 45 * interface_side])
-          cube([14, 12, height * 2], center = true);
+          cube([14.1, 12.1, height * 2], center = true);
+          
+          if (remove_outside_curved_wall)
+          {
+            translate([1.52 * thickness, 0, -height])
+            cube([3.04 * thickness, 3.04 * thickness, height * 2], center = true);
+          }
+        }
+      }
+
+      if (crossing_offset + 1.5 * thickness > 0.5 * bar_length - thickness)
+      {
+        for (slide_in_x_index = [0 : thickness : 4])
+        {
+          slide_in_base = 3 * thickness - 0.5 * slide_in_x_index;
+
+          slide_in_x = crossing_offset - 1.5 * thickness + slide_in_base;
+          slide_in_y = 0.5 * height;
+          
+          angle = atan2(slide_in_y, slide_in_base);
+          
+          translate([0, -slide_in_x, 0])
+          rotate([angle, 0, 0])
+          translate([0, 1.52 * thickness, 0])
+          cylinder(0.5 * height, 1.52 * thickness, 1.52 * thickness, $fn = 120);
+
+          rotate([0, 0, 180])
+          translate([0, -slide_in_x, 0])
+          rotate([angle, 0, 0])
+          translate([0, 1.52 * thickness, 0])
+          cylinder(0.5 * height, 1.52 * thickness, 1.52 * thickness, $fn = 120);
         }
       }
     }
@@ -121,13 +152,13 @@ ys = $preview ? [-screw_offset_y, +screw_offset_y] : [0];
 color([1, 0.3, 0.6])
 for (x = xs)
   translate([x, 0, 0])
-    bar(depth, -1, screw_offset_y);
+    bar(depth, -1, screw_offset_y, true);
 /*/
 color([0.3, 1, 0.6])
 for (y = ys)
   translate([0, y, 0.1])
     rotate([0, 0, 90])
-      bar(depth, 1, screw_offset_x);
+      bar(depth, 1, screw_offset_x, false);
 /**/
 
 color([0, 0, 0])
