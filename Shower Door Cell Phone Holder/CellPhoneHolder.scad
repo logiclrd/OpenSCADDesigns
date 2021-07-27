@@ -7,6 +7,7 @@ beam_width = 30;
 beam_thickness = 10;
 beam_hook_length = 15;
 beam_hook_depth = 3;
+beam_hook_tolerance = 0.4;
 
 hinge_bracket_height = 48;
 hinge_pin_diameter = 10;
@@ -59,7 +60,7 @@ difference()
     cube([beam_thickness + beam_hook_length, beam_thickness, beam_width]);
   }
   
-  translate([hinge_bracket_cutaway_start - 1, 0.5 * beam_thickness, beam_width - beam_thickness])
+  translate([hinge_bracket_cutaway_start - 1, 0.5 * beam_thickness - beam_hook_tolerance, beam_width - beam_thickness])
   cube([hinge_bracket_height + 2, 0.5 * beam_thickness + 2, beam_thickness + 1]);
 }
 
