@@ -144,6 +144,6 @@ for (x = [0, 23])
     tray_width = 8,
     tray_height = 4,
     tray_lower_thickness = 3,
-    tray_notch_width = 1,
-    tray_notch_depth = 1.5);
+    tray_notch_width = 1.5,
+    tray_notch_depth = 2);
 }
