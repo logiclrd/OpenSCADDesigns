@@ -140,7 +140,7 @@ module long_side()
       translate([depth - joint_width, -1, 0])
       cube([joint_width, wall_thickness + 1, joint_thickness + 1]);
 
-      translate([0, width - wall_thickness + 1, 0])
+      translate([0, width - wall_thickness, 0])
       {
         cube([joint_width, wall_thickness + 1, joint_thickness]);
         translate([depth - joint_width, 0, 0])
@@ -153,6 +153,20 @@ module long_side()
       translate([-1, width - 2 * joint_width, -5])
       cube([wall_thickness + 1, joint_width, joint_thickness]);
     }
+  }
+}
+
+module long_side_with_hinge_spaces()
+{
+  difference()
+  {
+    long_side();
+    
+    translate([depth - hinge_height, wall_thickness, -1])
+    cube([hinge_height + 1, hinge_width, wall_thickness + 2 + ornate_extrusion]);
+
+    translate([depth - hinge_height, width - wall_thickness - hinge_width, -1])
+    cube([hinge_height + 1, hinge_width, wall_thickness + 2 + ornate_extrusion]);
   }
 }
 
@@ -245,22 +259,12 @@ module assembled()
   
   // back
   color("blue")
-  difference()
-  {
-    //translate([-wall_thickness, height - 2 * wall_thickness, 0])
-    multmatrix(
-      [[0, 1, 0, -wall_thickness],
-       [0, 0, 1, height - 2 * wall_thickness],
-       [1, 0, 0, 0],
-       [0, 0, 0, 1]])
-    long_side();
-
-    translate([0, height - 0.5 - 2 * wall_thickness, depth - hinge_height])
-    cube([hinge_width, wall_thickness + 1 + ornate_extrusion, hinge_height + 1]);
-
-    translate([width - hinge_width - 2 * wall_thickness + 1, height - 0.5 - 2 * wall_thickness, depth - hinge_height])
-    cube([hinge_width, wall_thickness + 1 + ornate_extrusion, hinge_height + 1]);
-  }
+  multmatrix(
+    [[0, 1, 0, -wall_thickness],
+     [0, 0, 1, height - 2 * wall_thickness],
+     [1, 0, 0, 0],
+     [0, 0, 0, 1]])
+  long_side_with_hinge_spaces();
 
   // top
   color("green")
