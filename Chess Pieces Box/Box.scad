@@ -41,9 +41,12 @@ module ornate()
     multmatrix(
       [[0, 1, 0, 0],
        [1, 0, 0, 0],
-       [0, 0, ornate_extrusion, ornate_extrusion * 0.5],
+       [0, 0, 1, 0],
        [0, 0, 0, 1]])
-    import("ornate.svg");
+    linear_extrude(height = ornate_extrusion, $fn = 1)
+    {
+      import("ornate.svg");
+    }
   }
 }
 
