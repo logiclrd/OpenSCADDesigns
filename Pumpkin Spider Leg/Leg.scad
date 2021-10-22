@@ -1,13 +1,13 @@
 translate([-120, 11, 50])
-rotate([0, -45, 0])
+rotate([0, -45, -3.5])
 cylinder(50, 4, 2);
 
 translate([-120, 11, 35])
-rotate([0, -45, 0])
+rotate([0, -45, -3.5])
 cylinder(50, 4, 2);
 
 translate([-129, 11, 29])
-rotate([0, -45, 0])
+rotate([0, -45, -3.5])
 cylinder(40, 4, 2);
 
 scale([3, 3, 3])
