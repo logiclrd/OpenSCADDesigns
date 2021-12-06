@@ -1,6 +1,6 @@
 ornate_width = 331.5075;
 ornate_height = 234.9995;
-ornate_extrusion = 1.4;
+ornate_extrusion = 0.2;
 ornate_border_size = 4.9075;
 
 margin = 3;
@@ -150,7 +150,7 @@ module long_side()
       // Joining tabs to floor
       translate([-1, joint_width, 0])
       cube([wall_thickness + 1, joint_width, joint_thickness]);
-      translate([-1, width - 2 * joint_width, -5])
+      translate([-1, width - 2 * joint_width, 0])
       cube([wall_thickness + 1, joint_width, joint_thickness]);
     }
   }
