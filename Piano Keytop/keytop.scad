@@ -17,7 +17,7 @@ intersection()
       cube([head_width - 2 * edge_radius, head_length - 2 * edge_radius, height]);
     }
     
-    sphere(edge_radius, $fn = 40);
+    sphere(edge_radius + 0.005, $fn = 40);
   }
   
   translate([-edge_radius, -edge_radius, edge_radius])
