@@ -3,8 +3,8 @@ head_length = 49.2;
 tail_left = 2.75;
 tail_right = 6.25;
 entire_length = 150;
-height = 2.05;
-edge_radius = 0.75;
+height = 2.55;
+edge_radius = 1.125;
 
 intersection()
 {
