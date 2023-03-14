@@ -31,7 +31,7 @@ rb_terminal_block_inset_mm = 2;
 
 pi_width_mm = pi_width_inches * 25.4;
 pi_height_mm = pi_height_inches * 25.4;
-board_thickness_mm = 1;
+board_thickness_mm = 1.25;
 rb_width_mm = rb_width_inches * 25.4;
 rb_height_mm = 60;
 rb_pinch_mm = 18;
@@ -53,8 +53,8 @@ module_width_mm = pi_width_mm + 2 * module_additional_width_mm;
 pi_bracket_hdmi_space_start_mm = 34;
 pi_bracket_hdmi_space_end_mm = 51;
 
-pi_bracket_bat_space_start_mm = (2 + 3/16) * 25.4;
-pi_bracket_bat_space_end_mm = (3 + 1/8) * 25.4;
+pi_bracket_bat_space_start_mm = (2 + 5/16) * 25.4;
+pi_bracket_bat_space_end_mm = (3 + 2/8) * 25.4;
 pi_bracket_bat_space_offset_mm = 1.8;
 pi_bracket_bat_space_depth_mm = 3.5;
 
