@@ -59,6 +59,7 @@ module_snapin_depth_mm = 6;
 module_snapin_height_mm = 10;
 module_thickness_mm = 10;
 module_width_mm = pi_width_mm + 2 * module_additional_width_mm;
+module_insertion_allowance_mm = 0.2;
 
 pi_bracket_hdmi_space_start_mm = 34;
 pi_bracket_hdmi_space_end_mm = 51;
@@ -225,13 +226,13 @@ module case()
   {
     union()
     {
-      translate([0, -0.5 * case_margin_mm, 0])
+      translate([-module_insertion_allowance_mm, -0.5 * case_margin_mm, 0])
       difference()
       {
-        cube([case_width_mm + 2 * wall_thickness_mm, case_depth_mm + 2 * case_margin_mm + 2 * wall_thickness_mm, case_base_height_mm + case_height_mm + lid_allowance_mm]);
+        cube([case_width_mm + 2 * wall_thickness_mm + 2 * module_insertion_allowance_mm, case_depth_mm + 2 * case_margin_mm + 2 * wall_thickness_mm, case_base_height_mm + case_height_mm + lid_allowance_mm]);
 
         translate([wall_thickness_mm, wall_thickness_mm, case_base_height_mm])
-          cube([case_width_mm, case_depth_mm + 2 * case_margin_mm, case_height_mm + lid_allowance_mm + 1]);
+          cube([case_width_mm + 2 * module_insertion_allowance_mm, case_depth_mm + 2 * case_margin_mm, case_height_mm + lid_allowance_mm + 1]);
 
         translate([(case_width_mm + 2 * wall_thickness_mm) / 2, case_depth_mm + 2 * case_margin_mm + 5, case_base_height_mm + case_height_mm - device_box_depth_mm + case_wire_port_mm / sqrt(2) + 12])
         rotate([0, 45, 0])
@@ -239,13 +240,13 @@ module case()
       }
 
       for (snapin = [0, 1, 2])
-        translate([0, snapin * next_module_offset_mm, 0])
+        translate([-module_insertion_allowance_mm, snapin * next_module_offset_mm, 0])
         for (x = [0, 1])
           for (y = [0, 1])
-            translate([wall_thickness_mm + x * (module_width_mm - module_snapin_depth_mm), wall_thickness_mm + y * (module_thickness_mm + module_snapin_width_mm), case_base_height_mm])
+            translate([wall_thickness_mm + x * (module_width_mm - module_snapin_depth_mm + 2 * module_insertion_allowance_mm), wall_thickness_mm + y * (module_thickness_mm + module_snapin_width_mm + 2 * module_insertion_allowance_mm) - module_insertion_allowance_mm, case_base_height_mm])
             cube([module_snapin_depth_mm, module_snapin_width_mm, module_snapin_height_mm]);
 
-      translate([0, case_depth_mm + 1.5 * case_margin_mm + 2 * wall_thickness_mm, 0])
+      translate([-0.5 * module_insertion_allowance_mm, case_depth_mm + 1.5 * case_margin_mm + 2 * wall_thickness_mm, 0])
       cube([device_box_mm, device_box_mm, device_box_elevation_mm]);
     }
 
