@@ -7,6 +7,10 @@ case_depth_inches = 3.5;
 ribbon_width_inches = 2;
 device_box_inches = 4;
 device_box_depth_inches = 2 + 1/8;
+power_cable_depth_inches = 5/8;
+power_cable_width_inches = 9/32 - 1/64;
+power_cable_turning_space_inches = 3/4;
+power_cable_thickness_inches = 3/16;
 
 lid_allowance_mm = 5;
 wall_thickness_mm = 3;
@@ -29,6 +33,11 @@ rb_ribbon_pin_header_depth_mm = 4;
 rb_terminal_block_spacing_mm = 1.5;
 rb_terminal_block_inset_mm = 2;
 
+power_cable_depth_mm = power_cable_depth_inches * 25.4;
+power_cable_width_mm = power_cable_width_inches * 25.4;
+power_cable_turning_space_mm = power_cable_turning_space_inches * 25.4;
+power_cable_thickness_mm = power_cable_thickness_inches * 25.4;
+
 pi_width_mm = pi_width_inches * 25.4;
 pi_height_mm = pi_height_inches * 25.4;
 board_thickness_mm = 1.25;
@@ -41,7 +50,7 @@ rb_board_extra_thickness_mm = 0.5;
 case_width_mm = pi_width_mm + 2 * module_additional_width_mm;
 case_depth_mm = case_depth_inches * 25.4;
 case_height_mm = pi_height_mm;
-case_base_height_mm = 15;
+case_base_height_mm = power_cable_depth_mm + 2;
 case_margin_mm = 15;
 case_wire_port_mm = 20;
 
@@ -168,33 +177,80 @@ module terminal_block()
     }
   }
 }
+
+module power_cable_space()
+{
+  power_cable_inset_inches = 5/8;
+  power_cable_inset_mm = power_cable_inset_inches * 25.4;
+
+  translate([wall_thickness_mm + case_width_mm - power_cable_inset_mm, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm, 0])
+  cube([power_cable_inset_mm, power_cable_width_mm, power_cable_depth_mm + 1]);
+
+  translate([wall_thickness_mm + case_width_mm / 2 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm - power_cable_thickness_mm) / 2, 0])
+  difference()
+  {
+    cube([case_width_mm / 2, power_cable_thickness_mm, power_cable_depth_mm + 1]);
+
+    multmatrix([
+      [1, 0, 0, power_cable_thickness_mm * 2],
+      [0, 1, 0, 0],
+      [-(power_cable_depth_mm - power_cable_thickness_mm) / (case_width_mm / 2 - power_cable_thickness_mm * 2 - power_cable_inset_mm + power_cable_thickness_mm * 0.5), 0, 1, 0],
+      [0, 0, 0, 1]])
+    cube([case_width_mm / 2 - power_cable_thickness_mm, power_cable_thickness_mm, power_cable_depth_mm - power_cable_thickness_mm]);
+
+    cube([power_cable_thickness_mm * 2, power_cable_thickness_mm, power_cable_depth_mm - power_cable_thickness_mm]);
+  }
+
+  translate([wall_thickness_mm + case_width_mm / 2 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm - power_cable_thickness_mm) / 2, power_cable_depth_mm - power_cable_thickness_mm])
+  cube([power_cable_thickness_mm, case_depth_mm + case_margin_mm, case_base_height_mm + case_height_mm - device_box_depth_mm + case_wire_port_mm / sqrt(2) + 12]);
+
+  translate([wall_thickness_mm + case_width_mm / 2 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm + power_cable_thickness_mm) / 2, power_cable_depth_mm - power_cable_thickness_mm])
+  multmatrix([
+    [1, 0, 0, 0],
+    [-1, 1, 0, power_cable_thickness_mm],
+    [0, 0, 1, 0],
+    [0, 0, 0, 1]])
+  cube([power_cable_thickness_mm * 2, power_cable_thickness_mm, power_cable_depth_mm + 1]);
+}
+
+module power_cable()
+{
+  // TODO
+}
+
 module case()
 {
   color("orange")
-  union()
+  difference()
   {
-    translate([0, -0.5 * case_margin_mm, 0])
-    difference()
+    union()
     {
-      cube([case_width_mm + 2 * wall_thickness_mm, case_depth_mm + 2 * case_margin_mm + 2 * wall_thickness_mm, case_base_height_mm + case_height_mm + lid_allowance_mm]);
+      translate([0, -0.5 * case_margin_mm, 0])
+      difference()
+      {
+        cube([case_width_mm + 2 * wall_thickness_mm, case_depth_mm + 2 * case_margin_mm + 2 * wall_thickness_mm, case_base_height_mm + case_height_mm + lid_allowance_mm]);
 
-      translate([wall_thickness_mm, wall_thickness_mm, case_base_height_mm])
-        cube([case_width_mm, case_depth_mm + 2 * case_margin_mm, case_height_mm + lid_allowance_mm + 1]);
+        translate([wall_thickness_mm, wall_thickness_mm, case_base_height_mm])
+          cube([case_width_mm, case_depth_mm + 2 * case_margin_mm, case_height_mm + lid_allowance_mm + 1]);
 
-      translate([(case_width_mm + 2 * wall_thickness_mm) / 2, case_depth_mm + 2 * case_margin_mm + 5, case_base_height_mm + case_height_mm - device_box_depth_mm + case_wire_port_mm / sqrt(2) + 12])
-      rotate([0, 45, 0])
-        cube([case_wire_port_mm, 10, case_wire_port_mm], center = true);
+        translate([(case_width_mm + 2 * wall_thickness_mm) / 2, case_depth_mm + 2 * case_margin_mm + 5, case_base_height_mm + case_height_mm - device_box_depth_mm + case_wire_port_mm / sqrt(2) + 12])
+        rotate([0, 45, 0])
+          cube([case_wire_port_mm, 10, case_wire_port_mm], center = true);
+      }
+
+      for (snapin = [0, 1, 2])
+        translate([0, snapin * next_module_offset_mm, 0])
+        for (x = [0, 1])
+          for (y = [0, 1])
+            translate([wall_thickness_mm + x * (module_width_mm - module_snapin_depth_mm), wall_thickness_mm + y * (module_thickness_mm + module_snapin_width_mm), case_base_height_mm])
+            cube([module_snapin_depth_mm, module_snapin_width_mm, module_snapin_height_mm]);
+
+      translate([0, case_depth_mm + 1.5 * case_margin_mm + 2 * wall_thickness_mm, 0])
+      cube([device_box_mm, device_box_mm, device_box_elevation_mm]);
     }
 
-    for (snapin = [0, 1, 2])
-      translate([0, snapin * next_module_offset_mm, 0])
-      for (x = [0, 1])
-        for (y = [0, 1])
-          translate([wall_thickness_mm + x * (module_width_mm - module_snapin_depth_mm), wall_thickness_mm + y * (module_thickness_mm + module_snapin_width_mm), case_base_height_mm])
-          cube([module_snapin_depth_mm, module_snapin_width_mm, module_snapin_height_mm]);
-
-    translate([0, case_depth_mm + 1.5 * case_margin_mm + 2 * wall_thickness_mm, 0])
-    cube([device_box_mm, device_box_mm, device_box_elevation_mm]);
+    translate([0, 0, case_base_height_mm - power_cable_depth_mm])
+    power_cable_space();
   }
 }
 
