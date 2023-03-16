@@ -8,9 +8,10 @@ ribbon_width_inches = 2;
 device_box_inches = 4;
 device_box_depth_inches = 2 + 1/8;
 power_cable_depth_inches = 5/8;
-power_cable_width_inches = 9/32 - 1/64;
+power_cable_width_inches = 9/32;
 power_cable_turning_space_inches = 3/4;
 power_cable_thickness_inches = 3/16;
+power_cable_inset_inches = 7/8;
 
 lid_allowance_mm = 5;
 wall_thickness_mm = 3;
@@ -37,6 +38,7 @@ power_cable_depth_mm = power_cable_depth_inches * 25.4;
 power_cable_width_mm = power_cable_width_inches * 25.4;
 power_cable_turning_space_mm = power_cable_turning_space_inches * 25.4;
 power_cable_thickness_mm = power_cable_thickness_inches * 25.4;
+power_cable_inset_mm = power_cable_inset_inches * 25.4;
 
 pi_width_mm = pi_width_inches * 25.4;
 pi_height_mm = pi_height_inches * 25.4;
@@ -61,8 +63,8 @@ module_thickness_mm = 10;
 module_width_mm = pi_width_mm + 2 * module_additional_width_mm;
 module_insertion_allowance_mm = 0.2;
 
-pi_bracket_hdmi_space_start_mm = 34;
-pi_bracket_hdmi_space_end_mm = 51;
+pi_bracket_hdmi_space_start_mm = 29;
+pi_bracket_hdmi_space_end_mm = 47;
 
 pi_bracket_bat_space_start_mm = (1 + 7/8) * 25.4;
 pi_bracket_bat_space_end_mm = (2 + 13/16) * 25.4;
@@ -181,9 +183,6 @@ module terminal_block()
 
 module power_cable_space()
 {
-  power_cable_inset_inches = 5/8;
-  power_cable_inset_mm = power_cable_inset_inches * 25.4;
-
   translate([wall_thickness_mm + case_width_mm - power_cable_inset_mm, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm, 0])
   cube([power_cable_inset_mm, power_cable_width_mm, power_cable_depth_mm + 1]);
 
@@ -195,23 +194,48 @@ module power_cable_space()
     multmatrix([
       [1, 0, 0, power_cable_thickness_mm * 2],
       [0, 1, 0, 0],
-      [-(power_cable_depth_mm - power_cable_thickness_mm) / (case_width_mm / 2 - power_cable_thickness_mm * 2 - power_cable_inset_mm + power_cable_thickness_mm * 0.5), 0, 1, 0],
+      [-(power_cable_depth_mm - power_cable_thickness_mm - 3) / (case_width_mm / 2 - power_cable_thickness_mm * 2 - power_cable_inset_mm + power_cable_thickness_mm * 0.5), 0, 1, -3],
       [0, 0, 0, 1]])
     cube([case_width_mm / 2 - power_cable_thickness_mm, power_cable_thickness_mm, power_cable_depth_mm - power_cable_thickness_mm]);
 
-    cube([power_cable_thickness_mm * 2, power_cable_thickness_mm, power_cable_depth_mm - power_cable_thickness_mm]);
+    cube([power_cable_thickness_mm * 2, power_cable_thickness_mm, power_cable_depth_mm - power_cable_thickness_mm - 3]);
   }
 
-  translate([wall_thickness_mm + case_width_mm / 2 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm - power_cable_thickness_mm) / 2, power_cable_depth_mm - power_cable_thickness_mm])
-  cube([power_cable_thickness_mm, case_depth_mm + case_margin_mm, case_base_height_mm + case_height_mm - device_box_depth_mm + case_wire_port_mm / sqrt(2) + 12]);
+  translate([wall_thickness_mm + case_width_mm / 2 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm - power_cable_thickness_mm) / 2, power_cable_depth_mm - power_cable_thickness_mm - 3])
+  cube([power_cable_thickness_mm, power_cable_thickness_mm, case_base_height_mm + case_height_mm - device_box_depth_mm + case_wire_port_mm / sqrt(2) + 12]);
 
-  translate([wall_thickness_mm + case_width_mm / 2 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm + power_cable_thickness_mm) / 2, power_cable_depth_mm - power_cable_thickness_mm])
+  translate([wall_thickness_mm + case_width_mm / 2 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm - power_cable_thickness_mm) / 2 + power_cable_thickness_mm, power_cable_depth_mm - power_cable_thickness_mm])
   multmatrix([
     [1, 0, 0, 0],
-    [-1, 1, 0, power_cable_thickness_mm],
-    [0, 0, 1, 0],
+    [0, 1, 0, 0],
+    [0, 3 / (case_depth_mm + case_margin_mm - power_cable_thickness_mm), 1, -3],
     [0, 0, 0, 1]])
-  cube([power_cable_thickness_mm * 2, power_cable_thickness_mm, power_cable_depth_mm + 1]);
+  cube([power_cable_thickness_mm, case_depth_mm + case_margin_mm - power_cable_thickness_mm, case_base_height_mm + case_height_mm - device_box_depth_mm + case_wire_port_mm / sqrt(2) + 12]);
+
+  translate([0, 0, case_base_height_mm - 1])
+  difference()
+  {
+    translate([wall_thickness_mm + case_width_mm / 2 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm + power_cable_thickness_mm) / 2, -power_cable_thickness_mm - 1])
+    multmatrix([
+      [1, 0, 0, 0],
+      [0, 1, 0, 0],
+      [0, 3 / (case_depth_mm + case_margin_mm - power_cable_thickness_mm), 1, -3],
+      [0, 0, 0, 1]])
+    multmatrix([
+      [1, 0, 0, 0],
+      [-1, 1, 0, power_cable_thickness_mm],
+      [0, 0, 1, 0],
+      [0, 0, 0, 1]])
+    cube([power_cable_thickness_mm * 2, power_cable_thickness_mm, power_cable_depth_mm + 1]);
+
+    translate([wall_thickness_mm + case_width_mm / 2 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm + power_cable_thickness_mm) / 2, -power_cable_thickness_mm - case_base_height_mm - wall_thickness_mm])
+    multmatrix([
+      [1, 0, 0, 0],
+      [-1, 1, 0, power_cable_thickness_mm],
+      [0, 0, 1, 0],
+      [0, 0, 0, 1]])
+    cube([power_cable_thickness_mm * 2, power_cable_thickness_mm, power_cable_depth_mm + 1]);
+  }
 }
 
 module power_cable()
@@ -252,6 +276,9 @@ module case()
 
     translate([0, 0, case_base_height_mm - power_cable_depth_mm])
     power_cable_space();
+
+    translate([module_additional_width_mm + 5 + pi_bracket_hdmi_space_start_mm + wall_thickness_mm, module_thickness_mm / 2 + 2, case_base_height_mm - 3.5])
+    cube([pi_bracket_hdmi_space_end_mm - pi_bracket_hdmi_space_start_mm, module_snapin_depth_mm, pi_height_mm]);
   }
 }
 
