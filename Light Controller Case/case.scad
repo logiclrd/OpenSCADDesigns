@@ -11,7 +11,7 @@ power_cable_depth_inches = 5/8;
 power_cable_width_inches = 9/32;
 power_cable_turning_space_inches = 3/4;
 power_cable_thickness_inches = 3/16;
-power_cable_inset_inches = 7/8;
+power_cable_inset_inches = 15/16;
 
 lid_allowance_mm = 5;
 wall_thickness_mm = 3;
@@ -66,14 +66,15 @@ module_insertion_allowance_mm = 0.2;
 pi_bracket_hdmi_space_start_mm = 29;
 pi_bracket_hdmi_space_end_mm = 47;
 
-pi_bracket_bat_space_start_mm = (1 + 7/8) * 25.4;
-pi_bracket_bat_space_end_mm = (2 + 13/16) * 25.4;
+pi_bracket_bat_space_start_mm = (1 + 15/16) * 25.4;
+pi_bracket_bat_space_end_mm = (2 + 15/16) * 25.4;
 pi_bracket_bat_space_offset_mm = 1.8;
 pi_bracket_bat_space_depth_mm = 3.5;
 
 device_box_mm = device_box_inches * 25.4;
 device_box_depth_mm = device_box_depth_inches * 25.4;
 device_box_elevation_mm = case_height_mm + case_base_height_mm - device_box_depth_mm + 9;
+device_box_pin_mm = module_thickness_mm;
 
 next_module_offset_mm = (case_depth_mm - module_thickness_mm - 2 * module_snapin_width_mm) / 2;
 
@@ -243,6 +244,68 @@ module power_cable()
   // TODO
 }
 
+module device_box_support(pin_tolerance_mm, avoid_pin_flat_roof)
+{
+  color("orangered")
+  translate([-0.5 * module_insertion_allowance_mm, case_depth_mm + 1.5 * case_margin_mm + 2 * wall_thickness_mm, 0])
+  {
+    cube([device_box_mm, device_box_mm, device_box_elevation_mm]);
+
+    translate([device_box_pin_mm * 1.5 - pin_tolerance_mm, -2 * device_box_pin_mm + 0.5 * device_box_mm, device_box_pin_mm * 0.5 + pin_tolerance_mm])
+    cube([device_box_pin_mm + pin_tolerance_mm * 2, device_box_mm, device_box_pin_mm + pin_tolerance_mm], center = true);
+
+    translate([device_box_pin_mm * 2 - pin_tolerance_mm, -1.5 * device_box_pin_mm, device_box_pin_mm * 0.5])
+    cube([device_box_pin_mm * 2 + pin_tolerance_mm * 2, device_box_pin_mm + 2 * pin_tolerance_mm, device_box_pin_mm + pin_tolerance_mm], center = true);
+
+    translate([device_box_mm - 1.5 * device_box_pin_mm - pin_tolerance_mm, -2 * device_box_pin_mm + 0.5 * device_box_mm, device_box_pin_mm * 0.5 + pin_tolerance_mm])
+    cube([device_box_pin_mm + pin_tolerance_mm * 2, device_box_mm, device_box_pin_mm + pin_tolerance_mm], center = true);
+
+    translate([device_box_mm - 2 * device_box_pin_mm - pin_tolerance_mm, -1.5 * device_box_pin_mm, device_box_pin_mm * 0.5])
+    cube([device_box_pin_mm * 2 + pin_tolerance_mm * 2, device_box_pin_mm + 2 * pin_tolerance_mm, device_box_pin_mm + pin_tolerance_mm], center = true);
+
+    if (avoid_pin_flat_roof)
+    {
+      translate([device_box_pin_mm * 1.5 - pin_tolerance_mm, -1.75 * device_box_pin_mm + 0.5 * device_box_mm, device_box_pin_mm + pin_tolerance_mm])
+      rotate([0, 45, 0])
+      cube([device_box_pin_mm / sqrt(2) + pin_tolerance_mm * 2, device_box_mm - 0.5 * device_box_pin_mm, device_box_pin_mm / sqrt(2) + pin_tolerance_mm], center = true);
+
+      intersection()
+      {
+        translate([device_box_pin_mm * 1.5 - pin_tolerance_mm, -2 * device_box_pin_mm + 0.5 * device_box_mm, device_box_pin_mm + pin_tolerance_mm])
+        rotate([0, 45, 0])
+        cube([device_box_pin_mm / sqrt(2) + pin_tolerance_mm * 2, device_box_mm, device_box_pin_mm / sqrt(2) + pin_tolerance_mm], center = true);
+
+        translate([device_box_pin_mm * 2 - pin_tolerance_mm, -1.5 * device_box_pin_mm, device_box_pin_mm])
+        rotate([45, 0, 0])
+        cube([device_box_pin_mm * 2 + pin_tolerance_mm * 2, device_box_pin_mm / sqrt(2) + 2 * pin_tolerance_mm, device_box_pin_mm / sqrt(2) + pin_tolerance_mm], center = true);
+      }
+
+      translate([device_box_pin_mm * 2.25 - pin_tolerance_mm, -1.5 * device_box_pin_mm, device_box_pin_mm])
+      rotate([45, 0, 0])
+      cube([device_box_pin_mm * 1.5 + pin_tolerance_mm * 2, device_box_pin_mm / sqrt(2) + 2 * pin_tolerance_mm, device_box_pin_mm / sqrt(2) + pin_tolerance_mm], center = true);
+
+      translate([device_box_mm - 1.5 * device_box_pin_mm - pin_tolerance_mm, -1.75 * device_box_pin_mm + 0.5 * device_box_mm, device_box_pin_mm + pin_tolerance_mm])
+      rotate([0, 45, 0])
+      cube([device_box_pin_mm / sqrt(2) + pin_tolerance_mm * 2, device_box_mm - 0.5 * device_box_pin_mm, device_box_pin_mm / sqrt(2) + pin_tolerance_mm], center = true);
+
+      intersection()
+      {
+        translate([device_box_mm - 1.5 * device_box_pin_mm - pin_tolerance_mm, -2 * device_box_pin_mm + 0.5 * device_box_mm, device_box_pin_mm + pin_tolerance_mm])
+        rotate([0, 45, 0])
+        cube([device_box_pin_mm / sqrt(2) + pin_tolerance_mm * 2, device_box_mm, device_box_pin_mm / sqrt(2) + pin_tolerance_mm], center = true);
+
+        translate([device_box_mm - 2 * device_box_pin_mm - pin_tolerance_mm, -1.5 * device_box_pin_mm, device_box_pin_mm])
+        rotate([45, 0, 0])
+        cube([device_box_pin_mm * 2 + pin_tolerance_mm * 2, device_box_pin_mm / sqrt(2) + 2 * pin_tolerance_mm, device_box_pin_mm / sqrt(2) + pin_tolerance_mm], center = true);
+      }
+
+      translate([device_box_mm - 2.25 * device_box_pin_mm - pin_tolerance_mm, -1.5 * device_box_pin_mm, device_box_pin_mm])
+      rotate([45, 0, 0])
+      cube([device_box_pin_mm * 1.5 + pin_tolerance_mm * 2, device_box_pin_mm / sqrt(2) + 2 * pin_tolerance_mm, device_box_pin_mm / sqrt(2) + pin_tolerance_mm], center = true);
+    }
+  }
+}
+
 module case()
 {
   color("orange")
@@ -269,9 +332,6 @@ module case()
           for (y = [0, 1])
             translate([wall_thickness_mm + x * (module_width_mm - module_snapin_depth_mm + 2 * module_insertion_allowance_mm), wall_thickness_mm + y * (module_thickness_mm + module_snapin_width_mm + 2 * module_insertion_allowance_mm) - module_insertion_allowance_mm, case_base_height_mm])
             cube([module_snapin_depth_mm, module_snapin_width_mm, module_snapin_height_mm]);
-
-      translate([-0.5 * module_insertion_allowance_mm, case_depth_mm + 1.5 * case_margin_mm + 2 * wall_thickness_mm, 0])
-      cube([device_box_mm, device_box_mm, device_box_elevation_mm]);
     }
 
     translate([0, 0, case_base_height_mm - power_cable_depth_mm])
@@ -279,7 +339,12 @@ module case()
 
     translate([module_additional_width_mm + 5 + pi_bracket_hdmi_space_start_mm + wall_thickness_mm, module_thickness_mm / 2 + 2, case_base_height_mm - 3.5])
     cube([pi_bracket_hdmi_space_end_mm - pi_bracket_hdmi_space_start_mm, module_snapin_depth_mm, pi_height_mm]);
+
+    device_box_support(pin_tolerance_mm = module_insertion_allowance_mm, avoid_pin_flat_roof = true);
   }
+
+  translate([0, device_box_pin_mm * 2 + 5, 0])
+  device_box_support(pin_tolerance_mm = 0, avoid_pin_flat_roof = false);
 }
 
 module pi()
@@ -393,8 +458,6 @@ module rb()
     terminal_block();
   }
 }
-
-
 
 module rb_bracket()
 {
