@@ -457,13 +457,19 @@ module case()
             {
               cube([module_snapin_depth_mm, bracket_pin_width, bracket_pin_height]);
 
-              multmatrix([
-                [1, 0, 1, 0],
-                [0, 1, 0, 0],
-                [0, 0, 1, 0],
-                [0, 0, 0, 1]])
-              translate([0, 0, -module_snapin_depth_mm])
-              cube([module_snapin_depth_mm, bracket_pin_width, module_snapin_depth_mm]);
+              difference()
+              {
+                multmatrix([
+                  [1, 0, 1, 0],
+                  [0, 1, 0, 0],
+                  [0, 0, 1, 0],
+                  [0, 0, 0, 1]])
+                translate([0, 0, -module_snapin_depth_mm])
+                cube([module_snapin_depth_mm, bracket_pin_width, module_snapin_depth_mm]);
+
+                translate([-wall_thickness_mm - 20, -1, -wall_thickness_mm - 10])
+                cube([wall_thickness_mm + 20, bracket_pin_width + 2, bracket_pin_height]);
+              }
             }
 
             translate([0, module_snapin_width_mm, module_snapin_width_mm])
