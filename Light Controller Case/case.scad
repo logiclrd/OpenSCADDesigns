@@ -509,9 +509,11 @@ module pi_bottom_bracket()
       {
         cube([pi_width_mm + 2 * module_additional_width_mm, module_thickness_mm, 10]);
 
+        // Wall extension behind battery connector space.
         translate([module_additional_width_mm + 3 + pi_bottom_bracket_bat_space_start_mm, module_thickness_mm / 2 - 4 - pi_bottom_bracket_bat_space_depth_mm, pi_bottom_bracket_bat_space_offset_mm])
         cube([pi_bottom_bracket_bat_space_end_mm - pi_bottom_bracket_bat_space_start_mm + 4, 12, 10 - pi_bottom_bracket_bat_space_offset_mm]);
 
+        // Fillet to avoid overhang of wall extension.
         translate([module_additional_width_mm + 3 + pi_bottom_bracket_bat_space_start_mm, module_thickness_mm / 2 - 4 - pi_bottom_bracket_bat_space_depth_mm, 0])
         multmatrix([
           [1, 0, 0, 0],
@@ -521,18 +523,23 @@ module pi_bottom_bracket()
         cube([pi_bottom_bracket_bat_space_end_mm - pi_bottom_bracket_bat_space_start_mm + 4, 5, pi_bottom_bracket_bat_space_offset_mm]);
       }
 
+      // Additional space for junk on the back of the board.
       translate([module_additional_width_mm, module_thickness_mm / 2 - board_thickness_mm / 2, -1])
       cube([pi_width_mm, board_thickness_mm, pi_height_mm]);
 
+      // Board front components gap
       translate([module_additional_width_mm + 5, module_thickness_mm / 2, -1])
       cube([pi_width_mm - 6, module_snapin_depth_mm, pi_height_mm]);
 
+      // Board back components gap
       translate([module_additional_width_mm + 5, module_thickness_mm / 2 - 3, 2])
       cube([pi_width_mm - 6, module_snapin_depth_mm, pi_height_mm]);
 
+      // Additional space for the back side extensions of the HDMI port
       translate([module_additional_width_mm + 5 + pi_bottom_bracket_hdmi_space_start_mm, module_thickness_mm / 2 - 2, -1])
       cube([pi_bottom_bracket_hdmi_space_end_mm - pi_bottom_bracket_hdmi_space_start_mm, module_snapin_depth_mm, pi_height_mm]);
 
+      // Battery connector gap
       translate([module_additional_width_mm + 5 + pi_bottom_bracket_bat_space_start_mm, module_thickness_mm / 2 - 2 - pi_bottom_bracket_bat_space_depth_mm, pi_bottom_bracket_bat_space_offset_mm])
       cube([pi_bottom_bracket_bat_space_end_mm - pi_bottom_bracket_bat_space_start_mm, 10, 10]);
     }
@@ -542,7 +549,7 @@ module pi_bottom_bracket()
 module pi_top_bracket()
 {
   color("cornflowerblue")
-  translate([wall_thickness_mm, wall_thickness_mm + module_snapin_width_mm, case_base_height_mm - ($preview ? 0.002 : 0 /* Render fix */)])
+  translate([wall_thickness_mm, wall_thickness_mm + module_snapin_width_mm, case_base_height_mm - ($preview ? 0.01 : 0 /* Render fix */)])
   {
     difference()
     {
