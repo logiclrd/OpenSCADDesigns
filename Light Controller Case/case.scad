@@ -411,7 +411,7 @@ module case()
   {
     union()
     {
-      // Pcimary hull
+      // Primary hull
       translate([-module_insertion_allowance_mm, -0.5 * case_margin_mm, 0])
       difference()
       {
@@ -485,7 +485,7 @@ module case()
     translate([module_additional_width_mm + 5 + pi_bottom_bracket_hdmi_space_start_mm + wall_thickness_mm, module_thickness_mm / 2 + 2, case_base_height_mm - 3.5])
     cube([pi_bottom_bracket_hdmi_space_end_mm - pi_bottom_bracket_hdmi_space_start_mm, module_snapin_depth_mm, pi_height_mm]);
 
-    device_box_support(pin_tolerance_mm = module_insertion_allowance_mm, avoid_pin_flat_roof = true);
+    device_box_support(pin_tolerance_mm = module_insertion_allowance_mm * 2, avoid_pin_flat_roof = true);
   }
 
   translate([0, device_box_pin_mm * 2 + 5, 0])
@@ -553,7 +553,23 @@ module pi_top_bracket()
   {
     difference()
     {
-      cube([pi_width_mm + 2 * module_additional_width_mm, module_thickness_mm, 10]);
+      union()
+      {
+        cube([pi_width_mm + 2 * module_additional_width_mm, module_thickness_mm, 10]);
+
+        // Wall extension behind board.
+        translate([module_additional_width_mm + 5, module_thickness_mm / 2 - 4 - pi_bottom_bracket_bat_space_depth_mm, pi_bottom_bracket_bat_space_offset_mm])
+        cube([pi_width_mm - 10, 12, 10 - pi_bottom_bracket_bat_space_offset_mm]);
+
+        // Fillet to avoid overhang of wall extension.
+        translate([module_additional_width_mm + 5, module_thickness_mm / 2 - 4 - pi_bottom_bracket_bat_space_depth_mm, 0])
+        multmatrix([
+          [1, 0, 0, 0],
+          [0, 1, -1, 1.8],
+          [0, 0, 1, 0],
+          [0, 0, 0, 1]])
+        cube([pi_width_mm - 10, 5, pi_bottom_bracket_bat_space_offset_mm]);
+      }
 
       // Board insertion space
       translate([module_additional_width_mm, module_thickness_mm / 2 - board_thickness_mm / 2, -module_thickness_mm - 10])
@@ -564,8 +580,8 @@ module pi_top_bracket()
       cube([pi_width_mm - 10, module_snapin_depth_mm, pi_height_mm + 2]);
 
       // Back component space
-      translate([module_additional_width_mm + 5, module_thickness_mm / 2 - 3, -2])
-      cube([pi_width_mm - 10, module_snapin_depth_mm / 2, module_thickness_mm]);
+      translate([module_additional_width_mm + 5, module_thickness_mm / 2 - 3, -1])
+      cube([pi_width_mm - 10, module_snapin_depth_mm / 2, module_thickness_mm + 2]);
     }
   }
 }
@@ -686,7 +702,7 @@ module rb_top_bracket()
         pi_width_mm - rb_width_mm - ribbon_pi_inset_mm + ribbon_rb_inset_mm + wall_thickness_mm + 3,
         module_snapin_depth_mm / 2 + board_thickness_mm - 5,
         -1])
-      cube([rb_width_mm - 4, module_snapin_depth_mm, 8]);
+      cube([rb_width_mm - 4, module_snapin_depth_mm * 2, 8]);
     }
   }
 }
