@@ -244,6 +244,150 @@ module power_cable()
   // TODO
 }
 
+module device_box_support_connector(pin_thickness_mm, pin_extent_mm, pin_hook_mm, pin_tolerance_mm, avoid_pin_flat_roof)
+{
+  pin_mm = pin_thickness_mm + 2 * pin_tolerance_mm;
+
+  translate(
+    [
+      0,
+      -0.5 * pin_extent_mm,
+      0.5 * pin_mm
+    ])
+  cube(
+    [
+      pin_mm,
+      pin_extent_mm + pin_tolerance_mm,
+      pin_mm
+    ],
+    center = true);
+
+  translate(
+    [
+      0.5 * pin_mm - 1.5 * pin_tolerance_mm,
+      -pin_extent_mm + 0.5 * pin_mm - 1.5 * pin_tolerance_mm,
+      0.5 * pin_mm
+    ])
+  cube(
+    [
+      pin_hook_mm + pin_thickness_mm + pin_tolerance_mm,
+      pin_mm,
+      pin_mm
+    ],
+    center = true);
+
+  if (avoid_pin_flat_roof)
+  {
+    union()
+    {
+      difference()
+      {
+        translate([0, 0, 0.5 * pin_mm])
+        translate(
+          [
+            0,
+            -0.5 * pin_extent_mm,
+            0.5 * pin_mm
+          ])
+        rotate([0, 45, 0])
+        scale([1 / sqrt(2), 1, 1 / sqrt(2)])
+        cube(
+          [
+            pin_mm,
+            pin_extent_mm + pin_tolerance_mm,
+            pin_mm
+          ],
+          center = true);
+
+        translate(
+          [
+            0,
+            -pin_extent_mm - 1.5 * pin_tolerance_mm + 0.25 * pin_mm,
+            1.25 * pin_mm,
+          ])
+        cube(
+          [
+            pin_mm,
+            0.5 * pin_mm,
+            0.5 * pin_mm
+          ],
+          center = true);
+      }
+
+      difference()
+      {
+        translate([0, 0, 0.5 * pin_mm])
+        translate(
+          [
+            0.5 * pin_mm - 1.5 * pin_tolerance_mm,
+            -pin_extent_mm + 0.5 * pin_thickness_mm - 0.5 * pin_tolerance_mm,
+            0.5 * pin_mm
+          ])
+        rotate([45, 0, 0])
+        scale([1, 1 / sqrt(2), 1 / sqrt(2)])
+        cube(
+          [
+            pin_hook_mm + pin_mm - pin_tolerance_mm,
+            pin_mm,
+            pin_mm
+          ],
+          center = true);
+
+        translate(
+          [
+            -0.25 * pin_mm,
+            -pin_extent_mm - 1.5 * pin_tolerance_mm + 0.5 * pin_mm,
+            1.25 * pin_mm,
+          ])
+        cube(
+          [
+            0.5 * pin_mm,
+            pin_mm,
+            0.5 * pin_mm
+          ],
+          center = true);
+      }
+    }
+
+    intersection()
+    {
+      translate([0, 0, 0.5 * pin_mm])
+      translate(
+        [
+          0,
+          -0.5 * pin_extent_mm - pin_tolerance_mm,
+          0.5 * pin_mm
+        ])
+      rotate([0, 45, 0])
+      scale([1 / sqrt(2), 1, 1 / sqrt(2)])
+      cube(
+        [
+          pin_mm,
+          pin_extent_mm + pin_tolerance_mm,
+          pin_mm
+        ],
+        center = true);
+
+      translate([0, 0, 0.5 * pin_mm])
+      translate(
+        [
+          0.5 * pin_mm - 1.5 * pin_tolerance_mm,
+          -pin_extent_mm + 0.5 * pin_thickness_mm - 0.5 * pin_tolerance_mm,
+          0.5 * pin_mm
+        ])
+      rotate([45, 0, 0])
+      scale([1, 1 / sqrt(2), 1 / sqrt(2)])
+      cube(
+        [
+          pin_hook_mm + pin_mm - pin_tolerance_mm,
+          pin_mm,
+          pin_mm
+        ],
+        center = true);
+    }
+  }
+}
+
 module device_box_support(pin_tolerance_mm, avoid_pin_flat_roof)
 {
   color("orangered")
@@ -251,58 +395,12 @@ module device_box_support(pin_tolerance_mm, avoid_pin_flat_roof)
   {
     cube([device_box_mm, device_box_mm, device_box_elevation_mm]);
 
-    translate([device_box_pin_mm * 1.5 - pin_tolerance_mm, -2 * device_box_pin_mm + 0.5 * device_box_mm, device_box_pin_mm * 0.5 + pin_tolerance_mm])
-    cube([device_box_pin_mm + pin_tolerance_mm * 2, device_box_mm, device_box_pin_mm + pin_tolerance_mm], center = true);
+    translate([1.5 * device_box_pin_mm, 0, 0])
+    device_box_support_connector(device_box_pin_mm, device_box_pin_mm * 2, device_box_pin_mm, module_insertion_allowance_mm, avoid_pin_flat_roof);
 
-    translate([device_box_pin_mm * 2 - pin_tolerance_mm, -1.5 * device_box_pin_mm, device_box_pin_mm * 0.5])
-    cube([device_box_pin_mm * 2 + pin_tolerance_mm * 2, device_box_pin_mm + 2 * pin_tolerance_mm, device_box_pin_mm + pin_tolerance_mm], center = true);
-
-    translate([device_box_mm - 1.5 * device_box_pin_mm - pin_tolerance_mm, -2 * device_box_pin_mm + 0.5 * device_box_mm, device_box_pin_mm * 0.5 + pin_tolerance_mm])
-    cube([device_box_pin_mm + pin_tolerance_mm * 2, device_box_mm, device_box_pin_mm + pin_tolerance_mm], center = true);
-
-    translate([device_box_mm - 2 * device_box_pin_mm - pin_tolerance_mm, -1.5 * device_box_pin_mm, device_box_pin_mm * 0.5])
-    cube([device_box_pin_mm * 2 + pin_tolerance_mm * 2, device_box_pin_mm + 2 * pin_tolerance_mm, device_box_pin_mm + pin_tolerance_mm], center = true);
-
-    if (avoid_pin_flat_roof)
-    {
-      translate([device_box_pin_mm * 1.5 - pin_tolerance_mm, -1.75 * device_box_pin_mm + 0.5 * device_box_mm, device_box_pin_mm + pin_tolerance_mm])
-      rotate([0, 45, 0])
-      cube([device_box_pin_mm / sqrt(2) + pin_tolerance_mm * 2, device_box_mm - 0.5 * device_box_pin_mm, device_box_pin_mm / sqrt(2) + pin_tolerance_mm], center = true);
-
-      intersection()
-      {
-        translate([device_box_pin_mm * 1.5 - pin_tolerance_mm, -2 * device_box_pin_mm + 0.5 * device_box_mm, device_box_pin_mm + pin_tolerance_mm])
-        rotate([0, 45, 0])
-        cube([device_box_pin_mm / sqrt(2) + pin_tolerance_mm * 2, device_box_mm, device_box_pin_mm / sqrt(2) + pin_tolerance_mm], center = true);
-
-        translate([device_box_pin_mm * 2 - pin_tolerance_mm, -1.5 * device_box_pin_mm, device_box_pin_mm])
-        rotate([45, 0, 0])
-        cube([device_box_pin_mm * 2 + pin_tolerance_mm * 2, device_box_pin_mm / sqrt(2) + 2 * pin_tolerance_mm, device_box_pin_mm / sqrt(2) + pin_tolerance_mm], center = true);
-      }
-
-      translate([device_box_pin_mm * 2.25 - pin_tolerance_mm, -1.5 * device_box_pin_mm, device_box_pin_mm])
-      rotate([45, 0, 0])
-      cube([device_box_pin_mm * 1.5 + pin_tolerance_mm * 2, device_box_pin_mm / sqrt(2) + 2 * pin_tolerance_mm, device_box_pin_mm / sqrt(2) + pin_tolerance_mm], center = true);
-
-      translate([device_box_mm - 1.5 * device_box_pin_mm - pin_tolerance_mm, -1.75 * device_box_pin_mm + 0.5 * device_box_mm, device_box_pin_mm + pin_tolerance_mm])
-      rotate([0, 45, 0])
-      cube([device_box_pin_mm / sqrt(2) + pin_tolerance_mm * 2, device_box_mm - 0.5 * device_box_pin_mm, device_box_pin_mm / sqrt(2) + pin_tolerance_mm], center = true);
-
-      intersection()
-      {
-        translate([device_box_mm - 1.5 * device_box_pin_mm - pin_tolerance_mm, -2 * device_box_pin_mm + 0.5 * device_box_mm, device_box_pin_mm + pin_tolerance_mm])
-        rotate([0, 45, 0])
-        cube([device_box_pin_mm / sqrt(2) + pin_tolerance_mm * 2, device_box_mm, device_box_pin_mm / sqrt(2) + pin_tolerance_mm], center = true);
-
-        translate([device_box_mm - 2 * device_box_pin_mm - pin_tolerance_mm, -1.5 * device_box_pin_mm, device_box_pin_mm])
-        rotate([45, 0, 0])
-        cube([device_box_pin_mm * 2 + pin_tolerance_mm * 2, device_box_pin_mm / sqrt(2) + 2 * pin_tolerance_mm, device_box_pin_mm / sqrt(2) + pin_tolerance_mm], center = true);
-      }
-
-      translate([device_box_mm - 2.25 * device_box_pin_mm - pin_tolerance_mm, -1.5 * device_box_pin_mm, device_box_pin_mm])
-      rotate([45, 0, 0])
-      cube([device_box_pin_mm * 1.5 + pin_tolerance_mm * 2, device_box_pin_mm / sqrt(2) + 2 * pin_tolerance_mm, device_box_pin_mm / sqrt(2) + pin_tolerance_mm], center = true);
-    }
+    translate([device_box_mm - 1.5 * device_box_pin_mm, 0, 0])
+    scale([-1, 1, 1])
+    device_box_support_connector(device_box_pin_mm, device_box_pin_mm * 2, device_box_pin_mm, module_insertion_allowance_mm, avoid_pin_flat_roof);
   }
 }
 
