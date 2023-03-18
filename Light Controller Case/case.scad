@@ -539,6 +539,30 @@ module pi_bottom_bracket()
   }
 }
 
+module pi_top_bracket()
+{
+  color("cornflowerblue")
+  translate([wall_thickness_mm, wall_thickness_mm + module_snapin_width_mm, case_base_height_mm - ($preview ? 0.002 : 0 /* Render fix */)])
+  {
+    difference()
+    {
+      cube([pi_width_mm + 2 * module_additional_width_mm, module_thickness_mm, 10]);
+
+      // Board insertion space
+      translate([module_additional_width_mm, module_thickness_mm / 2 - board_thickness_mm / 2, -module_thickness_mm - 10])
+      cube([pi_width_mm, board_thickness_mm, pi_height_mm + 2]);
+
+      // Front face of board opening
+      translate([module_additional_width_mm + 5, module_thickness_mm / 2, -1])
+      cube([pi_width_mm - 10, module_snapin_depth_mm, pi_height_mm + 2]);
+
+      // Back component space
+      translate([module_additional_width_mm + 5, module_thickness_mm / 2 - 3, -2])
+      cube([pi_width_mm - 10, module_snapin_depth_mm / 2, module_thickness_mm]);
+    }
+  }
+}
+
 module rb()
 {
   color("red")
@@ -634,6 +658,32 @@ module rb_bottom_bracket()
   }
 }
 
+module rb_top_bracket()
+{
+  color("pink")
+  translate([wall_thickness_mm, module_snapin_width_mm, case_base_height_mm])
+  {
+    difference()
+    {
+      cube([pi_width_mm + 2 * module_additional_width_mm, module_thickness_mm, 10]);
+
+      // Board insertion space
+      translate([
+        pi_width_mm - rb_width_mm - ribbon_pi_inset_mm + ribbon_rb_inset_mm + wall_thickness_mm + 1,
+        module_snapin_depth_mm / 2 + board_thickness_mm + 0.5,
+        -1])
+      cube([rb_width_mm, board_thickness_mm + rb_board_extra_thickness_mm, 8]);
+
+      // GPIO cable cutaway
+      translate([
+        pi_width_mm - rb_width_mm - ribbon_pi_inset_mm + ribbon_rb_inset_mm + wall_thickness_mm + 3,
+        module_snapin_depth_mm / 2 + board_thickness_mm - 5,
+        -1])
+      cube([rb_width_mm - 4, module_snapin_depth_mm, 8]);
+    }
+  }
+}
+
 module device_box()
 {
   color("gray")
@@ -657,9 +707,12 @@ pi();
 
 pi_bottom_bracket();
 
+translate([0, 0, case_height_mm - module_thickness_mm])
+pi_top_bracket();
+
 translate([
   wall_thickness_mm + module_additional_width_mm + pi_width_mm - rb_width_mm - (ribbon_pi_inset_mm - ribbon_rb_inset_mm),
-  wall_thickness_mm + 2 * next_module_offset_mm + module_snapin_width_mm + module_thickness_mm / 2 - board_thickness_mm / 2,
+  wall_thickness_mm + 2 * next_module_offset_mm + module_snapin_width_mm + module_thickness_mm / 2,
   case_base_height_mm])
 rb();
 
@@ -667,11 +720,16 @@ translate([
   0,
   wall_thickness_mm + 2 * next_module_offset_mm,
   0])
-rb_bottom_bracket();
+{
+  rb_bottom_bracket();
+
+  translate([0, 0, case_height_mm - module_thickness_mm])
+  rb_top_bracket();
+}
 
 translate([
   wall_thickness_mm + module_additional_width_mm + pi_width_mm - rb_width_mm - (ribbon_pi_inset_mm - ribbon_rb_inset_mm) + ribbon_gender_adapter_outset_mm,
-  wall_thickness_mm + 2 * next_module_offset_mm + module_snapin_width_mm + module_thickness_mm / 2 - board_thickness_mm / 2 - ribbon_gender_adapter_height_mm - rb_ribbon_pin_header_height_mm,
+  wall_thickness_mm + 2 * next_module_offset_mm + module_snapin_width_mm + module_thickness_mm / 2 - ribbon_gender_adapter_height_mm - rb_ribbon_pin_header_height_mm,
   case_base_height_mm + rb_height_mm - ribbon_gender_adapter_depth_mm])
 gender_adapter();
 
