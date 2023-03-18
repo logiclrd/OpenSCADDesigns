@@ -411,25 +411,66 @@ module case()
   {
     union()
     {
+      // Pcimary hull
       translate([-module_insertion_allowance_mm, -0.5 * case_margin_mm, 0])
       difference()
       {
+        // Primary volume
         cube([case_width_mm + 2 * wall_thickness_mm + 2 * module_insertion_allowance_mm, case_depth_mm + 2 * case_margin_mm + 2 * wall_thickness_mm, case_base_height_mm + case_height_mm + lid_allowance_mm]);
 
+        // Interior space
         translate([wall_thickness_mm, wall_thickness_mm, case_base_height_mm])
           cube([case_width_mm + 2 * module_insertion_allowance_mm, case_depth_mm + 2 * case_margin_mm, case_height_mm + lid_allowance_mm + 1]);
 
+        // Cable port
         translate([(case_width_mm + 2 * wall_thickness_mm) / 2, case_depth_mm + 2 * case_margin_mm + 5, case_base_height_mm + case_height_mm - device_box_depth_mm + case_wire_port_mm / sqrt(2) + 12])
         rotate([0, 45, 0])
           cube([case_wire_port_mm, 10, case_wire_port_mm], center = true);
       }
 
+      // Bottom bracket pins
       for (snapin = [0, 1, 2])
         translate([-module_insertion_allowance_mm, snapin * next_module_offset_mm, 0])
         for (x = [0, 1])
           for (y = [0, 1])
             translate([wall_thickness_mm + x * (module_width_mm - module_snapin_depth_mm + 2 * module_insertion_allowance_mm), wall_thickness_mm + y * (module_thickness_mm + module_snapin_width_mm + 2 * module_insertion_allowance_mm) - module_insertion_allowance_mm, case_base_height_mm])
             cube([module_snapin_depth_mm, module_snapin_width_mm, module_snapin_height_mm]);
+
+      // Top bracket pins
+      bracket_pin_width = module_snapin_width_mm * 2 + module_thickness_mm;
+      bracket_pin_height = module_snapin_width_mm + module_thickness_mm;
+
+      for (snapin = [0, 1, 2])
+      {
+        for (y = [-1, 1])
+        {
+          translate(
+            [
+              -module_insertion_allowance_mm + (y + 1) * (case_width_mm / 2 + wall_thickness_mm),
+              wall_thickness_mm + snapin * next_module_offset_mm,
+              case_base_height_mm + case_height_mm - bracket_pin_height
+            ])
+          scale([-y, 1, 1])
+          difference()
+          {
+            union()
+            {
+              cube([module_snapin_depth_mm, bracket_pin_width, bracket_pin_height]);
+
+              multmatrix([
+                [1, 0, 1, 0],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1]])
+              translate([0, 0, -module_snapin_depth_mm])
+              cube([module_snapin_depth_mm, bracket_pin_width, module_snapin_depth_mm]);
+            }
+
+            translate([0, module_snapin_width_mm, module_snapin_width_mm])
+            cube([module_snapin_depth_mm + 1, module_thickness_mm, module_thickness_mm + 1]);
+          }
+        }
+      }
     }
 
     translate([0, 0, case_base_height_mm - power_cable_depth_mm])
