@@ -1,5 +1,12 @@
 $fn = 24;
 
+case_power_channel_test = false;
+case_device_box_support_interface_test = false;
+
+show_pi = $preview;
+show_rb = $preview;
+show_device_box = $preview;
+
 pi_width_inches = 3.5 + 1/8;
 pi_height_inches = 2.5;
 rb_width_inches = 2 + 9.5/16;
@@ -8,10 +15,10 @@ ribbon_width_inches = 2;
 device_box_inches = 4;
 device_box_depth_inches = 2 + 1/8;
 power_cable_depth_inches = 5/8;
-power_cable_width_inches = 9/32;
+power_cable_width_inches = 5/16;
 power_cable_turning_space_inches = 3/4;
 power_cable_thickness_inches = 3/16;
-power_cable_inset_inches = 15/16;
+power_cable_inset_inches = 1 + 3/32;
 
 lid_allowance_mm = 5;
 wall_thickness_mm = 3;
@@ -71,26 +78,21 @@ pi_bottom_bracket_bat_space_end_mm = (2 + 15/16) * 25.4;
 pi_bottom_bracket_bat_space_offset_mm = 1.8;
 pi_bottom_bracket_bat_space_depth_mm = 3.5;
 
+pi_power_button_width_mm = 6.75;
+pi_power_button_depth_mm = 4;
+
+pi_audio_port_width_mm = 7;
+pi_audio_port_depth_mm = 5;
+
 device_box_mm = device_box_inches * 25.4;
 device_box_depth_mm = device_box_depth_inches * 25.4;
 device_box_elevation_mm = case_height_mm + case_base_height_mm - device_box_depth_mm + 9;
 device_box_pin_mm = module_thickness_mm;
 
+elephants_foot_compensation_factor = 0.75;
+elephants_foot_compensation_height_mm = 1.0;
+
 next_module_offset_mm = (case_depth_mm - module_thickness_mm - 2 * module_snapin_width_mm) / 2;
-
-module gender_adapter()
-{
-  color("black")
-  cube([ribbon_gender_adapter_width_mm, ribbon_gender_adapter_depth_mm, ribbon_gender_adapter_depth_mm]);
-
-  color("black")
-  translate([0, ribbon_gender_adapter_height_mm - ribbon_gender_adapter_depth_mm, 0])
-  cube([ribbon_gender_adapter_width_mm, ribbon_gender_adapter_depth_mm, ribbon_gender_adapter_depth_mm]);
-  
-  color("green")
-  translate([1.5, 0.5, ribbon_gender_adapter_depth_mm / 2 - board_thickness_mm / 2])
-  cube([ribbon_gender_adapter_width_mm - 3, ribbon_gender_adapter_height_mm - 1, board_thickness_mm]);
-}
 
 terminal_block_height_mm = 13;
 terminal_block_width_mm = 11;
@@ -110,6 +112,20 @@ terminal_block_screw_diameter_mm = terminal_block_head_depth_mm - 2 * terminal_b
 terminal_block_screw_space_mm = terminal_block_width_mm - 2 * terminal_block_screw_inset_mm;
 
 terminal_block_next_screw_offset_mm = (terminal_block_screw_space_mm - terminal_block_screw_diameter_mm) / 2;
+
+module gender_adapter()
+{
+  color("black")
+  cube([ribbon_gender_adapter_width_mm, ribbon_gender_adapter_depth_mm, ribbon_gender_adapter_depth_mm]);
+
+  color("black")
+  translate([0, ribbon_gender_adapter_height_mm - ribbon_gender_adapter_depth_mm, 0])
+  cube([ribbon_gender_adapter_width_mm, ribbon_gender_adapter_depth_mm, ribbon_gender_adapter_depth_mm]);
+
+  color("green")
+  translate([1.5, 0.5, ribbon_gender_adapter_depth_mm / 2 - board_thickness_mm / 2])
+  cube([ribbon_gender_adapter_width_mm - 3, ribbon_gender_adapter_height_mm - 1, board_thickness_mm]);
+}
 
 module terminal_block()
 {
@@ -195,11 +211,11 @@ module power_cable_space()
     multmatrix([
       [1, 0, 0, power_cable_thickness_mm * 2],
       [0, 1, 0, 0],
-      [-(power_cable_depth_mm - power_cable_thickness_mm - 3) / (case_width_mm / 2 - power_cable_thickness_mm * 2 - power_cable_inset_mm + power_cable_thickness_mm * 0.5), 0, 1, -3],
+      [-(power_cable_depth_mm - power_cable_thickness_mm - 4) / (case_width_mm / 2 - power_cable_thickness_mm * 2 - power_cable_inset_mm + power_cable_thickness_mm * 0.5), 0, 1, -4],
       [0, 0, 0, 1]])
     cube([case_width_mm / 2 - power_cable_thickness_mm, power_cable_thickness_mm, power_cable_depth_mm - power_cable_thickness_mm]);
 
-    cube([power_cable_thickness_mm * 2, power_cable_thickness_mm, power_cable_depth_mm - power_cable_thickness_mm - 3]);
+    cube([power_cable_thickness_mm * 2, power_cable_thickness_mm, power_cable_depth_mm - power_cable_thickness_mm - 4]);
   }
 
   translate([wall_thickness_mm + case_width_mm / 2 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm - power_cable_thickness_mm) / 2, power_cable_depth_mm - power_cable_thickness_mm - 3])
@@ -244,7 +260,7 @@ module power_cable()
   // TODO
 }
 
-module device_box_support_connector(pin_thickness_mm, pin_extent_mm, pin_hook_mm, pin_tolerance_mm, avoid_pin_flat_roof)
+module device_box_support_connector(pin_thickness_mm, pin_extent_mm, pin_hook_mm, pin_tolerance_mm, avoid_pin_flat_roof, elephants_foot_compensation)
 {
   pin_mm = pin_thickness_mm + 2 * pin_tolerance_mm;
 
@@ -275,6 +291,59 @@ module device_box_support_connector(pin_thickness_mm, pin_extent_mm, pin_hook_mm
       pin_mm
     ],
     center = true);
+
+  if (elephants_foot_compensation)
+  {
+    for (direction_x = [-1, 1])
+      for (direction_y = [-1, 1])
+      {
+        multmatrix([
+          [1, 0, elephants_foot_compensation_factor * direction_x, -elephants_foot_compensation_height_mm * elephants_foot_compensation_factor * direction_x],
+          [0, 1, elephants_foot_compensation_factor * direction_y, -elephants_foot_compensation_height_mm * elephants_foot_compensation_factor * direction_y],
+          [0, 0, 1, 0],
+          [0, 0, 0, 1]])
+        translate(
+          [
+            0,
+            -0.5 * pin_extent_mm,
+            0.5 * elephants_foot_compensation_height_mm
+          ])
+        cube(
+          [
+            pin_mm,
+            pin_extent_mm + pin_tolerance_mm,
+            elephants_foot_compensation_height_mm
+          ],
+          center = true);
+
+        multmatrix([
+          [1, 0, elephants_foot_compensation_factor * direction_x, -elephants_foot_compensation_height_mm * elephants_foot_compensation_factor * direction_x],
+          [0, 1, elephants_foot_compensation_factor * direction_y, -elephants_foot_compensation_height_mm * elephants_foot_compensation_factor * direction_y],
+          [0, 0, 1, 0],
+          [0, 0, 0, 1]])
+        translate(
+          [
+            0.5 * pin_mm - 1.5 * pin_tolerance_mm,
+            -pin_extent_mm + 0.5 * pin_mm - 1.5 * pin_tolerance_mm,
+            0.5 * elephants_foot_compensation_height_mm
+          ])
+        cube(
+          [
+            pin_hook_mm + pin_thickness_mm + pin_tolerance_mm,
+            pin_mm,
+            elephants_foot_compensation_height_mm
+          ],
+          center = true);
+      }
+
+    multmatrix([
+      [1, 0, 0, 0],
+      [0, 1, elephants_foot_compensation_factor, -elephants_foot_compensation_height_mm * elephants_foot_compensation_factor],
+      [0, 0, 1, 0],
+      [0, 0, 0, 1]])
+      translate([-case_width_mm / 2, 0, 0])
+    cube([case_width_mm, 2, elephants_foot_compensation_height_mm]);
+  }
 
   if (avoid_pin_flat_roof)
   {
@@ -388,7 +457,7 @@ module device_box_support_connector(pin_thickness_mm, pin_extent_mm, pin_hook_mm
   }
 }
 
-module device_box_support(pin_tolerance_mm, avoid_pin_flat_roof)
+module device_box_support(pin_tolerance_mm, avoid_pin_flat_roof, elephants_foot_compensation)
 {
   color("orangered")
   translate([-0.5 * module_insertion_allowance_mm, case_depth_mm + 1.5 * case_margin_mm + 2 * wall_thickness_mm, 0])
@@ -396,11 +465,11 @@ module device_box_support(pin_tolerance_mm, avoid_pin_flat_roof)
     cube([device_box_mm, device_box_mm, device_box_elevation_mm]);
 
     translate([1.5 * device_box_pin_mm, 0, 0])
-    device_box_support_connector(device_box_pin_mm, device_box_pin_mm * 2, device_box_pin_mm, module_insertion_allowance_mm, avoid_pin_flat_roof);
+    device_box_support_connector(device_box_pin_mm, device_box_pin_mm * 2, device_box_pin_mm, pin_tolerance_mm, avoid_pin_flat_roof, elephants_foot_compensation);
 
     translate([device_box_mm - 1.5 * device_box_pin_mm, 0, 0])
     scale([-1, 1, 1])
-    device_box_support_connector(device_box_pin_mm, device_box_pin_mm * 2, device_box_pin_mm, module_insertion_allowance_mm, avoid_pin_flat_roof);
+    device_box_support_connector(device_box_pin_mm, device_box_pin_mm * 2, device_box_pin_mm, pin_tolerance_mm, avoid_pin_flat_roof, elephants_foot_compensation);
   }
 }
 
@@ -482,14 +551,14 @@ module case()
     translate([0, 0, case_base_height_mm - power_cable_depth_mm])
     power_cable_space();
 
-    translate([module_additional_width_mm + 5 + pi_bottom_bracket_hdmi_space_start_mm + wall_thickness_mm, module_thickness_mm / 2 + 2, case_base_height_mm - 3.5])
+    translate([wall_thickness_mm + module_additional_width_mm + 5 + pi_bottom_bracket_hdmi_space_start_mm + wall_thickness_mm, module_thickness_mm / 2 + 8, case_base_height_mm - 3.5])
     cube([pi_bottom_bracket_hdmi_space_end_mm - pi_bottom_bracket_hdmi_space_start_mm, module_snapin_depth_mm, pi_height_mm]);
 
-    device_box_support(pin_tolerance_mm = module_insertion_allowance_mm * 2, avoid_pin_flat_roof = true);
+    device_box_support(pin_tolerance_mm = module_insertion_allowance_mm * 2, avoid_pin_flat_roof = true, elephants_foot_compensation = true);
   }
 
   translate([0, device_box_pin_mm * 2 + 5, 0])
-  device_box_support(pin_tolerance_mm = 0, avoid_pin_flat_roof = false);
+  device_box_support(pin_tolerance_mm = 0, avoid_pin_flat_roof = false, elephants_foot_compensation = false);
 }
 
 module pi()
@@ -582,6 +651,14 @@ module pi_top_bracket()
       // Back component space
       translate([module_additional_width_mm + 5, module_thickness_mm / 2 - 3, -1])
       cube([pi_width_mm - 10, module_snapin_depth_mm / 2, module_thickness_mm + 2]);
+
+      // Power/Reset button space
+      translate([module_additional_width_mm + pi_width_mm - 6, module_thickness_mm / 2, -pi_power_button_depth_mm])
+      cube([pi_power_button_width_mm + 1, module_snapin_depth_mm, 10]);
+
+      // Audio port space
+      translate([9 - pi_audio_port_width_mm, module_thickness_mm / 2, -pi_audio_port_depth_mm])
+      cube([pi_audio_port_width_mm + 1, module_snapin_depth_mm, 10]);
     }
   }
 }
@@ -723,38 +800,72 @@ module device_box()
   }
 }
 
-case();
 
-translate([wall_thickness_mm + module_additional_width_mm, wall_thickness_mm + module_snapin_width_mm + module_thickness_mm / 2 - board_thickness_mm / 2, case_base_height_mm])
-pi();
-
-pi_bottom_bracket();
-
-translate([0, 0, case_height_mm - module_thickness_mm])
-pi_top_bracket();
-
-translate([
-  wall_thickness_mm + module_additional_width_mm + pi_width_mm - rb_width_mm - (ribbon_pi_inset_mm - ribbon_rb_inset_mm),
-  wall_thickness_mm + 2 * next_module_offset_mm + module_snapin_width_mm + module_thickness_mm / 2,
-  case_base_height_mm])
-rb();
-
-translate([
-  0,
-  wall_thickness_mm + 2 * next_module_offset_mm,
-  0])
+intersection()
 {
-  rb_bottom_bracket();
+  case();
 
-  translate([0, 0, case_height_mm - module_thickness_mm])
-  rb_top_bracket();
+  if (case_power_channel_test)
+  {
+    translate([40, 2, 0])
+    cube([case_width_mm + 2 * wall_thickness_mm + 15, 18, 25]);
+  }
+
+  if (case_device_box_support_interface_test)
+  {
+    translate([-5, 95, 0])
+    cube([case_width_mm + 2 * wall_thickness_mm + 15, 50, 13]);
+  }
 }
 
-translate([
-  wall_thickness_mm + module_additional_width_mm + pi_width_mm - rb_width_mm - (ribbon_pi_inset_mm - ribbon_rb_inset_mm) + ribbon_gender_adapter_outset_mm,
-  wall_thickness_mm + 2 * next_module_offset_mm + module_snapin_width_mm + module_thickness_mm / 2 - ribbon_gender_adapter_height_mm - rb_ribbon_pin_header_height_mm,
-  case_base_height_mm + rb_height_mm - ribbon_gender_adapter_depth_mm])
-gender_adapter();
+translate([0, 0, $preview ? 0 : (case_height_mm + 2 * lid_allowance_mm)])
+{
+  if (show_pi)
+  {
+    translate([wall_thickness_mm + module_additional_width_mm, wall_thickness_mm + module_snapin_width_mm + module_thickness_mm / 2 - board_thickness_mm / 2, case_base_height_mm])
+    pi();
+  }
 
-translate([(case_width_mm + wall_thickness_mm * 2) / 2, device_box_mm / 2 - case_margin_mm / 2 + case_depth_mm + 2 * case_margin_mm + 2 * wall_thickness_mm, device_box_depth_mm / 2 + device_box_elevation_mm])
-device_box();
+  pi_bottom_bracket();
+
+  translate([0, 0, case_height_mm - module_thickness_mm])
+  pi_top_bracket();
+}
+
+if (show_rb)
+{
+  translate([
+    wall_thickness_mm + module_additional_width_mm + pi_width_mm - rb_width_mm - (ribbon_pi_inset_mm - ribbon_rb_inset_mm),
+    wall_thickness_mm + 2 * next_module_offset_mm + module_snapin_width_mm + module_thickness_mm / 2,
+    case_base_height_mm])
+  rb();
+}
+
+translate([0, 0, $preview ? 0 : (case_height_mm + 2 * lid_allowance_mm)])
+{
+  translate([
+    0,
+    wall_thickness_mm + 2 * next_module_offset_mm,
+    0])
+  {
+    rb_bottom_bracket();
+
+    translate([0, 0, case_height_mm - module_thickness_mm])
+    rb_top_bracket();
+  }
+}
+
+if (show_rb)
+{
+  translate([
+    wall_thickness_mm + module_additional_width_mm + pi_width_mm - rb_width_mm - (ribbon_pi_inset_mm - ribbon_rb_inset_mm) + ribbon_gender_adapter_outset_mm,
+    wall_thickness_mm + 2 * next_module_offset_mm + module_snapin_width_mm + module_thickness_mm / 2 - ribbon_gender_adapter_height_mm - rb_ribbon_pin_header_height_mm,
+    case_base_height_mm + rb_height_mm - ribbon_gender_adapter_depth_mm])
+  gender_adapter();
+}
+
+if (show_device_box)
+{
+  translate([(case_width_mm + wall_thickness_mm * 2) / 2, device_box_mm / 2 - case_margin_mm / 2 + case_depth_mm + 2 * case_margin_mm + 2 * wall_thickness_mm, device_box_depth_mm / 2 + device_box_elevation_mm])
+  device_box();
+}
