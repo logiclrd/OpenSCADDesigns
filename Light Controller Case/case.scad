@@ -551,7 +551,7 @@ module case()
         }
       }
 
-      translate([0, case_depth_mm + 2 * case_margin_mm + 2 * wall_thickness_mm - 0.5 * case_margin_mm, 0])
+      translate([0, case_depth_mm + 2 * case_margin_mm + 2 * wall_thickness_mm - 0.5 * case_margin_mm - 0.001 /* why? without this, the connector is treated as a separate hull for some reason... */, 0])
       scale([1, -1, 1])
       {
         translate([1.5 * device_box_pin_mm, 0, 0])
