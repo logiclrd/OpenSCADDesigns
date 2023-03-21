@@ -1,3 +1,19 @@
+// Design:
+//   Case has a slotted design.
+//   => Banana Pi goes into one slot. This slot has a Micro USB connector
+//      welded into exactly the right spot so that pushing the board down
+//      connects it for power.
+//   => Relay board goes into another slot.
+//   => Friction with mounting brackets that hold the boards pins them
+//      into place.
+//   => Wires connect to relays via terminal block.
+//   => Two bus bars for neutral and hot. Power source is split using the
+//      bus bars.
+//   => A device box is attached on the side with receptacles.
+//   => A pad raises the device box to the correct height so that its cover
+//      does not interfere with the main case. The pad is affixed to the
+//      case using L shaped connector inserts.
+
 $fn = 24;
 
 case_power_channel_test = false;
