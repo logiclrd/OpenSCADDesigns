@@ -38,7 +38,7 @@ power_cable_inset_inches = 1 + 3/32;
 
 lid_allowance_mm = 5;
 wall_thickness_mm = 3;
-module_additional_width_mm = 4;
+module_additional_width_mm = 30;
 
 ribbon_width_mm = ribbon_width_inches * 25.4;
 
@@ -216,13 +216,15 @@ module terminal_block()
 
 module power_cable_space()
 {
-  translate([wall_thickness_mm + case_width_mm - power_cable_inset_mm, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm, 0])
+  // End of the cable (wider).
+  translate([wall_thickness_mm + case_width_mm - module_additional_width_mm - power_cable_inset_mm, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm, 0])
   cube([power_cable_inset_mm, power_cable_width_mm, power_cable_depth_mm + 1]);
 
-  translate([wall_thickness_mm + case_width_mm / 2 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm - power_cable_thickness_mm) / 2, 0])
+  // Cable channel up to the bend.
+  translate([wall_thickness_mm + device_box_mm * 0.5 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm - power_cable_thickness_mm) / 2, 0])
   difference()
   {
-    cube([case_width_mm / 2, power_cable_thickness_mm, power_cable_depth_mm + 1]);
+    cube([(pi_width_mm / 2 + module_additional_width_mm) - module_additional_width_mm, power_cable_thickness_mm, power_cable_depth_mm + 1]);
 
     multmatrix([
       [1, 0, 0, power_cable_thickness_mm * 2],
@@ -234,10 +236,12 @@ module power_cable_space()
     cube([power_cable_thickness_mm * 2, power_cable_thickness_mm, power_cable_depth_mm - power_cable_thickness_mm - 4]);
   }
 
-  translate([wall_thickness_mm + case_width_mm / 2 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm - power_cable_thickness_mm) / 2, power_cable_depth_mm - power_cable_thickness_mm - 3])
+  // Cable channel bend.
+  translate([wall_thickness_mm + device_box_mm / 2 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm - power_cable_thickness_mm) / 2, power_cable_depth_mm - power_cable_thickness_mm - 3])
   cube([power_cable_thickness_mm, power_cable_thickness_mm, case_base_height_mm + case_height_mm - device_box_depth_mm + case_wire_port_mm / sqrt(2) + 12]);
 
-  translate([wall_thickness_mm + case_width_mm / 2 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm - power_cable_thickness_mm) / 2 + power_cable_thickness_mm, power_cable_depth_mm - power_cable_thickness_mm])
+  // Cable channel from the bend to the cable port.
+  translate([wall_thickness_mm + device_box_mm / 2 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm - power_cable_thickness_mm) / 2 + power_cable_thickness_mm, power_cable_depth_mm - power_cable_thickness_mm])
   multmatrix([
     [1, 0, 0, 0],
     [0, 1, 0, 0],
@@ -245,10 +249,11 @@ module power_cable_space()
     [0, 0, 0, 1]])
   cube([power_cable_thickness_mm, case_depth_mm + case_margin_mm - power_cable_thickness_mm, case_base_height_mm + case_height_mm - device_box_depth_mm + case_wire_port_mm / sqrt(2) + 12]);
 
+  // Extra space at the bend for the cable to turn the corner.
   translate([0, 0, case_base_height_mm - 1])
   difference()
   {
-    translate([wall_thickness_mm + case_width_mm / 2 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm + power_cable_thickness_mm) / 2, -power_cable_thickness_mm - 1])
+    translate([wall_thickness_mm + device_box_mm / 2 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm + power_cable_thickness_mm) / 2, -power_cable_thickness_mm - 1])
     multmatrix([
       [1, 0, 0, 0],
       [0, 1, 0, 0],
@@ -261,7 +266,7 @@ module power_cable_space()
       [0, 0, 0, 1]])
     cube([power_cable_thickness_mm * 2, power_cable_thickness_mm, power_cable_depth_mm + 1]);
 
-    translate([wall_thickness_mm + case_width_mm / 2 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm + power_cable_thickness_mm) / 2, -power_cable_thickness_mm - case_base_height_mm - wall_thickness_mm])
+    translate([wall_thickness_mm + device_box_mm / 2 - power_cable_thickness_mm * 0.5, case_margin_mm * 0.5 + wall_thickness_mm - board_thickness_mm + (power_cable_width_mm + power_cable_thickness_mm) / 2, -power_cable_thickness_mm - case_base_height_mm - wall_thickness_mm])
     multmatrix([
       [1, 0, 0, 0],
       [-1, 1, 0, power_cable_thickness_mm],
@@ -512,7 +517,7 @@ module case()
           cube([case_width_mm + 2 * module_insertion_allowance_mm, case_depth_mm + 2 * case_margin_mm, case_height_mm + lid_allowance_mm + 1]);
 
         // Cable port
-        translate([(case_width_mm + 2 * wall_thickness_mm) / 2, case_depth_mm + 2 * case_margin_mm + 5, case_base_height_mm + case_height_mm - device_box_depth_mm + case_wire_port_mm / sqrt(2) + 12])
+        translate([wall_thickness_mm + device_box_mm / 2, case_depth_mm + 2 * case_margin_mm + 5, case_base_height_mm + case_height_mm - device_box_depth_mm + case_wire_port_mm / sqrt(2) + 12])
         rotate([0, 45, 0])
           cube([case_wire_port_mm, 10, case_wire_port_mm], center = true);
       }
@@ -567,7 +572,7 @@ module case()
         }
       }
 
-      translate([0, case_depth_mm + 2 * case_margin_mm + 2 * wall_thickness_mm - 0.5 * case_margin_mm - 0.001 /* why? without this, the connector is treated as a separate hull for some reason... */, 0])
+      translate([wall_thickness_mm, case_depth_mm + 2 * case_margin_mm + 2 * wall_thickness_mm - 0.5 * case_margin_mm - 0.001 /* why? without this, the connector is treated as a separate hull for some reason... */, 0])
       scale([1, -1, 1])
       {
         translate([1.5 * device_box_pin_mm, 0, 0])
@@ -586,7 +591,7 @@ module case()
     cube([pi_bottom_bracket_hdmi_space_end_mm - pi_bottom_bracket_hdmi_space_start_mm, module_snapin_depth_mm, pi_height_mm]);
   }
 
-  translate([0, device_box_pin_mm * 2 + 5, 0])
+  translate([wall_thickness_mm, device_box_pin_mm * 2 + 5, 0])
   device_box_support();
 }
 
@@ -766,23 +771,26 @@ module rb_bottom_bracket()
     {
       cube([pi_width_mm + 2 * module_additional_width_mm, module_thickness_mm, 10]);
       
-      translate([
-        pi_width_mm - rb_width_mm - ribbon_pi_inset_mm + ribbon_rb_inset_mm + wall_thickness_mm + 1,
-        module_snapin_depth_mm / 2 + board_thickness_mm + 0.5,
-        -1])
-      cube([rb_width_mm, board_thickness_mm + rb_board_extra_thickness_mm, 12]);
+      translate([module_additional_width_mm, 0, 0])
+      {
+        translate([
+          pi_width_mm - rb_width_mm - ribbon_pi_inset_mm + ribbon_rb_inset_mm + wall_thickness_mm - 3,
+          module_snapin_depth_mm / 2 + board_thickness_mm + 0.5,
+          -1])
+        cube([rb_width_mm, board_thickness_mm + rb_board_extra_thickness_mm, 12]);
 
-      translate([
-        pi_width_mm - rb_width_mm - ribbon_pi_inset_mm + ribbon_rb_inset_mm + wall_thickness_mm + 3,
-        module_snapin_depth_mm / 2 + board_thickness_mm - 2,
-        3])
-      cube([rb_width_mm - 4, board_thickness_mm + 2, 12]);
+        translate([
+          pi_width_mm - rb_width_mm - ribbon_pi_inset_mm + ribbon_rb_inset_mm + wall_thickness_mm - 1,
+          module_snapin_depth_mm / 2 + board_thickness_mm - 2,
+          3])
+        cube([rb_width_mm - 4, board_thickness_mm + 2, 12]);
 
-      translate([
-        pi_width_mm - rb_width_mm - ribbon_pi_inset_mm + ribbon_rb_inset_mm + wall_thickness_mm + 3,
-        module_snapin_depth_mm / 2 + board_thickness_mm + 1,
-        -1])
-      cube([rb_width_mm - 4, module_snapin_depth_mm, 12]);
+        translate([
+          pi_width_mm - rb_width_mm - ribbon_pi_inset_mm + ribbon_rb_inset_mm + wall_thickness_mm - 1,
+          module_snapin_depth_mm / 2 + board_thickness_mm + 1,
+          -1])
+        cube([rb_width_mm - 4, module_snapin_depth_mm, 12]);
+      }
     }
   }
 }
@@ -796,19 +804,22 @@ module rb_top_bracket()
     {
       cube([pi_width_mm + 2 * module_additional_width_mm, module_thickness_mm, 10]);
 
-      // Board insertion space
-      translate([
-        pi_width_mm - rb_width_mm - ribbon_pi_inset_mm + ribbon_rb_inset_mm + wall_thickness_mm + 1,
-        module_snapin_depth_mm / 2 + board_thickness_mm + 0.5,
-        -1])
-      cube([rb_width_mm, board_thickness_mm + rb_board_extra_thickness_mm, 8]);
+      translate([module_additional_width_mm, 0, 0])
+      {
+        // Board insertion space
+        translate([
+          pi_width_mm - rb_width_mm - ribbon_pi_inset_mm + ribbon_rb_inset_mm + wall_thickness_mm - 3,
+          module_snapin_depth_mm / 2 + board_thickness_mm + 0.5,
+          -1])
+        cube([rb_width_mm, board_thickness_mm + rb_board_extra_thickness_mm, 8]);
 
-      // GPIO cable cutaway
-      translate([
-        pi_width_mm - rb_width_mm - ribbon_pi_inset_mm + ribbon_rb_inset_mm + wall_thickness_mm + 3,
-        module_snapin_depth_mm / 2 + board_thickness_mm - 5,
-        -1])
-      cube([rb_width_mm - 4, module_snapin_depth_mm * 2, 8]);
+        // GPIO cable cutaway
+        translate([
+          pi_width_mm - rb_width_mm - ribbon_pi_inset_mm + ribbon_rb_inset_mm + wall_thickness_mm - 1,
+          module_snapin_depth_mm / 2 + board_thickness_mm - 5,
+          -1])
+        cube([rb_width_mm - 4, module_snapin_depth_mm * 2, 8]);
+      }
     }
   }
 }
@@ -895,6 +906,6 @@ if (show_rb)
 
 if (show_device_box)
 {
-  translate([(case_width_mm + wall_thickness_mm * 2) / 2, device_box_mm / 2 - case_margin_mm / 2 + case_depth_mm + 2 * case_margin_mm + 2 * wall_thickness_mm, device_box_depth_mm / 2 + device_box_elevation_mm])
+  translate([(case_width_mm + wall_thickness_mm * 2) / 2 + module_additional_width_mm, device_box_mm / 2 - case_margin_mm / 2 + case_depth_mm + 2 * case_margin_mm + 2 * wall_thickness_mm, device_box_depth_mm / 2 + device_box_elevation_mm])
   device_box();
 }
