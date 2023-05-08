@@ -1,0 +1,1 @@
+Source for poster stand: https://www.thingiverse.com/thing:4787206
