@@ -40,11 +40,26 @@ power_cable_turning_space_inches = 3/4;
 power_cable_thickness_inches = 3/16;
 power_cable_inset_inches = 1 + 3/32;
 
+header_protrusion_mm = 2.5;
+
 usb_header_width_mm = 13.1;
 usb_header_depth_mm = 14.1;
-usb_header_height_mm = 6.55;
+usb_header_height_mm = 6;
 usb_header_wall_thickness_mm = 0.2;
 usb_header_guide_thickness_mm = 1.6;
+usb_double_header_separator_thickness_mm = 2.5;
+
+ethernet_header_width_mm = 15.5;
+ethernet_header_depth_mm = 20.5;
+ethernet_header_height_mm = 13;
+ethernet_header_wall_thickness_mm = 1.5;
+
+micro_usb_header_width_mm = 6.2;
+micro_usb_header_depth_mm = 5;
+micro_usb_header_height_mm = 2;
+micro_usb_header_wall_thickness_mm = 0.08;
+micro_usb_header_protrusion_mm = 1;
+micro_usb_header_offset_mm = 69.5;
 
 lid_allowance_mm = 5;
 wall_thickness_mm = 3;
@@ -638,7 +653,7 @@ module usb_double_header()
 {
   usb_header(top = false);
 
-  translate([0, 0, usb_header_height_mm + 0.45])
+  translate([0, 0, usb_header_height_mm + usb_double_header_separator_thickness_mm])
   usb_header(bottom = false);
 
   color("gray")
@@ -655,7 +670,81 @@ module usb_double_header()
   translate([usb_header_wall_thickness_mm, 0, usb_header_height_mm - usb_header_wall_thickness_mm])
   color("white")
   {
-    cube([usb_header_width_mm - 2 * usb_header_wall_thickness_mm, usb_header_depth_mm - 0.1, 1.4]);
+    cube([usb_header_width_mm - 2 * usb_header_wall_thickness_mm, usb_header_depth_mm - 0.1, usb_double_header_separator_thickness_mm]);
+  }
+}
+
+module ethernet_header()
+{
+  color("gray")
+  {
+    difference()
+    {
+      cube([ethernet_header_width_mm, ethernet_header_depth_mm, ethernet_header_height_mm]);
+
+      translate([ethernet_header_wall_thickness_mm + 0.025, -1, ethernet_header_wall_thickness_mm + 0.1])
+      cube([ethernet_header_width_mm - 2 * ethernet_header_wall_thickness_mm + 0.2, ethernet_header_depth_mm, ethernet_header_height_mm - 2 * ethernet_header_wall_thickness_mm + 0.2]);
+
+      translate([ethernet_header_width_mm * 0.5 - 4.9 * 0.5, -0.1, 0])
+      cube([4.9, 1, 2]);
+    }
+  }
+
+  color("black")
+  {
+    difference()
+    {
+      translate([0.05, 0.05, 0.05])
+      cube([ethernet_header_width_mm - 0.1, ethernet_header_depth_mm - 0.1, ethernet_header_height_mm - 0.1]);
+
+      translate([ethernet_header_wall_thickness_mm, -1, ethernet_header_wall_thickness_mm + 0.2])
+      cube([ethernet_header_width_mm - 2 * ethernet_header_wall_thickness_mm, ethernet_header_depth_mm - 0.1, ethernet_header_height_mm - 2 * ethernet_header_wall_thickness_mm]);
+    }
+  }
+
+  color("green")
+  {
+    translate([ethernet_header_wall_thickness_mm, -0.05, ethernet_header_wall_thickness_mm])
+    cube([2.5, 1.4, 1]);
+  }
+
+  color("yellow")
+  {
+    translate([ethernet_header_width_mm - ethernet_header_wall_thickness_mm - 2.5, -0.05, ethernet_header_wall_thickness_mm])
+    cube([2.5, 1.4, 1]);
+  }
+}
+
+module micro_usb_power_header()
+{
+  color("gray")
+  {
+    union()
+    {
+      difference()
+      {
+        cube([micro_usb_header_width_mm, micro_usb_header_depth_mm, micro_usb_header_height_mm]);
+
+        translate([micro_usb_header_wall_thickness_mm + 0.025, -1, micro_usb_header_wall_thickness_mm])
+        cube([micro_usb_header_width_mm - 2 * micro_usb_header_wall_thickness_mm, micro_usb_header_depth_mm, micro_usb_header_height_mm - 2 * micro_usb_header_wall_thickness_mm]);
+
+        translate([0, -1, micro_usb_header_height_mm * 0.5])
+        rotate([0, 135, 0])
+        cube([100, 100, 100]);
+
+        translate([micro_usb_header_width_mm - micro_usb_header_height_mm * 0.5, -1, 0])
+        rotate([0, 45, 0])
+        cube([100, 100, 100]);
+      }
+
+      translate([0, 0, micro_usb_header_height_mm * 0.5])
+      rotate([0, 45, 0])
+      cube([micro_usb_header_height_mm * sqrt(2) / 2, micro_usb_header_depth_mm, micro_usb_header_wall_thickness_mm]);
+
+      translate([micro_usb_header_width_mm - micro_usb_header_wall_thickness_mm / sqrt(2), 0, micro_usb_header_height_mm * 0.5 + micro_usb_header_wall_thickness_mm / sqrt(2)])
+      rotate([0, 135, 0])
+      cube([micro_usb_header_height_mm * sqrt(2) / 2, micro_usb_header_depth_mm, micro_usb_header_wall_thickness_mm]);
+    }
   }
 }
 
@@ -691,15 +780,29 @@ module pi()
 
   // Board front face
   rotate([-90, 0, 0])
-  translate([0, -pi_height_mm, board_thickness_mm])
+  translate([0, -pi_height_mm, board_thickness_mm + 0.01])
   {
-    translate([0, usb_header_width_mm + 3.175, 0])
-    rotate([0, 0, -90])
-    usb_double_header();
+    translate([-header_protrusion_mm, 0, 0])
+    {
+      translate([0, usb_header_width_mm + 2, 0])
+      rotate([0, 0, -90])
+      usb_double_header();
 
-    translate([0, usb_header_width_mm + 21.2, 0])
-    rotate([0, 0, -90])
-    usb_double_header();
+      translate([0, usb_header_width_mm + 20, 0])
+      rotate([0, 0, -90])
+      usb_double_header();
+
+      translate([0, ethernet_header_width_mm + 38, 0])
+      rotate([0, 0, -90])
+      ethernet_header();
+    }
+
+    translate([0, micro_usb_header_protrusion_mm, 0])
+    {
+      translate([micro_usb_header_width_mm + micro_usb_header_offset_mm, pi_height_mm, 0])
+      rotate([0, 0, 180])
+      micro_usb_power_header();
+    }
   }
 }
 
@@ -932,7 +1035,7 @@ module device_box()
   difference()
   {
     cube([device_box_mm, device_box_mm, device_box_depth_mm], center = true);
-    
+
     translate([0, 0, 0.5])
     cube([device_box_mm - 1, device_box_mm - 1, device_box_depth_mm], center = true);
 
