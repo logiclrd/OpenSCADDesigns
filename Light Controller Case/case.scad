@@ -1,6 +1,6 @@
 // Design:
 //   Case has a slotted design.
-//   => Banana Pi goes into one slot. This slot has a Micro USB connector
+//   => Pi computer goes into one slot. This slot has a Micro USB connector
 //      welded into exactly the right spot so that pushing the board down
 //      connects it for power.
 //   => Relay board goes into another slot.
@@ -19,12 +19,16 @@ $fn = 24;
 case_power_channel_test = false;
 case_device_box_support_interface_test = false;
 
+render_case = false;
+render_pi_brackets = false;
+render_rb_brackets = false;
+
 show_pi = $preview;
 show_rb = $preview;
 show_device_box = $preview;
 
-pi_width_inches = 3.5 + 1/8;
-pi_height_inches = 2.5;
+pi_width_inches = 3.33;
+pi_height_inches = 2.22;
 rb_width_inches = 2 + 9.5/16;
 case_depth_inches = 3.5;
 ribbon_width_inches = 2;
@@ -35,6 +39,12 @@ power_cable_width_inches = 5/16;
 power_cable_turning_space_inches = 3/4;
 power_cable_thickness_inches = 3/16;
 power_cable_inset_inches = 1 + 3/32;
+
+usb_header_width_mm = 13.1;
+usb_header_depth_mm = 14.1;
+usb_header_height_mm = 6.55;
+usb_header_wall_thickness_mm = 0.2;
+usb_header_guide_thickness_mm = 1.6;
 
 lid_allowance_mm = 5;
 wall_thickness_mm = 3;
@@ -65,6 +75,7 @@ power_cable_inset_mm = power_cable_inset_inches * 25.4;
 
 pi_width_mm = pi_width_inches * 25.4;
 pi_height_mm = pi_height_inches * 25.4;
+pi_corner_round_mm = 1.85;
 board_thickness_mm = 1.25;
 rb_width_mm = rb_width_inches * 25.4;
 rb_height_mm = 60;
@@ -595,10 +606,101 @@ module case()
   device_box_support();
 }
 
+module usb_header(top = true, bottom = true)
+{
+  color("gray")
+  {
+    difference()
+    {
+      cube([usb_header_width_mm, usb_header_depth_mm, usb_header_height_mm]);
+
+      translate([usb_header_wall_thickness_mm, -1, usb_header_wall_thickness_mm])
+      cube([usb_header_width_mm - 2 * usb_header_wall_thickness_mm, usb_header_depth_mm - 0.1, usb_header_height_mm - 2 * usb_header_wall_thickness_mm]);
+
+      if (!top)
+        translate([usb_header_wall_thickness_mm, -1, usb_header_height_mm - 0.5])
+        cube([usb_header_width_mm - 2 * usb_header_wall_thickness_mm, usb_header_depth_mm - 0.1, 2]);
+
+      if (!bottom)
+        translate([usb_header_wall_thickness_mm, -1, -usb_header_wall_thickness_mm])
+        cube([usb_header_width_mm - 2 * usb_header_wall_thickness_mm, usb_header_depth_mm - 0.1, 2]);
+    }
+  }
+
+  color("black")
+  {
+    translate([2 * usb_header_wall_thickness_mm, usb_header_wall_thickness_mm, usb_header_height_mm - usb_header_guide_thickness_mm - 1.3])
+    cube([usb_header_width_mm - 4 * usb_header_wall_thickness_mm, usb_header_depth_mm - 0.4, usb_header_guide_thickness_mm]);
+  }
+}
+
+module usb_double_header()
+{
+  usb_header(top = false);
+
+  translate([0, 0, usb_header_height_mm + 0.45])
+  usb_header(bottom = false);
+
+  color("gray")
+  {
+    difference()
+    {
+      cube([usb_header_width_mm, usb_header_depth_mm, usb_header_height_mm * 2]);
+
+      translate([0.2, -1, 0.2])
+      cube([usb_header_width_mm - 2 * usb_header_wall_thickness_mm, usb_header_depth_mm - 0.1, usb_header_height_mm * 2]);
+    }
+  }
+
+  translate([usb_header_wall_thickness_mm, 0, usb_header_height_mm - usb_header_wall_thickness_mm])
+  color("white")
+  {
+    cube([usb_header_width_mm - 2 * usb_header_wall_thickness_mm, usb_header_depth_mm - 0.1, 1.4]);
+  }
+}
+
 module pi()
 {
-  color("blue")
-  cube([pi_width_mm, board_thickness_mm, pi_height_mm]);
+  color("white")
+  {
+    intersection()
+    {
+      cube([pi_width_mm, board_thickness_mm, pi_height_mm]);
+
+      union()
+      {
+        rotate([90, 0, 0])
+        for (x = [0, 1])
+          for (y = [0, 1])
+            translate(
+              [
+                pi_corner_round_mm + x * (pi_width_mm - 2 * pi_corner_round_mm),
+                pi_corner_round_mm + y * (pi_height_mm - 2 * pi_corner_round_mm),
+                -2.5
+              ])
+            cylinder(5, pi_corner_round_mm, pi_corner_round_mm, $fn = 64);
+
+        translate([pi_corner_round_mm, -3, 0])
+        cube([pi_width_mm - 2 * pi_corner_round_mm, 6, pi_height_mm]);
+
+        translate([0, -3, pi_corner_round_mm])
+        cube([pi_width_mm, 6, pi_height_mm - 2 * pi_corner_round_mm]);
+      }
+    }
+  }
+
+  // Board front face
+  rotate([-90, 0, 0])
+  translate([0, -pi_height_mm, board_thickness_mm])
+  {
+    translate([0, usb_header_width_mm + 3.175, 0])
+    rotate([0, 0, -90])
+    usb_double_header();
+
+    translate([0, usb_header_width_mm + 21.2, 0])
+    rotate([0, 0, -90])
+    usb_double_header();
+  }
 }
 
 module pi_bottom_bracket()
@@ -840,21 +942,23 @@ module device_box()
   }
 }
 
-
-intersection()
+if (render_case)
 {
-  case();
-
-  if (case_power_channel_test)
+  intersection()
   {
-    translate([40, 2, 0])
-    cube([case_width_mm + 2 * wall_thickness_mm + 15, 18, 25]);
-  }
+    case();
 
-  if (case_device_box_support_interface_test)
-  {
-    translate([-5, 95, 0])
-    cube([case_width_mm + 2 * wall_thickness_mm + 15, 50, 13]);
+    if (case_power_channel_test)
+    {
+      translate([40, 2, 0])
+      cube([case_width_mm + 2 * wall_thickness_mm + 15, 18, 25]);
+    }
+
+    if (case_device_box_support_interface_test)
+    {
+      translate([-5, 95, 0])
+      cube([case_width_mm + 2 * wall_thickness_mm + 15, 50, 13]);
+    }
   }
 }
 
@@ -866,10 +970,13 @@ translate([0, 0, $preview ? 0 : (case_height_mm + 2 * lid_allowance_mm)])
     pi();
   }
 
-  pi_bottom_bracket();
+  if (render_pi_brackets)
+  {
+    pi_bottom_bracket();
 
-  translate([0, 0, case_height_mm - module_thickness_mm])
-  pi_top_bracket();
+    translate([0, 0, case_height_mm - module_thickness_mm])
+    pi_top_bracket();
+  }
 }
 
 if (show_rb)
@@ -881,17 +988,20 @@ if (show_rb)
   rb();
 }
 
-translate([0, 0, $preview ? 0 : (case_height_mm + 2 * lid_allowance_mm)])
+if (render_rb_brackets)
 {
-  translate([
-    0,
-    wall_thickness_mm + 2 * next_module_offset_mm,
-    0])
+  translate([0, 0, $preview ? 0 : (case_height_mm + 2 * lid_allowance_mm)])
   {
-    rb_bottom_bracket();
+    translate([
+      0,
+      wall_thickness_mm + 2 * next_module_offset_mm,
+      0])
+    {
+      rb_bottom_bracket();
 
-    translate([0, 0, case_height_mm - module_thickness_mm])
-    rb_top_bracket();
+      translate([0, 0, case_height_mm - module_thickness_mm])
+      rb_top_bracket();
+    }
   }
 }
 
