@@ -20,12 +20,12 @@ case_power_channel_test = false;
 case_device_box_support_interface_test = false;
 
 render_case = false;
-render_pi_brackets = false;
+render_pi_brackets = true;
 render_rb_brackets = false;
 
 show_pi = $preview;
-show_rb = $preview;
-show_device_box = $preview;
+show_rb = false;//$preview;
+show_device_box = false;//$preview;
 
 pi_width_inches = 3.33;
 pi_height_inches = 2.22;
@@ -39,6 +39,18 @@ power_cable_width_inches = 5/16;
 power_cable_turning_space_inches = 3/4;
 power_cable_thickness_inches = 3/16;
 power_cable_inset_inches = 1 + 3/32;
+
+pi_mounting_holes =
+  [
+    [22.5, 3],
+    [22.5, 38],
+    [22.5, 52.5],
+    [74, 17],
+    [80.5, 3],
+    [80.5, 52.5]
+  ];
+
+mounting_hole_diameter_mm = 3.6;
 
 header_protrusion_mm = 2.5;
 
@@ -60,6 +72,48 @@ micro_usb_header_height_mm = 2;
 micro_usb_header_wall_thickness_mm = 0.08;
 micro_usb_header_protrusion_mm = 1;
 micro_usb_header_offset_mm = 69.5;
+
+hdmi_header_width_mm = 15;
+hdmi_header_depth_mm = 11;
+hdmi_header_height_mm = 5;
+hdmi_header_wall_thickness_mm = 0.1;
+hdmi_header_protrusion_mm = 2;
+hdmi_header_offset_mm = 45;
+
+colour_table =
+  [
+    "black",
+    "blue",
+    "green",
+    "cyan",
+    "red",
+    "purple",
+    "orange",
+    "gray",
+    "#808080",
+    "lightblue",
+    "#C2EF23",
+    "#80FFFF",
+    "#FF8080",
+    "#FF40FF",
+    "#FFFF40",
+    "white"
+  ];
+
+gpio_pin_colours =
+  [
+    [ 6, 10, 10, 2, 0, 2, 2, 2, 6, 1, 1, 1, 0, 10, 2, 2, 2, 2, 2, 0 ],
+    [ 4,  4,  0, 2, 2, 2, 0, 2, 2, 0, 1, 1, 1, 10, 0, 2, 0, 2, 2, 2 ]
+  ];
+
+gpio_pin_spacing_mm = 2.54;
+gpio_pin_pad_height_mm = 2.5;
+gpio_pin_pad_bevel_mm = 0.7;
+gpio_pin_width_mm = 0.635;
+gpio_pin_length_mm = 6;
+
+gpio_header_offset_mm = 26;
+gpio_header_inset_mm = 0.5;
 
 lid_allowance_mm = 5;
 wall_thickness_mm = 3;
@@ -100,7 +154,7 @@ rb_pinch_depth_mm = 3;
 rb_board_extra_thickness_mm = 0.5;
 case_width_mm = pi_width_mm + 2 * module_additional_width_mm;
 case_depth_mm = case_depth_inches * 25.4;
-case_height_mm = pi_height_mm;
+case_height_mm = 2.5 * 25.4;
 case_base_height_mm = power_cable_depth_mm + 2;
 case_margin_mm = 15;
 case_wire_port_mm = 20;
@@ -748,60 +802,167 @@ module micro_usb_power_header()
   }
 }
 
-module pi()
+module hdmi_header()
+{
+  color("gray")
+  {
+    union()
+    {
+      difference()
+      {
+        cube([hdmi_header_width_mm, hdmi_header_depth_mm, hdmi_header_height_mm]);
+
+        translate([hdmi_header_wall_thickness_mm + 0.025, -1, hdmi_header_wall_thickness_mm])
+        cube([hdmi_header_width_mm - 2 * hdmi_header_wall_thickness_mm, hdmi_header_depth_mm, hdmi_header_height_mm - 2 * hdmi_header_wall_thickness_mm]);
+
+        translate([0, -1, hdmi_header_height_mm * 0.5])
+        rotate([0, 135, 0])
+        cube([100, 100, 100]);
+
+        translate([hdmi_header_width_mm - hdmi_header_height_mm * 0.5, -1, 0])
+        rotate([0, 45, 0])
+        cube([100, 100, 100]);
+      }
+
+      translate([0, 0, hdmi_header_height_mm * 0.5])
+      rotate([0, 45, 0])
+      cube([hdmi_header_height_mm * sqrt(2) / 2, hdmi_header_depth_mm, hdmi_header_wall_thickness_mm]);
+
+      translate([hdmi_header_width_mm - hdmi_header_wall_thickness_mm / sqrt(2), 0, hdmi_header_height_mm * 0.5 + hdmi_header_wall_thickness_mm / sqrt(2)])
+      rotate([0, 135, 0])
+      cube([hdmi_header_height_mm * sqrt(2) / 2, hdmi_header_depth_mm, hdmi_header_wall_thickness_mm]);
+    }
+  }
+}
+
+module gpio_pin(pad_colour)
+{
+  color(pad_colour)
+  translate([0, 0, gpio_pin_pad_height_mm])
+  difference()
+  {
+    cube([gpio_pin_spacing_mm, gpio_pin_spacing_mm, 0.05]);
+
+    translate([0.5 * gpio_pin_spacing_mm, 0.5 * gpio_pin_spacing_mm, 0])
+    rotate([0, 0, 45])
+    difference()
+    {
+      cube([gpio_pin_spacing_mm * sqrt(2), gpio_pin_spacing_mm * sqrt(2), 0.2], center = true);
+      cube([gpio_pin_spacing_mm * sqrt(2) - gpio_pin_pad_bevel_mm, gpio_pin_spacing_mm * sqrt(2) - gpio_pin_pad_bevel_mm, 0.3], center = true);
+    }
+  }
+
+  color("black")
+  difference()
+  {
+    cube([gpio_pin_spacing_mm, gpio_pin_spacing_mm, gpio_pin_pad_height_mm]);
+
+    translate([0.5 * gpio_pin_spacing_mm, 0.5 * gpio_pin_spacing_mm, 0.5 * gpio_pin_pad_height_mm])
+    rotate([0, 0, 45])
+    difference()
+    {
+      cube([gpio_pin_spacing_mm * sqrt(2), gpio_pin_spacing_mm * sqrt(2), gpio_pin_pad_height_mm + 2], center = true);
+      cube([gpio_pin_spacing_mm * sqrt(2) - gpio_pin_pad_bevel_mm, gpio_pin_spacing_mm * sqrt(2) - gpio_pin_pad_bevel_mm, gpio_pin_pad_height_mm + 4], center = true);
+    }
+  }
+
+  translate([gpio_pin_spacing_mm * 0.5, gpio_pin_spacing_mm * 0.5, gpio_pin_pad_height_mm + gpio_pin_length_mm * 0.5])
+  cube([gpio_pin_width_mm, gpio_pin_width_mm, gpio_pin_length_mm], center = true);
+}
+
+module gpio_header()
+{
+  for (row = [0, 1])
+    for (column = [0:19])
+    {
+      translate([column * 2.54, row * 2.54, 0])
+      gpio_pin(colour_table[gpio_pin_colours[row][column]]);
+    }
+}
+
+module pi(simple = false)
 {
   color("white")
   {
     intersection()
     {
-      cube([pi_width_mm, board_thickness_mm, pi_height_mm]);
-
-      union()
+      difference()
       {
-        rotate([90, 0, 0])
-        for (x = [0, 1])
-          for (y = [0, 1])
-            translate(
-              [
-                pi_corner_round_mm + x * (pi_width_mm - 2 * pi_corner_round_mm),
-                pi_corner_round_mm + y * (pi_height_mm - 2 * pi_corner_round_mm),
-                -2.5
-              ])
-            cylinder(5, pi_corner_round_mm, pi_corner_round_mm, $fn = 64);
+        cube([pi_width_mm, board_thickness_mm, pi_height_mm]);
 
-        translate([pi_corner_round_mm, -3, 0])
-        cube([pi_width_mm - 2 * pi_corner_round_mm, 6, pi_height_mm]);
+        if (!simple)
+        {
+          // Mounting holes
+          for (hole_position = pi_mounting_holes)
+            rotate([90, 0, 0])
+            translate([hole_position[0], pi_height_mm - hole_position[1], -board_thickness_mm - 1])
+            cylinder(board_thickness_mm * 2, d = mounting_hole_diameter_mm);
+        }
+      }
 
-        translate([0, -3, pi_corner_round_mm])
-        cube([pi_width_mm, 6, pi_height_mm - 2 * pi_corner_round_mm]);
+      if (!simple)
+      {
+        union()
+        {
+          rotate([90, 0, 0])
+          for (x = [0, 1])
+            for (y = [0, 1])
+              translate(
+                [
+                  pi_corner_round_mm + x * (pi_width_mm - 2 * pi_corner_round_mm),
+                  pi_corner_round_mm + y * (pi_height_mm - 2 * pi_corner_round_mm),
+                  -2.5
+                ])
+              cylinder(5, pi_corner_round_mm, pi_corner_round_mm, $fn = 64);
+
+          translate([pi_corner_round_mm, -3, 0])
+          cube([pi_width_mm - 2 * pi_corner_round_mm, 6, pi_height_mm]);
+
+          translate([0, -3, pi_corner_round_mm])
+          cube([pi_width_mm, 6, pi_height_mm - 2 * pi_corner_round_mm]);
+        }
       }
     }
   }
 
-  // Board front face
-  rotate([-90, 0, 0])
-  translate([0, -pi_height_mm, board_thickness_mm + 0.01])
+  if (!simple)
   {
-    translate([-header_protrusion_mm, 0, 0])
+    // Board front face
+    rotate([-90, 0, 0])
+    translate([0, -pi_height_mm, board_thickness_mm + 0.01])
     {
-      translate([0, usb_header_width_mm + 2, 0])
-      rotate([0, 0, -90])
-      usb_double_header();
+      translate([-header_protrusion_mm, 0, 0])
+      {
+        translate([0, usb_header_width_mm + 2, 0])
+        rotate([0, 0, -90])
+        usb_double_header();
 
-      translate([0, usb_header_width_mm + 20, 0])
-      rotate([0, 0, -90])
-      usb_double_header();
+        translate([0, usb_header_width_mm + 20, 0])
+        rotate([0, 0, -90])
+        usb_double_header();
 
-      translate([0, ethernet_header_width_mm + 38, 0])
-      rotate([0, 0, -90])
-      ethernet_header();
-    }
+        translate([0, ethernet_header_width_mm + 39.5, 0])
+        rotate([0, 0, -90])
+        ethernet_header();
+      }
 
-    translate([0, micro_usb_header_protrusion_mm, 0])
-    {
-      translate([micro_usb_header_width_mm + micro_usb_header_offset_mm, pi_height_mm, 0])
+      translate([0, micro_usb_header_protrusion_mm, 0])
+      {
+        translate([micro_usb_header_width_mm + micro_usb_header_offset_mm, pi_height_mm, 0])
+        rotate([0, 0, 180])
+        micro_usb_power_header();
+      }
+
+      translate([0, hdmi_header_protrusion_mm, 0])
+      {
+        translate([hdmi_header_width_mm + hdmi_header_offset_mm, pi_height_mm, 0])
+        rotate([0, 0, 180])
+        hdmi_header();
+      }
+
+      translate([20 * gpio_pin_spacing_mm + gpio_header_offset_mm, 2 * gpio_pin_spacing_mm + gpio_header_inset_mm, 0])
       rotate([0, 0, 180])
-      micro_usb_power_header();
+      gpio_header();
     }
   }
 }
@@ -817,39 +978,33 @@ module pi_bottom_bracket()
       {
         cube([pi_width_mm + 2 * module_additional_width_mm, module_thickness_mm, 10]);
 
-        // Wall extension behind battery connector space.
-        translate([module_additional_width_mm + 3 + pi_bottom_bracket_bat_space_start_mm, module_thickness_mm / 2 - 4 - pi_bottom_bracket_bat_space_depth_mm, pi_bottom_bracket_bat_space_offset_mm])
-        cube([pi_bottom_bracket_bat_space_end_mm - pi_bottom_bracket_bat_space_start_mm + 4, 12, 10 - pi_bottom_bracket_bat_space_offset_mm]);
+        // Wall extension to accommodate pins protruding from rear.
+        translate([module_additional_width_mm - 3, module_thickness_mm / 2 - 4 - pi_bottom_bracket_bat_space_depth_mm, pi_bottom_bracket_bat_space_offset_mm])
+        cube([pi_width_mm + 6, 12, 10 - pi_bottom_bracket_bat_space_offset_mm]);
 
         // Fillet to avoid overhang of wall extension.
-        translate([module_additional_width_mm + 3 + pi_bottom_bracket_bat_space_start_mm, module_thickness_mm / 2 - 4 - pi_bottom_bracket_bat_space_depth_mm, 0])
+        translate([module_additional_width_mm - 3, module_thickness_mm / 2 - 4 - pi_bottom_bracket_bat_space_depth_mm, 0])
         multmatrix([
           [1, 0, 0, 0],
           [0, 1, -1, 1.8],
           [0, 0, 1, 0],
           [0, 0, 0, 1]])
-        cube([pi_bottom_bracket_bat_space_end_mm - pi_bottom_bracket_bat_space_start_mm + 4, 5, pi_bottom_bracket_bat_space_offset_mm]);
+        cube([pi_width_mm + 6, 5, pi_bottom_bracket_bat_space_offset_mm]);
       }
 
-      // Additional space for junk on the back of the board.
-      translate([module_additional_width_mm, module_thickness_mm / 2 - board_thickness_mm / 2, -1])
-      cube([pi_width_mm, board_thickness_mm, pi_height_mm]);
+      // Board cutout
+      translate([module_additional_width_mm, module_thickness_mm / 2 - board_thickness_mm / 2, 0])
+      pi(simple = true);
 
       // Board front components gap
-      translate([module_additional_width_mm + 5, module_thickness_mm / 2, -1])
-      cube([pi_width_mm - 6, module_snapin_depth_mm, pi_height_mm]);
+      translate([module_additional_width_mm - header_protrusion_mm - 2, module_thickness_mm / 2, 1.5])
+      cube([ethernet_header_depth_mm + 4, module_snapin_depth_mm, pi_height_mm]);
+      translate([module_additional_width_mm - header_protrusion_mm + ethernet_header_depth_mm + 7, module_thickness_mm / 2, -1])
+      cube([pi_width_mm - ethernet_header_depth_mm - 11, module_snapin_depth_mm, pi_height_mm]);
 
       // Board back components gap
-      translate([module_additional_width_mm + 5, module_thickness_mm / 2 - 3, 2])
-      cube([pi_width_mm - 6, module_snapin_depth_mm, pi_height_mm]);
-
-      // Additional space for the back side extensions of the HDMI port
-      translate([module_additional_width_mm + 5 + pi_bottom_bracket_hdmi_space_start_mm, module_thickness_mm / 2 - 2, -1])
-      cube([pi_bottom_bracket_hdmi_space_end_mm - pi_bottom_bracket_hdmi_space_start_mm, module_snapin_depth_mm, pi_height_mm]);
-
-      // Battery connector gap
-      translate([module_additional_width_mm + 5 + pi_bottom_bracket_bat_space_start_mm, module_thickness_mm / 2 - 2 - pi_bottom_bracket_bat_space_depth_mm, pi_bottom_bracket_bat_space_offset_mm])
-      cube([pi_bottom_bracket_bat_space_end_mm - pi_bottom_bracket_bat_space_start_mm, 10, 10]);
+      translate([module_additional_width_mm - 5, module_thickness_mm / 2 - 3, 2])
+      cube([pi_width_mm, module_snapin_depth_mm * 0.5, pi_height_mm]);
     }
   }
 }
@@ -864,40 +1019,23 @@ module pi_top_bracket()
       union()
       {
         cube([pi_width_mm + 2 * module_additional_width_mm, module_thickness_mm, 10]);
-
-        // Wall extension behind board.
-        translate([module_additional_width_mm + 5, module_thickness_mm / 2 - 4 - pi_bottom_bracket_bat_space_depth_mm, pi_bottom_bracket_bat_space_offset_mm])
-        cube([pi_width_mm - 10, 12, 10 - pi_bottom_bracket_bat_space_offset_mm]);
-
-        // Fillet to avoid overhang of wall extension.
-        translate([module_additional_width_mm + 5, module_thickness_mm / 2 - 4 - pi_bottom_bracket_bat_space_depth_mm, 0])
-        multmatrix([
-          [1, 0, 0, 0],
-          [0, 1, -1, 1.8],
-          [0, 0, 1, 0],
-          [0, 0, 0, 1]])
-        cube([pi_width_mm - 10, 5, pi_bottom_bracket_bat_space_offset_mm]);
+        translate([module_additional_width_mm - 3, 0, -5])
+        cube([pi_width_mm + 6, module_thickness_mm, 15]);
       }
 
-      // Board insertion space
-      translate([module_additional_width_mm, module_thickness_mm / 2 - board_thickness_mm / 2, -module_thickness_mm - 10])
-      cube([pi_width_mm, board_thickness_mm, pi_height_mm + 2]);
+      // Board cutout
+      translate([module_additional_width_mm, module_thickness_mm / 2 - board_thickness_mm / 2, - (case_height_mm - module_thickness_mm)])
+      pi(simple = true);
 
-      // Front face of board opening
-      translate([module_additional_width_mm + 5, module_thickness_mm / 2, -1])
-      cube([pi_width_mm - 10, module_snapin_depth_mm, pi_height_mm + 2]);
+      // USB header cutout
+      translate([module_additional_width_mm - 5, module_thickness_mm * 0.5 + board_thickness_mm * 0.5, pi_height_mm - case_height_mm - 20 + module_thickness_mm])
+      cube([usb_header_depth_mm + 10, 20, 20]);
+      translate([module_additional_width_mm, -board_thickness_mm * 0.5 + 0.005, pi_height_mm - case_height_mm - 20 + module_thickness_mm])
+      cube([usb_header_depth_mm + 5, module_thickness_mm * 0.5, 20]);
 
-      // Back component space
-      translate([module_additional_width_mm + 5, module_thickness_mm / 2 - 3, -1])
-      cube([pi_width_mm - 10, module_snapin_depth_mm / 2, module_thickness_mm + 2]);
-
-      // Power/Reset button space
-      translate([module_additional_width_mm + pi_width_mm - 6, module_thickness_mm / 2, -pi_power_button_depth_mm])
-      cube([pi_power_button_width_mm + 1, module_snapin_depth_mm, 10]);
-
-      // Audio port space
-      translate([9 - pi_audio_port_width_mm, module_thickness_mm / 2, -pi_audio_port_depth_mm])
-      cube([pi_audio_port_width_mm + 1, module_snapin_depth_mm, 10]);
+      // GPIO header cutout
+      translate([module_additional_width_mm + gpio_header_offset_mm - 1.5, -1, pi_height_mm - case_height_mm - 20 + module_thickness_mm + 1])
+      cube([gpio_pin_spacing_mm * 20 + 3, 20, 20]);
     }
   }
 }
