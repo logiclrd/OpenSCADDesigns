@@ -117,7 +117,7 @@ gpio_header_inset_mm = 0.5;
 
 lid_allowance_mm = 5;
 wall_thickness_mm = 3;
-module_additional_width_mm = 30;
+module_additional_width_mm = 30 + (3.5 - pi_width_inches) * 25.4 / 2;
 
 ribbon_width_mm = ribbon_width_inches * 25.4;
 
@@ -152,7 +152,7 @@ rb_pinch_mm = 18;
 rb_pinch_inset_mm = 8;
 rb_pinch_depth_mm = 3;
 rb_board_extra_thickness_mm = 0.5;
-case_width_mm = pi_width_mm + 2 * module_additional_width_mm;
+case_width_mm = (3.5 * 25.4) + 2 * module_additional_width_mm;
 case_depth_mm = case_depth_inches * 25.4;
 case_height_mm = 2.5 * 25.4;
 case_base_height_mm = power_cable_depth_mm + 2;
