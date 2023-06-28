@@ -92,6 +92,59 @@ module lid()
   cube([width, height, wall_thickness]);
 }
 
+module pin(x, y, h, r, t = 0.24)
+{
+  translate([x, y, 0])
+  cylinder(h, r, r, $fn = 150);
+  translate([x, y, h])
+  cylinder(t, r, r - t, $fn = 150);
+}
+
+module lid_connector(tolerance = 0.05)
+{
+  diagonal = sqrt(width * width + height * height);
+  diagonal_angle = atan2(height, width);
+
+  translate([width / 2, height / 2, -1])
+  {
+    rotate([0, 0, diagonal_angle])
+    cube([diagonal / 2 + 15, 24, 2], center = true);
+
+    rotate([0, 0, -diagonal_angle])
+    cube([diagonal / 2 + 15, 24, 2], center = true);
+
+    for (x = [-1, 1])
+      for (y = [-1, 1])
+      {
+        ray_angle = diagonal_angle * x + 90 * y + 90;
+
+        circle_1 = (x == -1);
+        circle_2 = (x != -1) || (y != 1);
+        circle_3 = (x == 1) || (y == 1);
+        circle_offset = (x == 1) && (y == 1) ? 5 : 0;
+
+        r1 = (diagonal / 4) - 5 - 2 * circle_offset;
+        r2 = (diagonal / 4) - 30 - 2 * circle_offset;
+        r3 = (diagonal / 4) - 55 - 2 * circle_offset;
+
+        if (circle_1)
+        {
+          pin(r1 * cos(ray_angle), r1 * sin(ray_angle), wall_thickness, 10 - tolerance);
+        }
+
+        if (circle_2)
+        {
+          pin(r2 * cos(ray_angle), r2 * sin(ray_angle), wall_thickness, 10 - tolerance);
+        }
+
+        if (circle_3)
+        {
+          pin(r3 * cos(ray_angle), r3 * sin(ray_angle), wall_thickness, 10 - tolerance);
+        }
+      }
+  }
+}
+
 module short_side()
 {
   translate([margin, margin, wall_thickness])
@@ -272,4 +325,11 @@ module assembled()
   lid();
 }
 
-assembled();
+difference()
+{
+  lid();
+  lid_connector(0);
+}
+
+translate([0, 0, -10])
+lid_connector();
