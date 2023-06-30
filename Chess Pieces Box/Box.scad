@@ -34,7 +34,14 @@ module ornate()
   if ($preview)
   {
     translate([ornate_width / 2, ornate_height / 2, 0])
-    cylinder(ornate_extrusion, ornate_height / 2, ornate_height / 2);
+    {
+      color("green")
+      union()
+      {
+        cylinder(ornate_extrusion, ornate_height / 2, ornate_height / 2);
+        cube([ornate_height - 10, ornate_width / 2, ornate_extrusion * 5], center = true);
+      }
+    }
   }
   else
   {
@@ -54,8 +61,8 @@ module ornate_smaller(constraint, angle)
 {
   box_size = ornate_width + ornate_height;
   
-  rotated_width = abs(cos(angle)) * ornate_width + abs(sin(angle)) * ornate_height;
-  rotated_height = abs(sin(angle)) * ornate_width + abs(cos(angle)) * ornate_height;
+  rotated_width = abs(cos(angle)) * ornate_width + abs(sin(angle)) * (ornate_height - 2 * wall_thickness);
+  rotated_height = abs(sin(angle)) * ornate_width + abs(cos(angle)) * (ornate_height - 2 * wall_thickness);
 
   union()
   {
@@ -152,7 +159,7 @@ module short_side()
 
   union()
   {
-    cube([depth, height, wall_thickness]);
+    cube([depth, height - 2 * wall_thickness, wall_thickness]);
     
     // Joining tabs to long_side
     translate([0, -wall_thickness, 0])
@@ -162,7 +169,7 @@ module short_side()
       cube([joint_width, wall_thickness, wall_thickness]);
     }
     
-    translate([0, height, 0])
+    translate([0, height - 2 * wall_thickness, 0])
     {
       cube([joint_width, wall_thickness, wall_thickness]);
       translate([depth - joint_width, 0, 0])
