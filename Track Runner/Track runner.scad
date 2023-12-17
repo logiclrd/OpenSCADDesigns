@@ -134,26 +134,6 @@ module wheels()
   }
 }
 
-module carriage_bar_plate_interface(expansion = 0)
-{
-  multmatrix(
-    [[1, 0, 0, -carriage_length * 0.3],
-     [-1, 1, 0, -carriage_bar_thickness * 0.5],
-     [0, 0, 1, carriage_bar_height / 6],
-     [0, 0, 0, 1]])
-  {
-    cube([carriage_bar_thickness + expansion, carriage_bar_thickness + expansion, carriage_bar_height * 2 / 3 + expansion], center = true);
-
-    intersection()
-    {
-      cube([carriage_bar_thickness + expansion, carriage_bar_thickness + expansion, carriage_bar_height + expansion], center = true);
-      
-      translate([0, -50, 0])
-      cube([100, 100, 100], center = true);
-    }
-  }
-}
-
 module tensioner_arm()
 {
   translate(
@@ -342,8 +322,30 @@ module tensioner_bracket()
 module tensioner()
 {
   translate([0, $preview ? 0 : -40, 0])
+  color("red")
   tensioner_arm();
+  color("green")
   tensioner_bracket();
+}
+
+module carriage_bar_plate_interface(expansion = 0)
+{
+  multmatrix(
+    [[1, 0, 0, -carriage_length * 0.3],
+     [-1, 1, 0, -carriage_bar_thickness * 0.5],
+     [0, 0, 1, carriage_bar_height / 6],
+     [0, 0, 0, 1]])
+  {
+    cube([carriage_bar_thickness + expansion, carriage_bar_thickness + expansion, carriage_bar_height * 2 / 3 + expansion], center = true);
+
+    intersection()
+    {
+      cube([carriage_bar_thickness + expansion, carriage_bar_thickness + expansion, carriage_bar_height + expansion], center = true);
+      
+      translate([0, -50, 0])
+      cube([100, 100, 100], center = true);
+    }
+  }
 }
 
 module carriage_bar(interface_expansion = 0)
@@ -382,17 +384,31 @@ module carriage_bars(interface_expansion = 0)
   // Carriage bars (left/right), to which the lower wheels attach
 
   // Left carriage bar
+  color("blue")
   translate([carriage_length / 2 - wheel_base, carriage_bar_thickness / 2 + wheel_left_offset - wheel_total_height - carriage_bar_thickness, carriage_bar_height / 2 + axle_height - carriage_bar_height * 0.5])
   carriage_bar(interface_expansion);
   
   // Right carriage bar
   union()
   {
+    color("green")
     translate([carriage_length / 2 - wheel_base, carriage_bar_thickness / 2 + wheel_right_offset + wheel_total_height, carriage_bar_height / 2 + axle_height - carriage_bar_height * 0.5])
     rotate([0, 0, 180])
     carriage_bar(interface_expansion);
-    
+
     tensioner();
+  }
+}
+
+module panel_attachment_point()
+{
+  // This is designed to take a nail with a flat head. The other end of the nail is bent into a loop that attaches to the panel.
+  // This may need to be adjusted following a closer inspection of the attachment points for the control rods.
+  translate([-0.5, 0, axle_height])
+  {
+    cube([1, 10, 100]);
+    translate([-2.5, 0, -5])
+    cube([6, 1, 100]);
   }
 }
 
@@ -401,10 +417,30 @@ module carriage_plate()
   // Carriage plate
   difference()
   {
-    translate([axle_hardware_allowance, wheel_right_offset + wheel_total_height + carriage_bar_thickness, axle_height - carriage_plate_thickness * 0.5])
-    cube([axle_spacing - 2 * axle_hardware_allowance, carriage_plate_width - 2 * carriage_bar_thickness, carriage_plate_thickness]);
+    union()
+    {
+      translate([axle_hardware_allowance - wheel_diameter - 1, wheel_right_offset + wheel_total_height + carriage_bar_thickness, axle_height - carriage_plate_thickness * 0.5])
+      cube([axle_spacing - 2 * axle_hardware_allowance + 2 * wheel_diameter + 2, carriage_plate_width - 2 * carriage_bar_thickness, carriage_plate_thickness]);
+      
+      // Bumpers
+      translate([-wheel_diameter, 0, axle_height - carriage_plate_thickness * 0.5])
+      cube([10, track_width, carriage_plate_thickness]);
+
+      translate([axle_spacing - 2 * axle_hardware_allowance + wheel_diameter + 4, 0, axle_height - carriage_plate_thickness * 0.5])
+      cube([10, track_width, carriage_plate_thickness]);
+    }
     
     carriage_bars(interface_expansion = 0.1);
+
+    // Left panel attachment
+    translate([5 - wheel_diameter, first_track_offset + 4 * track_spacing + 0.5 * track_slot_width, 0])
+    rotate([0, 0, 90])
+    panel_attachment_point();
+    
+    // Right panel attachment
+    translate([-5 + wheel_diameter + axle_spacing, first_track_offset + 2 * track_spacing + 0.5 * track_slot_width, 0])
+    rotate([0, 0, -90])
+    panel_attachment_point();
   }
 }
 
@@ -412,6 +448,7 @@ module carriage()
 {
   carriage_bars();
   
+  color("teal")
   translate([0, $preview ? 0 : carriage_plate_width * 1.5, 0])
   carriage_plate();
 }
