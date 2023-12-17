@@ -53,24 +53,28 @@ tensioner_resting_angle = 45;
 tensioner_axle_z = 0.5 * (tensioner_height + tensioner_thickness * 2) + wheel_diameter * 0.5 + track_height * 0.5 - track_slot_height - tensioner_thickness + tensioner_thickness;
 tensioner_axle_minimum_y = 0.5 * tensioner_height + top_channel_inset - 4 * tensioner_thickness;
 
+mount_clip_width = 2;
+mount_top_height = 5;
+mount_detent_size = 2;
+
 module track()
 {
   color("#dddddd")
-  translate([-20, 0, 0])
+  translate([-170, 0, 0])
   difference()
   {
-    cube([200, track_width, track_height]);
+    cube([500, track_width, track_height]);
     
     translate([-1, top_channel_inset, track_height - track_slot_height])
-    cube([202, top_channel_width, track_slot_height + 1]);
+    cube([502, top_channel_width, track_slot_height + 1]);
     
     translate([-1, top_channel_inset - track_slot_lip, track_height - 1])
-    cube([202, top_channel_width, track_slot_height]);
+    cube([502, top_channel_width, track_slot_height]);
     
     for (t = [0 : 4])
     {
       translate([-1, track_spacing * t + first_track_offset, -1])
-      cube([202, track_slot_width, 8]);
+      cube([502, track_slot_width, 8]);
     }
   }
 }
@@ -453,6 +457,58 @@ module carriage()
   carriage_plate();
 }
 
+module mount_clip(mount_width)
+{
+  difference()
+  {
+    translate([0, -mount_clip_width, -mount_clip_width])
+    difference()
+    {
+      // Basic clip shape
+      cube([mount_width, track_width + 2 * mount_clip_width, track_height + mount_top_height + mount_clip_width]);
+      translate([-1, mount_clip_width, mount_clip_width])
+      cube([mount_width + 2, track_width, track_height]);
+      translate([-1, 2 * mount_clip_width, 0])
+      cube([mount_width + 2, track_width - 2 * mount_clip_width, track_height]);
+    }
+
+    // Mounting detents
+    translate([0, 0, track_height - 1])
+    multmatrix(
+      [[1, 0, -1, 0],
+       [0, 1, 0, 0],
+       [0, 0, 1, 0],
+       [0, 0, 0, 1]])
+      cube([mount_detent_size, track_width, mount_detent_size]);
+
+    translate([mount_width - mount_detent_size, 0, track_height - 1])
+    multmatrix(
+      [[1, 0, 1, 0],
+       [0, 1, 0, 0],
+       [0, 0, 1, 0],
+       [0, 0, 0, 1]])
+      cube([mount_detent_size, track_width, mount_detent_size]);
+  }
+}
+
+module motor_mount()
+{
+  mount_clip(mount_width = 60);
+  // TODO
+}
+
+module belt_switch()
+{
+  mount_clip(mount_width = 40);
+  // TODO
+}
+
+module belt_pulleys()
+{
+  mount_clip(mount_width = 20);
+  // TODO
+}
+
 if ($preview)
 {
   track();
@@ -460,3 +516,12 @@ if ($preview)
 }
 
 carriage();
+
+translate([75 + axle_spacing, 0, 0])
+motor_mount();
+
+translate([-150, 0, 0])
+belt_pulleys();
+
+translate([-75, 0, 0])
+belt_switch();
