@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
+   sodipodi:docname="layer 3 part 2.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="2.089941"
+     inkscape:cx="73.207808"
+     inkscape:cy="226.56142"
+     inkscape:window-width="2560"
+     inkscape:window-height="1369"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="path5"
+       style="color:#000000;opacity:0.4;fill:#ff0000;-inkscape-stroke:none"
+       d="M 28.755868 64.259644 L 28.500069 64.320105 C 28.501069 64.329605 28.506821 64.344155 28.507821 64.353695 C 28.508209 64.354695 28.509488 64.356312 28.509888 64.357312 C 28.828937 67.271487 30.37568 71.463893 31.906063 74.771663 C 32.955863 77.040704 34.922387 79.243678 35.786963 81.081873 C 35.887703 81.296068 36.053996 81.671141 36.246883 82.090597 C 36.357179 82.158606 36.468412 82.23978 36.578129 82.304537 C 38.151423 83.233124 39.658677 83.848721 40.650232 85.044938 C 41.316707 85.848981 41.758665 86.68479 42.085803 87.536776 C 42.323454 87.498518 42.549398 87.399034 42.73641 87.209147 C 43.010101 86.931262 43.109403 86.580554 43.084192 86.220577 C 43.058982 85.8606 42.917711 85.485821 42.722457 85.113151 C 42.33195 84.367812 41.714834 83.6248 41.287402 83.070382 C 40.62193 82.207203 39.608555 81.704934 38.6271 81.213131 C 37.645645 80.721326 36.696783 80.239352 36.126994 79.466984 C 34.925385 77.838148 33.25786 75.761126 32.203202 73.705062 C 30.68313 70.741665 29.607551 66.513237 28.755868 64.259644 z " />
+  </g>
+</svg>
