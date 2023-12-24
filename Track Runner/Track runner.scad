@@ -49,6 +49,7 @@ tensioner_spring_radius = tensioner_spring_diameter * 0.5;
 tensioner_spring_width = 8;
 tensioner_wire_length = 11;
 tensioner_resting_angle = 45;
+tensioner_head_thickness = 6 * tensioner_thickness;
 
 tensioner_axle_z = 0.5 * (tensioner_height + tensioner_thickness * 2) + wheel_diameter * 0.5 + track_height * 0.5 - track_slot_height - tensioner_thickness + tensioner_thickness;
 tensioner_axle_minimum_y = 0.5 * tensioner_height + top_channel_inset - 4 * tensioner_thickness;
@@ -56,6 +57,23 @@ tensioner_axle_minimum_y = 0.5 * tensioner_height + top_channel_inset - 4 * tens
 mount_clip_width = 2;
 mount_top_height = 5;
 mount_detent_size = 2;
+
+washer_thickness = 0.75;
+washer_outer_diameter = 10;
+washer_inner_diameter = 4;
+
+belt_width = 6;
+belt_height = track_height + 2 * mount_top_height + 1 + washer_thickness;
+belt_position_y = 5;
+belt_thickness = 1;
+
+toothless_pulley_radius = 6;
+toothless_pulley_guard_radius = 9;
+toothless_pulley_belt_engagement_width = belt_width + 0.25;
+
+motor_mount_plate_width = 60;
+belt_switch_plate_width = 120;
+belt_pulley_plate_width = 20;
 
 module track()
 {
@@ -186,7 +204,7 @@ module tensioner_arm()
         0
       ])
     rotate([90, 0, 0])
-    cylinder(tensioner_spring_width + 6 * tensioner_thickness, tensioner_spring_radius, tensioner_spring_radius, center = true, $fn = 40);
+    cylinder(tensioner_spring_width + tensioner_head_thickness, tensioner_spring_radius, tensioner_spring_radius, center = true, $fn = 40);
 
     translate(
       [
@@ -201,7 +219,7 @@ module tensioner_arm()
         -3 * tensioner_thickness,
         -0.5 * (tensioner_wire_length - 0.5 * tensioner_spring_width)
       ])
-    cube([1, tensioner_spring_width + 6 * tensioner_thickness, tensioner_wire_length - 0.5 * tensioner_spring_width], center = true);
+    cube([1, tensioner_spring_width + tensioner_head_thickness, tensioner_wire_length - 0.5 * tensioner_spring_width], center = true);
     
     // Detent to trap the spring.
     translate(
@@ -238,11 +256,11 @@ module tensioner_bracket()
         translate(
           [
             axle_spacing / 2 + 2 * tensioner_thickness - wheel_bearing_radius * 2 - 3 * tensioner_thickness + tensioner_arm_length + wheel_bearing_radius,
-            tensioner_axle_minimum_y + 3 * tensioner_thickness,
+            tensioner_axle_minimum_y + 0.5 * tensioner_head_thickness,
             tensioner_axle_z
           ])
         rotate([90, 0, 0])
-        cylinder(6 * tensioner_thickness, 3 * tensioner_thickness, 3 * tensioner_thickness, center = true, $fn = 60);
+        cylinder(tensioner_head_thickness, 3 * tensioner_thickness, 3 * tensioner_thickness, center = true, $fn = 60);
         
         translate([0, 0, 100 + track_height + 1])
         cube([200, 200, 200], center = true);
@@ -300,16 +318,16 @@ module tensioner_bracket()
     translate(
       [
         axle_spacing / 2 + 2 * tensioner_thickness - wheel_bearing_radius * 2 - 3 * tensioner_thickness + tensioner_arm_length + wheel_bearing_radius,
-        wheel_thickness * 0.5 + top_channel_inset + top_channel_width * 0.5 - tensioner_thickness * 0.5 - wheel_total_height + tensioner_thickness + 2 * tensioner_arm_movement_space - 0.5 * tensioner_spring_width + 3 * tensioner_thickness,
+        wheel_thickness * 0.5 + top_channel_inset + top_channel_width * 0.5 - tensioner_thickness * 0.5 - wheel_total_height + tensioner_thickness + 2 * tensioner_arm_movement_space - 0.5 * tensioner_spring_width + 0.5 * tensioner_head_thickness,
         0.5 * (tensioner_height + tensioner_thickness * 2) + wheel_diameter * 0.5 + track_height * 0.5 - track_slot_height - tensioner_thickness + tensioner_thickness
       ])
     rotate([90, 0, 0])
-    cylinder(tensioner_spring_width + 6 * tensioner_thickness, tensioner_spring_radius, tensioner_spring_radius, center = true, $fn = 40);
+    cylinder(tensioner_spring_width + tensioner_head_thickness, tensioner_spring_radius, tensioner_spring_radius, center = true, $fn = 40);
 
     translate(
       [
         axle_spacing / 2 + 2 * tensioner_thickness - wheel_bearing_radius * 2 - 3 * tensioner_thickness + tensioner_arm_length + wheel_bearing_radius,
-        wheel_thickness * 0.5 + top_channel_inset + top_channel_width * 0.5 - tensioner_thickness * 0.5 - wheel_total_height + tensioner_thickness + 2 * tensioner_arm_movement_space - 0.5 * tensioner_spring_width + 6 * tensioner_thickness,
+        wheel_thickness * 0.5 + top_channel_inset + top_channel_width * 0.5 - tensioner_thickness * 0.5 - wheel_total_height + tensioner_thickness + 2 * tensioner_arm_movement_space - 0.5 * tensioner_spring_width + tensioner_head_thickness,
         0.5 * (tensioner_height + tensioner_thickness * 2) + wheel_diameter * 0.5 + track_height * 0.5 - track_slot_height - tensioner_thickness + tensioner_thickness
       ])
     rotate([0, tensioner_resting_angle, 0])
@@ -319,7 +337,7 @@ module tensioner_bracket()
         -3 * tensioner_thickness,
         -0.5 * (tensioner_wire_length - 0.5 * tensioner_spring_width)
       ])
-    cube([1, tensioner_spring_width + 6 * tensioner_thickness, tensioner_wire_length - 0.5 * tensioner_spring_width], center = true);
+    cube([1, tensioner_spring_width + tensioner_head_thickness, tensioner_wire_length - 0.5 * tensioner_spring_width], center = true);
   }
 }
 
@@ -468,45 +486,506 @@ module mount_clip(mount_width)
       cube([mount_width, track_width + 2 * mount_clip_width, track_height + mount_top_height + mount_clip_width]);
       translate([-1, mount_clip_width, mount_clip_width])
       cube([mount_width + 2, track_width, track_height]);
-      translate([-1, 2 * mount_clip_width, 0])
-      cube([mount_width + 2, track_width - 2 * mount_clip_width, track_height]);
+      translate([-1, 2 * mount_clip_width, -1])
+      cube([mount_width + 2, track_width - 2 * mount_clip_width, track_height + 1]);
     }
 
     // Mounting detents
-    translate([0, 0, track_height - 1])
+    translate([0, -mount_clip_width * 1.5, track_height - 1])
     multmatrix(
       [[1, 0, -1, 0],
        [0, 1, 0, 0],
        [0, 0, 1, 0],
        [0, 0, 0, 1]])
-      cube([mount_detent_size, track_width, mount_detent_size]);
+      cube([mount_detent_size, track_width + 3 * mount_clip_width, mount_detent_size]);
 
-    translate([mount_width - mount_detent_size, 0, track_height - 1])
+    translate([mount_width - mount_detent_size, -mount_clip_width * 1.5, track_height - 1])
     multmatrix(
       [[1, 0, 1, 0],
        [0, 1, 0, 0],
        [0, 0, 1, 0],
        [0, 0, 0, 1]])
-      cube([mount_detent_size, track_width, mount_detent_size]);
+      cube([mount_detent_size, track_width + 3 * mount_clip_width, mount_detent_size]);
+  }
+}
+
+module mount_clip_on(mount_width)
+{
+  difference()
+  {
+    translate([-1.5, 0, track_height])
+    cube([mount_width + 3, track_width, 2 * mount_top_height]);
+    
+    translate([0, 0, -0.1])
+    mount_clip(mount_width);
+    
+    translate([0, 4, track_height + 1])
+    cube([mount_width, track_width - 8, mount_top_height]);
+  }
+}
+
+module toothless_pulley()
+{
+  color("#e0e0e0")
+  translate([0, 0, 3.125])
+  difference()
+  {
+    union()
+    {
+      difference()
+      {
+        cylinder(belt_width + 2, r = toothless_pulley_guard_radius, center = true, $fn = 32);
+        cylinder(toothless_pulley_belt_engagement_width, d = 20, center = true);
+      }
+      
+      cylinder(belt_width + 2, r = toothless_pulley_radius, center = true, $fn = 32);
+    }
+    
+    cylinder(belt_width + 4, d = 5, center = true, $fn = 32);
+  }
+}
+
+module toothy_pulley()
+{
+  translate([0, 0, 3])
+  {
+    color("#e0e0e0")
+    difference()
+    {
+      union()
+      {
+        difference()
+        {
+          // Outer frame
+          translate([0, 0, -3])
+          cylinder(14, d = 13, center = true, $fn = 32);
+          
+          // Cutaway section for gears
+          cylinder(6, d = 20, center = true);
+        }
+        
+        difference()
+        {
+          // Point of contact with belt
+          cylinder(8, d = 10, center = true, $fn = 32);
+          
+          // Teeth
+          for (i = [0 : 15])
+          {
+            rotate([0, 0, i * 360 / 16])
+            translate([0, 5, 0])
+            scale([0.6, 0.75, 1])
+            rotate([0, 0, 45])
+            cube([2, 2, 20], center = true);
+          }
+        }
+      }
+      
+      // Channel for motor shaft
+      cylinder(25, d = 5, center = true, $fn = 32);
+      
+      // Holes for grub screws for attachment to motor shaft
+      translate([0, 0, -3 - 3.5])
+      rotate([90, 0, 0])
+      cylinder(10, d = 3, $fn = 20);
+
+      translate([0, 0, -3 - 3.5])
+      rotate([0, 90, 0])
+      cylinder(10, d = 3, $fn = 20);
+    }
+
+    // Grub screws for attachment to motor shaft
+    color("#404040")
+    {
+      translate([0, -3.25, -3 - 3.5])
+      rotate([90, 0, 0])
+      difference()
+      {
+        cylinder(3, d = 2.8, $fn = 20);
+        translate([0, 0, 2])
+        cylinder(2, d = 1.5, $fn = 6);
+      }
+
+      translate([3.25, 0, -3 - 3.5])
+      rotate([0, 90, 0])
+      difference()
+      {
+        cylinder(3, d = 2.8, $fn = 20);
+        translate([0, 0, 2])
+        cylinder(2, d = 1.5, $fn = 6);
+      }
+    }
   }
 }
 
 module motor_mount()
 {
   mount_clip(mount_width = 60);
-  // TODO
+
+  translate([0, 0, $preview ? 0 : 50])
+  {
+    mount_clip_on(mount_width = 60);
+    // TODO
+  }
+}
+
+function point_distance(p1, p2)
+  // p1: [x, y]
+  // p2: [x, y]
+  // return: d
+= sqrt(pow(p1[0] - p2[0], 2) + pow(p1[1] - p2[1], 2));
+
+function rotate_point(p, a)
+  // p: [x, y]
+  // a: angle
+  // return [x2, y2]
+= [p[0] * cos(a) + p[1] * sin(a), p[0] * sin(a) - p[1] * cos(a)];
+
+function add_vectors(p1, p2)
+= [p1[0] + p2[0], p1[1] + p2[1]];
+
+function make_line_array(p1, p2)
+= [p1[0], p1[1], p2[0], p2[1]];
+
+function circle_tangent_line_from_point(circle, point)
+  // circle: [x, y, r]
+  // point: [x1, y1]
+  // return: [x1, y1, x2, y2]
+= make_line_array(point, add_vectors(circle, rotate_point(
+    [pow(circle[2], 2) / point_distance(circle, point), circle[2] * sqrt(pow(point_distance(circle, point), 2) - circle[2] * circle[2]) / point_distance(circle, point)],
+    atan2(point[1] - circle[1], point[0] - circle[0]))));
+
+module belt_from_to_crossing(pulley_1, pulley_2, this_belt_thickness = belt_thickness, this_belt_width = belt_width)
+{
+  guide_circle_radius = pulley_1[2] + pulley_2[2];
+  
+  guide = circle_tangent_line_from_point(
+    [pulley_1[0], pulley_1[1], guide_circle_radius],
+    pulley_2);
+
+  angle = atan2(
+    guide[0] - guide[2],
+    guide[3] - guide[1]);
+  
+  guide_offset =
+    [
+      pulley_2[2] * cos(angle),
+      pulley_2[2] * sin(angle)
+    ];
+  
+  belt =
+    [
+      guide[0] + guide_offset[0],
+      guide[1] + guide_offset[1],
+      guide[2] + guide_offset[0],
+      guide[3] + guide_offset[1]
+    ];
+
+  belt_segment_length =
+    sqrt(
+      pow(belt[2] - belt[0], 2) +
+      pow(belt[3] - belt[1], 2));
+      
+  belt_angle = atan2(
+    belt[0] - belt[2],
+    belt[3] - belt[1]);
+    
+  belt_midpoint =
+    [
+      (belt[0] + belt[2]) * 0.5,
+      (belt[1] + belt[3]) * 0.5
+    ];
+      
+  translate([belt_midpoint[0], belt_midpoint[1], 0])
+  rotate([0, 0, belt_angle])
+  cube([this_belt_thickness, belt_segment_length, this_belt_width], center = true);
+}
+
+module belt_rotating_pulley(x, y, a)
+{
+  translate(
+    [
+      x,
+      y,
+      belt_height + toothless_pulley_radius
+    ])
+  rotate([-45, 0, a])
+  toothless_pulley();
+}
+
+module belt_rotating_pulley_mount(expand_pin)
+{
+  union()
+  {
+    intersection()
+    {
+      rotate([-45, 0, 0])
+      translate([0, 0, -toothless_pulley_guard_radius * 1.25 - 1 - washer_thickness])
+      difference()
+      {
+        cube(toothless_pulley_guard_radius * 2.5, center = true);
+        cylinder(toothless_pulley_guard_radius * 3, d = 4, center = true, $fn = 30);
+      }
+    
+      translate([0, 65, 67.5])
+      cube(150, center = true);
+    }
+    
+    rotate([-45, 0, 0])
+    {
+      translate([toothless_pulley_guard_radius * 0.7, 0, -toothless_pulley_guard_radius * 1.6])
+      cylinder(1.4 * toothless_pulley_guard_radius, d = expand_pin ? 4.2 : 4, $fn = 30, center = true);
+      translate([-toothless_pulley_guard_radius * 0.7, 0, -toothless_pulley_guard_radius * 1.6])
+      cylinder(1.4 * toothless_pulley_guard_radius, d = expand_pin ? 4.2 : 4, $fn = 30, center = true);
+    }
+  }
+}
+
+module overhead_pulley_mount(centre_pulley_angle, expand_pin)
+{
+  translate([belt_switch_plate_width * 0.5, tensioner_axle_minimum_y + tensioner_head_thickness + 2.5 * toothless_pulley_radius + belt_thickness + 3, 53])
+  union()
+  {
+    rotate([0, 0, centre_pulley_angle])
+    difference()
+    {
+      cube([3 * toothless_pulley_guard_radius, 2 * (toothless_pulley_belt_engagement_width + 2), 3 * toothless_pulley_guard_radius], center = true);
+      translate([0, 0, -5])
+      cube([4 * toothless_pulley_guard_radius, 2 * washer_thickness + (toothless_pulley_belt_engagement_width + 2), 3 * toothless_pulley_guard_radius], center = true);
+      
+      translate([0, 0, -toothless_pulley_guard_radius * 0.5 + 1.5])
+      rotate([90, 0, 0])
+      cylinder(3 * toothless_pulley_belt_engagement_width, d = 4, center = true, $fn = 30);
+    }
+    
+    wall_thickness = 0.5 * (
+      (2 * (toothless_pulley_belt_engagement_width + 2))
+      -
+      (2 * washer_thickness + (toothless_pulley_belt_engagement_width + 2)));
+    
+    echo(centre_pulley_angle);
+    echo(cos(centre_pulley_angle));
+    echo(sin(centre_pulley_angle));
+
+    union()
+    {
+      difference()
+      {
+        union()
+        {
+          // Diamond that provides the NW/SE supports.
+          translate([0, 0, -27])
+          rotate([0, 45, 0])
+          cube([40, wall_thickness / cos(centre_pulley_angle), 40], center = true);
+          
+          // Diamonds that provide the E/W supports.
+          translate([0, 0, -27])
+          rotate([45, 0, 0])
+          cube([wall_thickness / cos(centre_pulley_angle), 40, 40], center = true);
+        }
+
+        // Channel for the overhead belt to pass through.
+        rotate([0, 0, centre_pulley_angle])
+        translate([0, 0, -5])
+        cube([4 * toothless_pulley_guard_radius, 2 * washer_thickness + (toothless_pulley_belt_engagement_width + 2), 6 * toothless_pulley_guard_radius], center = true);
+        
+        // Channel for the belt that passes under the mount.
+        translate([-belt_switch_plate_width * 0.5, -(tensioner_axle_minimum_y + tensioner_head_thickness + 2.5 * toothless_pulley_radius + belt_thickness + 3), -23])
+        belt_from_to_crossing(
+          [
+            10,
+            tensioner_axle_minimum_y + tensioner_head_thickness + toothless_pulley_radius + belt_thickness,
+            toothless_pulley_radius
+          ],
+          [
+            belt_switch_plate_width - 10,
+            tensioner_axle_minimum_y + tensioner_head_thickness + 5 * toothless_pulley_radius + belt_thickness,
+            toothless_pulley_radius
+          ],
+          5,
+          10);
+
+        // Lie flat against the mount clip.
+        translate([0, 0, -50 - 27])
+        cube([100, 100, 100], center = true);
+      }
+      
+      // Pins from the overhead mount into the mount clip.
+      translate([0, 0, -36])
+      {
+        translate([0, -15, 0])
+        cylinder(10, d = expand_pin ? 3.2 : 3, $fn = 30);
+        translate([0, +15, 0])
+        cylinder(10, d = expand_pin ? 3.2 : 3, $fn = 30);
+        translate([-18, 0, 0])
+        cylinder(10, d = expand_pin ? 3.2 : 3, $fn = 30);
+        translate([+18, 0, 0])
+        cylinder(10, d = expand_pin ? 3.2 : 3, $fn = 30);
+      }
+    }
+  }
 }
 
 module belt_switch()
 {
-  mount_clip(mount_width = 40);
-  // TODO
+  mount_clip(mount_width = belt_switch_plate_width);
+
+  translate([0, 0, $preview ? 0 : 50])
+  {
+    centre_pulley_angle = -atan2(5 * toothless_pulley_radius + belt_width * 3, belt_switch_plate_width - 20);
+    
+    if ($preview)
+    {
+      // Straight through pulleys
+      translate([10, tensioner_axle_minimum_y + tensioner_head_thickness + toothless_pulley_radius + belt_thickness, belt_height])
+      toothless_pulley();
+
+      translate([belt_switch_plate_width - 10, tensioner_axle_minimum_y + tensioner_head_thickness + 5 * toothless_pulley_radius + belt_thickness, belt_height])
+      toothless_pulley();
+
+      // Belt between straight through pulleys
+      color("brown")
+      translate([0, 0, belt_height + 3])
+      belt_from_to_crossing(
+        [
+          10,
+          tensioner_axle_minimum_y + tensioner_head_thickness + toothless_pulley_radius + belt_thickness,
+          toothless_pulley_radius
+        ],
+        [
+          belt_switch_plate_width - 10,
+          tensioner_axle_minimum_y + tensioner_head_thickness + 5 * toothless_pulley_radius + belt_thickness,
+          toothless_pulley_radius
+        ]);
+
+      // Pulley washers
+      translate([10, tensioner_axle_minimum_y + tensioner_head_thickness + toothless_pulley_radius + belt_thickness, belt_height - washer_thickness])
+      washer();
+
+      translate([belt_switch_plate_width - 10, tensioner_axle_minimum_y + tensioner_head_thickness + 5 * toothless_pulley_radius + belt_thickness, belt_height - washer_thickness])
+      washer();
+      
+      // Over top pulleys
+      belt_rotating_pulley(
+        10,
+        tensioner_axle_minimum_y + belt_width * sqrt(2) / 4 + tensioner_head_thickness + 5 * toothless_pulley_radius + belt_thickness,
+        0);
+      belt_rotating_pulley(
+        belt_switch_plate_width - 10,
+        tensioner_axle_minimum_y + tensioner_head_thickness + toothless_pulley_radius + belt_thickness,
+        180);
+
+      translate([belt_switch_plate_width * 0.5, tensioner_axle_minimum_y + tensioner_head_thickness + 2.5 * toothless_pulley_radius + belt_thickness + 3, 50])
+      rotate([90, 0, centre_pulley_angle])
+      translate([0, 0, -0.5 * toothless_pulley_belt_engagement_width])
+      toothless_pulley();
+    }
+    
+    difference()
+    {
+      // Mount points for the two 45 degree pulleys.
+      p1x = 10;
+      p1y = tensioner_axle_minimum_y + belt_width * sqrt(2) / 4 + tensioner_head_thickness + 5 * toothless_pulley_radius + belt_thickness;
+      p2x = belt_switch_plate_width - 10;
+      p2y = tensioner_axle_minimum_y + belt_width * sqrt(2) / 4 + tensioner_head_thickness + toothless_pulley_radius - belt_thickness;
+      mx = (p1x + p2x) * 0.5;
+      my = (p1y + p2y) * 0.5;
+      dx = (p2x - p1x) * 0.5;
+      dy = (p2y - p1y) * 0.5;
+
+      // Top plate
+      union()
+      {
+        difference()
+        {
+          mount_clip_on(mount_width = belt_switch_plate_width);
+          
+          // 45 degree pulley mount attachments
+          translate([mx, my, 0])
+          for (a = [0, 180])
+          {
+            rotate([0, 0, a])
+            translate(
+              [
+                -dx,
+                -dy,
+                belt_height + toothless_pulley_radius
+              ])
+            belt_rotating_pulley_mount(true);
+          }
+          
+          // Attachment for the mount point for the overhead pulley.
+          overhead_pulley_mount(centre_pulley_angle, true);
+        }
+
+        // 45 degree pulley mounts
+        translate([mx, my, $preview ? 0 : 20])
+        for (a = [0, 180])
+        {
+          rotate([0, 0, a])
+          translate(
+            [
+              -dx,
+              -dy,
+              belt_height + toothless_pulley_radius
+            ])
+          belt_rotating_pulley_mount(false);
+        }
+
+        // Mount point for the overhead pulley.
+        translate([0, 0, $preview ? 0 : 20])
+        overhead_pulley_mount(centre_pulley_angle, false);
+      }
+      
+      translate([10, tensioner_axle_minimum_y + tensioner_head_thickness + toothless_pulley_radius + belt_thickness, belt_height])
+      cylinder(mount_top_height * 2, d = 4, center = true, $fn = 30);
+      translate([belt_switch_plate_width - 10, tensioner_axle_minimum_y + tensioner_head_thickness + 5 * toothless_pulley_radius + belt_thickness, belt_height])
+      cylinder(mount_top_height * 2, d = 4, center = true, $fn = 30);
+    }
+  }
+}
+
+module washer()
+{
+  color("#e0e0e0")
+  difference()
+  {
+    cylinder(washer_thickness, d = washer_outer_diameter);
+    cylinder(3 * washer_thickness, d = washer_inner_diameter, center = true, $fn = 30);
+  }
 }
 
 module belt_pulleys()
 {
-  mount_clip(mount_width = 20);
-  // TODO
+  mount_clip(mount_width = belt_pulley_plate_width);
+
+  translate([0, 0, $preview ? 0 : 50])
+  {
+    if ($preview)
+    {
+      translate([0.5 * belt_pulley_plate_width, tensioner_axle_minimum_y + tensioner_head_thickness + toothless_pulley_radius + belt_thickness, belt_height])
+      toothless_pulley();
+
+      translate([0.5 * belt_pulley_plate_width, tensioner_axle_minimum_y + tensioner_head_thickness + 5 * toothless_pulley_radius + belt_thickness, belt_height])
+      toothless_pulley();
+
+      // Pulley washers
+      translate([0.5 * belt_pulley_plate_width, tensioner_axle_minimum_y + tensioner_head_thickness + toothless_pulley_radius + belt_thickness, belt_height - washer_thickness])
+      washer();
+
+      translate([0.5 * belt_pulley_plate_width, tensioner_axle_minimum_y + tensioner_head_thickness + 5 * toothless_pulley_radius + belt_thickness, belt_height - washer_thickness])
+      washer();
+    }
+    
+    difference()
+    {
+      mount_clip_on(mount_width = belt_pulley_plate_width);
+      translate([0.5 * belt_pulley_plate_width, tensioner_axle_minimum_y + tensioner_head_thickness + toothless_pulley_radius + belt_thickness, belt_height])
+      cylinder(mount_top_height * 2, d = 4, center = true, $fn = 30);
+      translate([0.5 * belt_pulley_plate_width, tensioner_axle_minimum_y + tensioner_head_thickness + 5 * toothless_pulley_radius + belt_thickness, belt_height])
+      cylinder(mount_top_height * 2, d = 4, center = true, $fn = 30);
+    }
+  }
 }
 
 if ($preview)
@@ -523,5 +1002,5 @@ motor_mount();
 translate([-150, 0, 0])
 belt_pulleys();
 
-translate([-75, 0, 0])
+translate([-110, 0, 0])
 belt_switch();
