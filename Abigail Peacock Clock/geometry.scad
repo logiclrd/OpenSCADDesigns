@@ -19,10 +19,13 @@ clock_colour = "#333";
 feather_colour = "#8FD";
 spot_colour = "gold";
 
+surface_colour = "red";
+lettering_colour = "gold";
+
 scale_xy = 2;
 clock_thickness = 15;
 slice_thickness = clock_thickness * 0.5;;
-filigree_thickness = 2;
+filigree_thickness = 1;
 translation = [0, -250, 0];
 
 module clock(extend_down_battery = 0, extend_main = 0)
@@ -37,6 +40,13 @@ module clock(extend_down_battery = 0, extend_main = 0)
     cube([56, 19, clock_thickness], center = true);
     
     cylinder(30, d = 8, $fn = 30);
+    translate([0, 0, 7.49])
+    cylinder(1, d1 = 16, d2 = 8, $fn = 30);
+    
+    for (x = [-1, 1])
+      for (y = [-1, 1])
+        translate([x * 21, y * 23, 0])
+        cylinder(8.5, d = 2, $fn = 30);
   }
 }
 
@@ -178,7 +188,7 @@ module layer2_part2()
     color(spot_colour)
     translate([0, 0, slice_thickness])
     scale([scale_xy, scale_xy, filigree_thickness])
-    linear_extrude(filigree_thickness)
+    linear_extrude(1)
     translate(translation)
     {
       translate([-60, 0, 0])
@@ -304,33 +314,74 @@ module layer4_part1()
           translate([-60, 0, 0])
           import("layer 4 part 1.svg");
         }
+
+        color(feather_colour)
+        union()
+        {
+          translate([-63, 0, slice_thickness])
+          cylinder(0.4, 3, 2, $fn = 40);
+          translate([+63, 0, slice_thickness])
+          cylinder(0.4, 3, 2, $fn = 40);
+
+          translate([-44, 60, slice_thickness])
+          cylinder(0.4, 3, 2, $fn = 40);
+          translate([+44, 60, slice_thickness])
+          cylinder(0.4, 3, 2, $fn = 40);
+        }
       }
 
       if (include_colour_4)
       {
-        color(clock_colour)
-        scale([scale_xy, scale_xy, slice_thickness])
-        translate(translation)
-        linear_extrude(1)
-        union()
+        color(surface_colour)
+        difference()
         {
-          translate([-60, 0, 0])
-          import("clock body.svg");
-          scale([-1, 1, 1])
-          translate([-60, 0, 0])
-          import("clock body.svg");
+          scale([scale_xy, scale_xy, slice_thickness])
+          translate(translation)
+          linear_extrude(1)
+          union()
+          {
+            translate([-60, 0, 0])
+            import("clock body.svg");
+            scale([-1, 1, 1])
+            translate([-60, 0, 0])
+            import("clock body.svg");
+          }
+
+          translate([0, 0, -2 * slice_thickness])
+          clock(0, 0);
         }
       }
     }
     
     nibs(true);
-    
-    // Face number alignment hints
-    for (i = [0 : 11])
+  }
+
+  // Face numbers
+  if (include_colour_2)
+  {
+    color(lettering_colour)
+    translate([0, 0, slice_thickness])
     {
-      rotate([0, 0, i * 360 / 12])
-      translate([0, 40, slice_thickness - 0.2])
-      cylinder(1.2, 1, 0.5, $fn = 30);
+      for (i = [1 : 12])
+      {
+        rotate([0, 0, -i * 360 / 12])
+        translate([0, -118, 0])
+        linear_extrude(0.6)
+        scale([0.8, 0.5, 0.5])
+        import(str("roman numeral ", i, ".svg"));
+      }
+
+      scale([1, 1, 1])
+      linear_extrude(0.6)
+      translate([0, -297, 0])
+      import(str("arabic numerals alternate larger.svg"));
+
+      for (i = [1 : 60])
+      {
+        rotate([0, 0, i * 6])
+        translate([0, 39.5, 0.5])
+        cube([0.4, 3, 0.6], center = true);
+      }
     }
   }
 }
@@ -356,13 +407,7 @@ module layer4_part2()
 
 module layer4()
 {
-  difference()
-  {
-    layer4_part1();
-    translate([0, 0, -2 * slice_thickness])
-    clock(0, 0);
-  }
-
+  layer4_part1();
   layer4_part2();
 }
 
@@ -373,16 +418,29 @@ module layer5_part1()
   if (include_colour_2)
   {
     color(body_colour)
-    scale([scale_xy, scale_xy, filigree_thickness])
-    translate(translation)
-    linear_extrude(1)
-    union()
+    difference()
     {
-      translate([-60, 0, 0])
-      import("layer 5 part 1.svg");
-      scale([-1, 1, 1])
-      translate([-60, 0, 0])
-      import("layer 5 part 1.svg");
+      scale([scale_xy, scale_xy, filigree_thickness])
+      translate(translation)
+      linear_extrude(1)
+      union()
+      {
+        translate([-60, 0, 0])
+        import("layer 5 part 1.svg");
+        scale([-1, 1, 1])
+        translate([-60, 0, 0])
+        import("layer 5 part 1.svg");
+      }
+
+      translate([-63, 0, 0])
+      cylinder(0.4, 3.75, 2.5, $fn = 40);
+      translate([+63, 0, 0])
+      cylinder(0.4, 3.75, 2.5, $fn = 40);
+
+      translate([-44, 60, 0])
+      cylinder(0.4, 3.75, 2.5, $fn = 40);
+      translate([+44, 60, 0])
+      cylinder(0.4, 3.75, 2.5, $fn = 40);
     }
   }
 }
@@ -393,7 +451,7 @@ module layer5_part2()
   {
     color(clock_colour)
     translate([0, 0, filigree_thickness])
-    scale([scale_xy, scale_xy, 0.6])
+    scale([scale_xy, scale_xy, 0.4])
     translate(translation)
     linear_extrude(1)
     {
