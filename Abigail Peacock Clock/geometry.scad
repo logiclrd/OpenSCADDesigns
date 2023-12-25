@@ -126,7 +126,7 @@ module layer1()
   difference()
   {
     layer1_part1();
-    translate([0, 0, slice_thickness])
+    translate([0, 0, slice_thickness - 1])
     clock(1, 0);
   }
 
