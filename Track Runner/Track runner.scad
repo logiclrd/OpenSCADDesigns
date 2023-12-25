@@ -509,12 +509,12 @@ module mount_clip(mount_width)
   }
 }
 
-module mount_clip_on(mount_width)
+module mount_clip_on(mount_width, height = mount_top_height)
 {
   difference()
   {
     translate([-1.5, 0, track_height])
-    cube([mount_width + 3, track_width, 2 * mount_top_height]);
+    cube([mount_width + 3, track_width, mount_top_height + height]);
     
     translate([0, 0, -0.1])
     mount_clip(mount_width);
@@ -988,12 +988,224 @@ module belt_pulleys()
   }
 }
 
+module stepper_motor(expand)
+{
+  color("#444")
+  intersection()
+  {
+    cube([
+      42.3 + (expand ? 0.2 : 0),
+      42.3 + (expand ? 0.2 : 0),
+      20.4], center = true);
+    
+    rotate([0, 0, 45])
+    cube([
+      53 + (expand ? 0.2 * sqrt(2) : 0),
+      53 + (expand ? 0.2 * sqrt(2) : 0),
+      21], center = true);
+  }
+
+  intersection()
+  {
+    color("#eee")
+    translate([0, 0, 10.25])
+    cube([42.3, 42.3, 0.1], center = true);
+    
+    color("#444")
+    rotate([0, 0, 45])
+    cube([53, 52, 21], center = true);
+  }
+
+  color("#444")
+  translate([0, 0, 2.1])
+  cylinder(20.5, d = 21, center = true, $fn = 60);
+  
+  color("#eee")
+  {
+    translate([0, 0, 2 + (expand ? 1 : 0)])
+    cylinder(20.5, d = 22 + (expand ? 2 : 0), center = true, $fn = 60);
+    
+    translate([0, 0, 18])
+    difference()
+    {
+      cylinder(20.5, d = 4.5 + (expand ? 2 : 0), center = true, $fn = 30);
+      
+      if (!expand)
+      {
+        translate([0, 7, 0])
+        cube([10, 10, 21], center = true);
+      }
+    }
+  }
+}
+
+perimeter_module_overhang_height = 10;
+perimeter_module_plate_height = 15;
+perimeter_module_mount_width = 50;
+perimeter_module_overhang_amount = 13;
+
+module belt_perimeter_module(second_axle_offset = 0)
+{
+  translate([0, 0, $preview ? 0 : -40])
+  mount_clip(mount_width = perimeter_module_mount_width);
+  
+  mount_clip_on(mount_width = perimeter_module_mount_width, height = perimeter_module_plate_height);
+
+  difference()
+  {
+    for (side = [0 : 1])
+    {
+      translate([0, side * track_width, 0])
+      scale([1, 1 - side * 2, 1])
+      {
+        difference()
+        {
+          union()
+          {
+            translate([0.5 * perimeter_module_mount_width + second_axle_offset * 0.5, -0.5 * perimeter_module_overhang_amount + 1, track_height + mount_top_height + perimeter_module_plate_height - perimeter_module_overhang_height * 0.5])
+            cube([perimeter_module_mount_width + second_axle_offset, perimeter_module_overhang_amount + 1, perimeter_module_overhang_height], center = true);
+
+            translate([0.5 * perimeter_module_mount_width + second_axle_offset * 0.5, 5 - perimeter_module_overhang_amount, 0.5 * (track_height + mount_top_height + perimeter_module_plate_height) - 1])
+            cube([perimeter_module_mount_width + second_axle_offset, 10, track_height + mount_top_height + perimeter_module_plate_height + 2], center = true);
+
+            translate([0.5 * perimeter_module_mount_width + second_axle_offset * 0.5, -0.5 * perimeter_module_overhang_amount + 1, 0.5 * (track_height + mount_top_height + perimeter_module_plate_height) - 1])
+            cube([perimeter_module_mount_width + second_axle_offset, perimeter_module_overhang_amount + 1, track_height + mount_top_height + perimeter_module_plate_height + 2], center = true);
+          }
+          
+          translate([10, -5, 0.5 * (track_height + mount_top_height + perimeter_module_plate_height)])
+          cylinder(track_height + mount_top_height + perimeter_module_plate_height + 10, d = 4, center = true, $fn = 30);
+
+          translate([40 + second_axle_offset, -5, 0.5 * (track_height + mount_top_height + perimeter_module_plate_height)])
+          cylinder(track_height + mount_top_height + perimeter_module_plate_height + 10, d = 4, center = true, $fn = 30);
+        }
+      }
+      
+      if ($preview)
+      {
+        for (side = [0 : 1])
+        {
+          translate([0, side * (track_width + 10), 0])
+          {
+            translate([10, -5, -10])
+            toothless_pulley();
+            translate([40 + second_axle_offset, -5, -10])
+            toothless_pulley();
+          }
+        }
+      }
+    }
+    
+    translate([perimeter_module_mount_width + 3, track_width * 0.5, 0])
+    cube([3, track_width + 3, 200], center = true);
+  }
+}
+
+module belt_end_module()
+{
+  union()
+  {
+    translate([0.5 * perimeter_module_mount_width + 1, 0.5 * track_width, 0])
+    rotate([0, 0, 180])
+    translate([-0.5 * perimeter_module_mount_width - 1, -0.5 * track_width, 0])
+    belt_perimeter_module(second_axle_offset = 20);
+  }
+}
+
+motor_mount_extension_length = 60;
+
+module belt_motor_module()
+{
+  union()
+  {
+    belt_perimeter_module();
+    
+    for (side = [0 : 1])
+    {
+      translate([0, side * track_width, 0])
+      scale([1, 1 - side * 2, 1])
+      {
+        translate([
+          perimeter_module_mount_width + 0.5 * motor_mount_extension_length - 1,
+          5 - perimeter_module_overhang_amount,
+          0.5 * (track_height + mount_top_height + perimeter_module_plate_height) - 1])
+        cube([motor_mount_extension_length + 1, 10, track_height + mount_top_height + perimeter_module_plate_height + 2], center = true);
+
+        translate([0, 0, 10])
+        multmatrix(
+          [[1, 0, 0, 0],
+           [0, 1, 0, 0],
+           [0, -1, 1, 0],
+           [0, 0, 0, 1]])
+        difference()
+        {
+          translate([
+            perimeter_module_mount_width + 0.5 * motor_mount_extension_length + 1.5,
+            10 - perimeter_module_overhang_amount,
+            0])
+          cube([motor_mount_extension_length - 4, 20, 10], center = true);
+
+          translate([
+            perimeter_module_mount_width + 0.5 * motor_mount_extension_length + 1.5,
+            10.1 - perimeter_module_overhang_amount,
+            5])
+          cube([(motor_mount_extension_length - 4) / 3 + 0.2, 20, 10], center = true);
+        }
+      }
+    }
+    
+    translate([0, 0, $preview ? 0 : -50])
+    union()
+    {
+      translate([
+        perimeter_module_mount_width + 0.5 * motor_mount_extension_length + 1.5,
+        track_width * 0.5,
+        10 - 7])
+      difference()
+      {
+        cube([motor_mount_extension_length - 4, track_width + 6 - 20.1, 10], center = true);
+
+        translate([0, 0, 11])
+        rotate([180, 0, 0])
+        stepper_motor(true);
+      }
+
+      translate([0, 0, 10])
+      for (side = [0 : 1])
+      {
+        translate([0, side * track_width, 0])
+        scale([1, 1 - side * 2, 1])
+        multmatrix(
+          [[1, 0, 0, 0],
+           [0, 1, 0, 0],
+           [0, -1, 1, 0],
+           [0, 0, 0, 1]])
+        translate([
+          perimeter_module_mount_width + 0.5 * motor_mount_extension_length + 1.5,
+          10.1 - perimeter_module_overhang_amount,
+          0])
+        cube([(motor_mount_extension_length - 4) / 3, 20, 10], center = true);
+      }
+    }
+    
+    if ($preview)
+    {
+      translate([perimeter_module_mount_width + 0.5 * motor_mount_extension_length + 1.5, track_width * 0.5, 11])
+      rotate([180, 0, 0])
+      stepper_motor();
+      
+      translate([0, track_width * 0.5, -10])
+      toothy_pulley();
+    }
+  }
+}
+
 if ($preview)
 {
   track();
-  wheels();
+  //wheels();
 }
 
+/*
 carriage();
 
 translate([75 + axle_spacing, 0, 0])
@@ -1004,3 +1216,9 @@ belt_pulleys();
 
 translate([-110, 0, 0])
 belt_switch();
+*/
+translate([-169, 0, 0])
+belt_end_module();
+
+translate([279, 0, 0])
+belt_motor_module();
