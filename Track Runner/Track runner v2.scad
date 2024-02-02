@@ -1059,10 +1059,11 @@ module belt_perimeter_module(second_axle_offset = 0)
   translate([0, 0, $preview ? 0 : -40])
   mount_clip(mount_width = perimeter_module_mount_width);
   
-  mount_clip_on(mount_width = perimeter_module_mount_width, height = perimeter_module_plate_height, mount_clip_on_wall_width = 20);
+  //mount_clip_on(mount_width = perimeter_module_mount_width, height = perimeter_module_plate_height, mount_clip_on_wall_width = 20);
   
   mount_clip_on_lower_wall_extra_height = 8;
   
+  translate([0, 0, 1000])
   difference()
   {
     for (side = [0 : 1])
@@ -1217,9 +1218,10 @@ module belt_motor_module()
 if ($preview)
 {
   track();
-  wheels();
+  //wheels();
 }
 
+/*
 carriage();
 
 translate([75 + axle_spacing, 0, 0])
@@ -1230,7 +1232,13 @@ belt_pulleys();
 
 translate([-110, 0, 0])
 belt_switch();
+*/
 
+translate([-150, 0, 0])
+belt_end_module();
+
+translate([260, 0, 0])
+belt_motor_module();
 
 // Dimensional test
 //mount_clip(8);
