@@ -1,9 +1,9 @@
 $fn = 32;
 
-front_plate_width = 123;
+front_plate_width = 124;
 front_plate_height = 8;
 
-main_plate_width = 117;
+main_plate_width = 120.5;
 main_plate_height = 146;
 
 small_pin_diameter = 4.5; 
@@ -29,6 +29,10 @@ jig_block_height = main_plate_height + front_plate_height;
 jig_block_depth = 25;
 
 pin_height = 8;
+
+jig_fence_rotation_guide_inset_y = 32;
+jig_fence_rotation_guide_width = 34;
+jig_fence_rotation_guide_thickness = 5;
 
 fence_distance = 140;
 fence_thickness = 8;
@@ -82,6 +86,9 @@ module main_jig_piece()
 
       translate([0.5 * fence_bracket_length - 0.5 * jig_block_width, 0.5 * fence_bracket_width, 0.5 * biscuit_joiner_elevation])
       cube([fence_bracket_length + 2 * fence_thickness, fence_bracket_width, biscuit_joiner_elevation], center = true);
+
+      translate([0.5 * main_plate_width + jig_fence_rotation_guide_thickness * 0.5, 0.5 * jig_fence_rotation_guide_width + jig_fence_rotation_guide_inset_y, 50 + biscuit_joiner_elevation])
+      cube([jig_fence_rotation_guide_thickness, jig_fence_rotation_guide_width, 100], center = true);
     }
 
     pins();
