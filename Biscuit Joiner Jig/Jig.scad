@@ -62,10 +62,12 @@ module pins()
 {
   pin_geometry_height = pin_height + biscuit_joiner_elevation;
   
+  /*
   translate([small_pin_x, small_pin_y, pin_geometry_height * 0.5])
   cylinder(pin_geometry_height, d = small_pin_diameter, center = true);
   translate([-small_pin_x, small_pin_y, pin_geometry_height * 0.5])
   cylinder(pin_geometry_height, d = small_pin_diameter, center = true);
+  */
 
   translate([large_pin_x, large_pin_y, pin_geometry_height * 0.5])
   cylinder(pin_geometry_height, d = large_pin_diameter, center = true);
