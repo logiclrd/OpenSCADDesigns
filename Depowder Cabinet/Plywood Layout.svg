@@ -7,7 +7,7 @@
    viewBox="0 0 2438.4 1219.2"
    version="1.1"
    id="svg5"
-   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
    sodipodi:docname="Plywood Layout.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -24,13 +24,13 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="0.090236987"
-     inkscape:cx="8051.0223"
-     inkscape:cy="5130.9337"
+     inkscape:zoom="0.063807185"
+     inkscape:cx="7279.7444"
+     inkscape:cy="4051.2679"
      inkscape:window-width="2560"
-     inkscape:window-height="1510"
-     inkscape:window-x="0"
-     inkscape:window-y="54"
+     inkscape:window-height="1369"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1">
     <inkscape:page
@@ -38,7 +38,9 @@
        y="0"
        width="2438.3999"
        height="1219.2"
-       id="page1304" />
+       id="page1304"
+       margin="0"
+       bleed="0" />
     <inkscape:page
        x="2448.3999"
        y="0"
@@ -87,27 +89,27 @@
        x="582.99689"
        y="450.86484" />
     <rect
-       style="opacity:0.7;fill:#008080;stroke-width:1.79704;stroke-linecap:round;stroke-linejoin:round;stop-color:#000000"
+       style="opacity:0.7;fill:#008080;stroke-width:1.64701;stroke-linecap:round;stroke-linejoin:round;stop-color:#000000"
        id="rect234-56"
        width="482.60001"
-       height="317.5"
+       height="266.70001"
        x="2950.7732"
        y="756.35547" />
     <rect
-       style="opacity:0.7;fill:#008080;stroke-width:1.79704;stroke-linecap:round;stroke-linejoin:round;stop-color:#000000"
+       style="opacity:0.7;fill:#008080;stroke-width:1.64701;stroke-linecap:round;stroke-linejoin:round;stop-color:#000000"
        id="rect234-56-2"
        width="482.60001"
-       height="317.5"
+       height="266.70001"
        x="-2943.1404"
-       y="-1076.5391"
+       y="-1025.739"
        transform="scale(-1)" />
     <rect
-       style="opacity:0.7;fill:#008080;stroke-width:1.2707;stroke-linecap:round;stroke-linejoin:round;stop-color:#000000"
+       style="opacity:0.7;fill:#008080;stroke-width:1.19487;stroke-linecap:round;stroke-linejoin:round;stop-color:#000000"
        id="rect234-56-9"
-       width="241.3"
-       height="317.5"
-       x="3367.0315"
-       y="40.409496" />
+       width="254"
+       height="266.70001"
+       x="3441.6702"
+       y="753.62598" />
     <rect
        style="opacity:0.7;fill:#008080;stroke-width:2.84317;stroke-linecap:round;stroke-linejoin:round;stop-color:#000000"
        id="rect234-6"
@@ -234,42 +236,47 @@
          style="font-size:67.0278px;stroke-width:0.264583"
          x="2653.4189"
          y="1326.8505"
-         id="tspan2011-2">Cut 1: b.X=46&quot;, reducing b and discard</tspan><tspan
+         id="tspan14">Cut 1: b.X=57&quot;, reducing b and discardd</tspan><tspan
          sodipodi:role="line"
          style="font-size:67.0278px;stroke-width:0.264583"
          x="2653.4189"
          y="1410.6353"
-         id="tspan3404">Cut 2: b.Y=29&quot;, producing b1 and b2</tspan><tspan
+         id="tspan15">Cut 2: b.Y=29&quot;, producing b1 and b2</tspan><tspan
          sodipodi:role="line"
          style="font-size:67.0278px;stroke-width:0.264583"
          x="2653.4189"
          y="1494.4199"
-         id="tspan3881">Cut 3: b1.X=35.5&quot;, producing B1 and b12, B1 = 35.5&quot; x 29&quot;</tspan><tspan
+         id="tspan12">Cut 3: b1.X=35.5&quot;, producing B1 and b12, B1 = 35.5&quot; x 29&quot;</tspan><tspan
          sodipodi:role="line"
          style="font-size:67.0278px;stroke-width:0.264583"
          x="2653.4189"
          y="1578.2047"
-         id="tspan4453">Cut 4: b12.Y=12.5&quot;, reducing b12 and discard</tspan><tspan
+         id="tspan13">Cut 4: b12.X=19.5&quot;, producing B12 and discard</tspan><tspan
          sodipodi:role="line"
          style="font-size:67.0278px;stroke-width:0.264583"
          x="2653.4189"
          y="1661.9895"
-         id="tspan4816">Cut 5: b12.X=9.5&quot;, producing B12 and discard, B12 = 9.5&quot; x 12.5&quot;</tspan><tspan
+         id="tspan4453">Cut 5: b2.Y=10.5&quot;, reducing b2 and discard</tspan><tspan
          sodipodi:role="line"
          style="font-size:67.0278px;stroke-width:0.264583"
          x="2653.4189"
          y="1745.7742"
-         id="tspan5274">Cut 6: b2.Y=12.5&quot;, reducing b2 and discard</tspan><tspan
+         id="tspan4816">Cut 6: b2.X=19&quot;, producing B21 and b22, B21 = 19&quot; x 10.5&quot;</tspan><tspan
          sodipodi:role="line"
          style="font-size:67.0278px;stroke-width:0.264583"
          x="2653.4189"
          y="1829.559"
-         id="tspan5827">Cut 7: b2.X=19&quot;, producing B2 and b21, B2 = 19&quot; x 12.5&quot;</tspan><tspan
+         id="tspan5274">Cut 7: b22.X=19&quot;, reducing B22 and b23, B22 = 19&quot; x 10.5</tspan><tspan
          sodipodi:role="line"
          style="font-size:67.0278px;stroke-width:0.264583"
          x="2653.4189"
          y="1913.3438"
-         id="tspan6608">Cut 8: b21.X=19&quot;, producing B21 and discard, B21 = 19&quot; x 12.5&quot;</tspan></text>
+         id="tspan5827">Cut 8: b23.X=10&quot;, producing B23 and discard, B23 = 10&quot; x 10.5&quot;</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:67.0278px;stroke-width:0.264583"
+         x="2653.4189"
+         y="1997.1284"
+         id="tspan6608" /></text>
     <text
        xml:space="preserve"
        style="font-size:10.5833px;line-height:1.25;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';stroke-width:0.264583"
@@ -278,7 +285,7 @@
        id="text2015"><tspan
          sodipodi:role="line"
          id="tspan2013"
-         style="stroke-width:0.264583"></tspan></text>
+         style="stroke-width:0.264583" /></text>
     <text
        xml:space="preserve"
        style="font-size:77.611px;line-height:1.25;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';stroke-width:0.264583"
@@ -289,7 +296,12 @@
          id="tspan2017"
          style="stroke-width:0.264583"
          x="1594.157"
-         y="785.94385">A21 = 36&quot; x 20&quot;</tspan></text>
+         y="785.94385">A21 = 36&quot; x 20&quot;</tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.264583"
+         x="1594.157"
+         y="882.95758"
+         id="tspan5">Right</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:77.611px;line-height:1.25;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';stroke-width:0.264583"
@@ -311,7 +323,12 @@
          id="tspan2025"
          style="stroke-width:0.264583"
          x="50.444405"
-         y="112.10284">A11 = 29&quot; x 15.85&quot;</tspan></text>
+         y="112.10284">A11 = 29&quot; x 15.85&quot;</tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.264583"
+         x="50.444405"
+         y="209.11659"
+         id="tspan3">Top</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:77.611px;line-height:1.25;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';stroke-width:0.264583"
@@ -327,7 +344,12 @@
          style="stroke-width:0.264583"
          x="55.066231"
          y="716.50226"
-         id="tspan2033">           x 29&quot;</tspan></text>
+         id="tspan2033">           x 29&quot;</tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.264583"
+         x="55.066231"
+         y="813.51605"
+         id="tspan7">Front</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:77.611px;line-height:1.25;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';stroke-width:0.264583"
@@ -338,7 +360,12 @@
          id="tspan2035"
          style="stroke-width:0.264583"
          x="634.99115"
-         y="782.08148">A131 = 36&quot; x 20&quot;</tspan></text>
+         y="782.08148">A131 = 36&quot; x 20&quot;</tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.264583"
+         x="634.99115"
+         y="879.09521"
+         id="tspan4">Left</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:77.611px;line-height:1.25;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';stroke-width:0.264583"
@@ -349,7 +376,12 @@
          id="tspan2039"
          style="stroke-width:0.264583"
          x="784.84808"
-         y="135.37354">A1321 = 29&quot; x 19&quot;</tspan></text>
+         y="135.37354">A1321 = 29&quot; x 19&quot;</tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.264583"
+         x="784.84808"
+         y="232.38728"
+         id="tspan9">Platform</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:45.8611px;line-height:1.25;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';stroke-width:0.264583"
@@ -376,59 +408,103 @@
          id="tspan7085"
          style="stroke-width:0.264583"
          x="2491.7141"
-         y="126.33191">B1 = 35.5&quot; x 29&quot;</tspan></text>
+         y="126.33191">B1 = 35.5&quot; x 29&quot;</tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.264583"
+         x="2491.7141"
+         y="223.34566"
+         id="tspan8">Back</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:77.611px;line-height:1.25;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';stroke-width:0.264583"
-       x="3385.145"
-       y="118.59451"
+       style="font-size:77.611px;line-height:1.05;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';stroke-width:0.264583"
+       x="3459.7839"
+       y="827.66437"
        id="text7490"><tspan
          sodipodi:role="line"
          id="tspan7488"
-         style="stroke-width:0.264583"
-         x="3385.145"
-         y="118.59451">B12 =</tspan><tspan
+         style="line-height:1.05;stroke-width:0.264583"
+         x="3459.7839"
+         y="827.66437">B23 =</tspan><tspan
          sodipodi:role="line"
-         style="stroke-width:0.264583"
-         x="3385.145"
-         y="215.60826"
-         id="tspan7834">9.5&quot; x</tspan><tspan
+         style="line-height:1.05;stroke-width:0.264583"
+         x="3459.7839"
+         y="909.15588"
+         id="tspan7834">10&quot; x</tspan><tspan
          sodipodi:role="line"
-         style="stroke-width:0.264583"
-         x="3385.145"
-         y="312.62201"
-         id="tspan7931">12.5&quot;</tspan></text>
+         style="line-height:1.05;stroke-width:0.264583"
+         x="3459.7839"
+         y="990.64746"
+         id="tspan2">10.5&quot;</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:77.611px;line-height:1.25;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';stroke-width:0.264583"
+       style="font-size:77.611px;line-height:1.15;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';stroke-width:0.264583"
        x="2479.3425"
-       y="849.56482"
+       y="823.10638"
        id="text8030"><tspan
          sodipodi:role="line"
-         id="tspan8028"
-         style="stroke-width:0.264583"
+         style="line-height:1.15;stroke-width:0.264583"
          x="2479.3425"
-         y="849.56482">B2 = 9.5&quot;</tspan><tspan
+         y="823.10638"
+         id="tspan19">B21 = 19&quot;</tspan><tspan
          sodipodi:role="line"
-         style="stroke-width:0.264583"
+         style="line-height:1.15;stroke-width:0.264583"
          x="2479.3425"
-         y="946.57855"
-         id="tspan8298">     x 12.5&quot;</tspan></text>
+         y="912.35901"
+         id="tspan8298">     x 10.5&quot;</tspan><tspan
+         sodipodi:role="line"
+         style="line-height:1.15;stroke-width:0.264583"
+         x="2479.3425"
+         y="1001.6117"
+         id="tspan10">RPFC Wall</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:77.611px;line-height:1.25;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';stroke-width:0.264583"
+       style="font-size:77.611px;line-height:1.15;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';stroke-width:0.264583"
        x="2971.4751"
-       y="849.56482"
+       y="820.98969"
        id="text8437"><tspan
          sodipodi:role="line"
          id="tspan8433"
-         style="stroke-width:0.264583"
+         style="line-height:1.15;stroke-width:0.264583"
          x="2971.4751"
-         y="849.56482">B21 = 9.5&quot;</tspan><tspan
+         y="820.98969">B22 = 19&quot;</tspan><tspan
+         sodipodi:role="line"
+         style="line-height:1.15;stroke-width:0.264583"
+         x="2971.4751"
+         y="910.24231"
+         id="tspan1">     x 10.5&quot;</tspan><tspan
+         sodipodi:role="line"
+         style="line-height:1.15;stroke-width:0.264583"
+         x="2971.4751"
+         y="999.495"
+         id="tspan11">RPFC Wall</tspan></text>
+    <rect
+       style="opacity:0.7;fill:#008080;stroke-width:2.77296;stroke-linecap:round;stroke-linejoin:round;stop-color:#000000"
+       id="rect11"
+       width="495.29999"
+       height="736.59998"
+       x="-3860.2429"
+       y="-747.008"
+       transform="scale(-1)" />
+    <text
+       xml:space="preserve"
+       style="font-size:77.611px;line-height:1.25;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';stroke-width:0.264583"
+       x="3383.2349"
+       y="84.865837"
+       id="text17"><tspan
+         sodipodi:role="line"
+         id="tspan16"
+         style="stroke-width:0.264583"
+         x="3383.2349"
+         y="84.865837">B12 = 19.5&quot;</tspan><tspan
          sodipodi:role="line"
          style="stroke-width:0.264583"
-         x="2971.4751"
-         y="946.57855"
-         id="tspan8435">     x 12.5&quot;</tspan></text>
+         x="3383.2349"
+         y="181.87959"
+         id="tspan18">       x 29&quot;</tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.264583"
+         x="3383.2349"
+         y="278.89334"
+         id="tspan17">Bottom</tspan></text>
   </g>
 </svg>
