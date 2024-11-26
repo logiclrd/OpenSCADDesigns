@@ -10,10 +10,17 @@ module cone(inclination, sweep, slice = [0, 200])
     ]);
 }
 
+inclination_x = 42.5;
+inclination_y = 208;
+
+inclination = atan2(inclination_x, inclination_y);
+
+echo(str("Inclination: ", inclination_y, "x", inclination_x, " is ", inclination, " degrees"));
+
 circumference_mm = 1990;
 diameter_mm = circumference_mm / PI;
 radius_mm = diameter_mm / 2;
-inclination = 15;
+//inclination = 15;
 tack_count = 72;
 segments = 8;
 guide_thickness_mm = 10;
@@ -22,7 +29,7 @@ pin_slot_width_mm = 5;
 pin_height_mm = 15;
 pin_inset_mm = 6.5;
 pin_thickness_mm = 3;
-tack_shaft_diameter_mm = 1.3;
+tack_shaft_diameter_mm = 1.75;
 pin_tolerance_mm = 0.12;
 
 segment_sweep = 360 / segments;
