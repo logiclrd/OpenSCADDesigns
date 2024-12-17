@@ -123,7 +123,6 @@ if (layers > 0)
 }
 else
 {
-  for (angle = [0, 90])
-  rotate([angle, 0, 0])
+  rotate([45, 0, 0])
   text("Select a shape (instructions in the code)");
 }
