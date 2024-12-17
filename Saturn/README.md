@@ -1,5 +1,7 @@
 # Saturn Filleting Example
 
+## Approach: Minkowski
+
 The approach here is to use a Minkowski product to round the hard edge between Saturn and the rings. A straightforward Minkowski won't do the trick, because it's the negative image of a rounded boundary that we want to stamp onto the edge. So, we negate the proto-Saturn, and then do a Minkowski of that with a sphere, then negate it again. This screenshot shows the steps:
 
 ![Screenshot](Screenshot.png)
@@ -15,4 +17,18 @@ The approach here is to use a Minkowski product to round the hard edge between S
 5: The top half is just the bottom half flipped vertically.
 
 6: Splat steps 4 and 5 together into a single shape to make the desired result.
+
+Source code: [saturn.scad](saturn.scad)
+
+## Approach: Direct Geometry
+
+The approach here is to produce points and faces that can be passed to the `polyhedron()` function directly. The points are generated in "bands" (rings of points, but the word "ring" was already taken :-) ). These bands are then joined together using quads (except for the final "band", which is just a single point and is thus covered in triangles). As with the previous approach, the vertical symmetry is leveraged by generating just one half, and then flipping and joining for the other half.
+
+![Screenshot](Screenshot2.png)
+
+Source code: [saturn2.scad](saturn2.scad)
+
+## Comparison
+
+The Minkowski approach generalizes to more complex shapes easily, but takes a very long time to compute. The direct geometry approach requires a lot of careful thought to make even simple alterations to the geometry, but processes very quickly.
 
