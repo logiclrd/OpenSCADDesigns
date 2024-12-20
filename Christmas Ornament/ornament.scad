@@ -80,26 +80,43 @@ points =
         
     [0, 0, height_mm + cap_height_mm]
   ];
-  
+
 faces =
-  [
-    for (i = [1 : stripes])
-      [0, i, (i % stripes) + 1],
-      
-    for (i = [1 : layers])
-      let (b = (i - 1) * stripes + 1)
-      for (j = [0 : stripes - 1])
-        [b + j, b + (j + 1) % stripes, b + j + stripes],
+  (profile(1) != 0)
+  ?
+    [
+      for (i = [1 : stripes])
+        [0, i, (i % stripes) + 1],
 
-    for (i = [1 : layers])
-      let (b = (i - 1) * stripes + 1)
-      for (j = [0 : stripes - 1])
-        [b + (j + 1) % stripes, b + (j + 1) % stripes + stripes, b + j + stripes],
+      for (i = [1 : layers])
+        let (b = (i - 1) * stripes + 1)
+        for (j = [0 : stripes - 1])
+          [b + j, b + (j + 1) % stripes, b + j + stripes],
 
-    let (e = (layers + 1) * stripes + 1)
-    for (i = [1 : stripes])
-      [e, e - i, e - ((i % stripes) + 1)],
-  ];
+      for (i = [1 : layers])
+        let (b = (i - 1) * stripes + 1)
+        for (j = [0 : stripes - 1])
+          [b + (j + 1) % stripes, b + (j + 1) % stripes + stripes, b + j + stripes],
+
+      let (e = (layers + 1) * stripes + 1)
+      for (i = [1 : stripes])
+        [e, e - i, e - ((i % stripes) + 1)],
+    ]
+  :
+    [
+      for (i = [1 : stripes])
+        [0, i, (i % stripes) + 1],
+
+      for (i = [1 : layers])
+        let (b = (i - 1) * stripes + 1)
+        for (j = [0 : stripes - 1])
+          [b + j, b + (j + 1) % stripes, b + j + stripes],
+
+      for (i = [1 : layers])
+        let (b = (i - 1) * stripes + 1)
+        for (j = [0 : stripes - 1])
+          [b + (j + 1) % stripes, b + (j + 1) % stripes + stripes, b + j + stripes],
+    ];
 
 if (layers > 0)
 {
