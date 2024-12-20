@@ -64,62 +64,76 @@ function profile(t)
     : let (u = (0.75 - t) * 0.7) (0.25 + u * u);
 /**/
 
-points =
-  [
-    [0, 0, 0],
-    
-    for (i = [0 : layers])
-      for (j = [1 : stripes])
-        let (t = i / layers)
-        let (a = j * 360 / stripes + i * twist * 5 / layers)
-        let (r = profile(t) * radius_mm)
-        let (x = r * cos(a))
-        let (y = r * sin(a))
-        let (z = i * height_mm / layers)
-        [ x, y, z ],
-        
-    [0, 0, height_mm + cap_height_mm]
-  ];
+module ornament(
+  height_mm,
+  cap_height_mm,
+  cap_diameter_mm,
 
-faces =
-  (profile(1) != 0)
-  ?
+  render_cap,
+
+  cap_wall_thickness_mm,
+  cap_tolerance_mm,
+
+  twist,
+  radius_mm,
+  layers,
+  stripes,
+  cap_adjust_mm)
+{
+  points =
     [
-      for (i = [1 : stripes])
-        [0, i, (i % stripes) + 1],
-
-      for (i = [1 : layers])
-        let (b = (i - 1) * stripes + 1)
-        for (j = [0 : stripes - 1])
-          [b + j, b + (j + 1) % stripes, b + j + stripes],
-
-      for (i = [1 : layers])
-        let (b = (i - 1) * stripes + 1)
-        for (j = [0 : stripes - 1])
-          [b + (j + 1) % stripes, b + (j + 1) % stripes + stripes, b + j + stripes],
-
-      let (e = (layers + 1) * stripes + 1)
-      for (i = [1 : stripes])
-        [e, e - i, e - ((i % stripes) + 1)],
-    ]
-  :
-    [
-      for (i = [1 : stripes])
-        [0, i, (i % stripes) + 1],
-
-      for (i = [1 : layers])
-        let (b = (i - 1) * stripes + 1)
-        for (j = [0 : stripes - 1])
-          [b + j, b + (j + 1) % stripes, b + j + stripes],
-
-      for (i = [1 : layers])
-        let (b = (i - 1) * stripes + 1)
-        for (j = [0 : stripes - 1])
-          [b + (j + 1) % stripes, b + (j + 1) % stripes + stripes, b + j + stripes],
+      [0, 0, 0],
+      
+      for (i = [0 : layers])
+        for (j = [1 : stripes])
+          let (t = i / layers)
+          let (a = j * 360 / stripes + i * twist * 5 / layers)
+          let (r = profile(t) * radius_mm)
+          let (x = r * cos(a))
+          let (y = r * sin(a))
+          let (z = i * height_mm / layers)
+          [ x, y, z ],
+          
+      [0, 0, height_mm + cap_height_mm]
     ];
 
-if (layers > 0)
-{
+  faces =
+    (profile(1) != 0)
+    ?
+      [
+        for (i = [1 : stripes])
+          [0, i, (i % stripes) + 1],
+
+        for (i = [1 : layers])
+          let (b = (i - 1) * stripes + 1)
+          for (j = [0 : stripes - 1])
+            [b + j, b + (j + 1) % stripes, b + j + stripes],
+
+        for (i = [1 : layers])
+          let (b = (i - 1) * stripes + 1)
+          for (j = [0 : stripes - 1])
+            [b + (j + 1) % stripes, b + (j + 1) % stripes + stripes, b + j + stripes],
+
+        let (e = (layers + 1) * stripes + 1)
+        for (i = [1 : stripes])
+          [e, e - i, e - ((i % stripes) + 1)],
+      ]
+    :
+      [
+        for (i = [1 : stripes])
+          [0, i, (i % stripes) + 1],
+
+        for (i = [1 : layers])
+          let (b = (i - 1) * stripes + 1)
+          for (j = [0 : stripes - 1])
+            [b + j, b + (j + 1) % stripes, b + j + stripes],
+
+        for (i = [1 : layers])
+          let (b = (i - 1) * stripes + 1)
+          for (j = [0 : stripes - 1])
+            [b + (j + 1) % stripes, b + (j + 1) % stripes + stripes, b + j + stripes],
+      ];
+
   union()
   {
     polyhedron(points, faces, 1);
@@ -137,6 +151,22 @@ if (layers > 0)
       cylinder(cap_height_mm, d = cap_diameter_mm + 2 * cap_tolerance_mm);
     }
   }
+}
+
+if (layers > 0)
+{
+  ornament(
+    height_mm = height_mm,
+    cap_height_mm = cap_height_mm,
+    cap_diameter_mm = cap_diameter_mm,
+    render_cap = render_cap,
+    cap_wall_thickness_mm = cap_wall_thickness_mm,
+    cap_tolerance_mm = cap_tolerance_mm,
+    twist = twist,
+    radius_mm = radius_mm,
+    layers = layers,
+    stripes = stripes,
+    cap_adjust_mm = cap_adjust_mm);
 }
 else
 {
