@@ -71,7 +71,7 @@ module vertical_bracket()
       cube([bracket_width_mm, bracket_depth_mm, vertical_bracket_height_mm], center = true);
 
       for (i = [-1, 1])
-        strip_retention(i, vertical_bracket_height_mm, strip_escape_length_mm + corner_piece_inset_mm, strip_escape_length_mm + corner_piece_inset_mm);
+        strip_retention(i, vertical_bracket_height_mm, strip_escape_length_mm + corner_piece_inset_mm, 0);
     }
 
     mirror_retention_block_width_mm = mirror_retention_depth_mm + bracket_depth_mm / sqrt(2);
