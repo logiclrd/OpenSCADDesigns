@@ -21,6 +21,10 @@ base_chamfer_height_mm = 12;
 corner_piece_hole_depth_mm = 8;
 floor_size_mm = 201;
 
+horizontal_bracket_retention_width_mm = 6 * 25.4;
+horizontal_bracket_retention_wall_thickness_mm = 2.5;
+horizontal_bracket_retention_tolerance_mm = 0.3;
+
 pin_width_mm = 10;
 pin_depth_mm = 8;
 pin_inset_mm = 10;
@@ -81,7 +85,7 @@ module profile(height_mm)
       {
         translate([-3.5 * bracket_width_mm, 0, 0])
         cube([6 * bracket_width_mm, 6 * bracket_width_mm, 4 * height_mm], center = true);
-        
+
         translate([0, -3.5 * bracket_depth_mm, 0])
         cube([4 * bracket_width_mm, 6 * bracket_depth_mm, 4 * height_mm], center = true);
       }
@@ -96,37 +100,82 @@ echo(base_chamfer_generation_side_mm);
 
 module base()
 {
-  difference()
+  union()
   {
-    intersection()
+    difference()
     {
-      roof()
-      square(base_chamfer_generation_side_mm, center = true);
-      
-      linear_extrude(height = base_thickness_mm)
-      square(2 * mirror_width_mm, center = true);
+      intersection()
+      {
+        roof()
+        square(base_chamfer_generation_side_mm, center = true);
+
+        linear_extrude(height = base_thickness_mm)
+        square(2 * mirror_width_mm, center = true);
+      }
+
+      color("red")
+      for (i = [1 : 4])
+      {
+        rotate([0, 0, 45 + 90 * i])
+        translate([0, mirror_width_mm / sqrt(2) + corner_piece_offset_mm, base_thickness_mm - corner_piece_hole_depth_mm + slot_tolerance_mm / 2])
+        minkowski()
+        {
+          profile(corner_piece_hole_depth_mm + 1);
+          sphere(d = slot_tolerance_mm, $fn = 10);
+        }
+      }
+
+      for (i = [1 : 4])
+      {
+        rotate([0, 0, 90 * i])
+        translate([0, floor_size_mm / 2, base_thickness_mm])
+        rotate([-45, 0, 0])
+        color("blue")
+        minkowski()
+        {
+          cube([7.875 * 25.4, bracket_depth_mm, bracket_width_mm], center = true);
+
+          sphere(d = horizontal_bracket_retention_tolerance_mm, $fn = 12);
+        }
+      }
+
+      translate([0, 0, base_thickness_mm - floor_inset_mm])
+      linear_extrude(floor_inset_mm + 1)
+      square(floor_size_mm, center = true);
+
+      for (i = [0 : 3])
+        rotate([0, 0, i * 90])
+        {
+          translate([0, base_side_mm, 0])
+          cube([base_side_mm * 2, base_side_mm, base_thickness_mm * 2], center = true);
+
+          color("teal")
+          translate([0, mirror_width_mm * 0.5 + corner_piece_offset_mm * sqrt(2) + mirror_thickness_mm / 2 - bracket_depth_mm + mirror_retention_inset_mm, base_thickness_mm])
+          cube([mirror_width_mm, mirror_thickness_mm, 2], center = true);
+        }
     }
 
-    color("red")
     for (i = [1 : 4])
     {
-      rotate([0, 0, 45 + 90 * i])
-      translate([0, mirror_width_mm / sqrt(2) + corner_piece_offset_mm, base_thickness_mm - corner_piece_hole_depth_mm + slot_tolerance_mm / 2])
-      minkowski()
+      rotate([0, 0, 90 * i])
       {
-        profile(corner_piece_hole_depth_mm + 1);
-        sphere(d = slot_tolerance_mm, $fn = 10);
+        translate([0, floor_size_mm / 2, base_thickness_mm])
+        rotate([-45, 0, 0])
+        difference()
+        {
+          translate([0, 5, -0.25 * bracket_width_mm - 0.5 * horizontal_bracket_retention_wall_thickness_mm])
+          cube([horizontal_bracket_retention_width_mm, bracket_depth_mm + 2 * horizontal_bracket_retention_wall_thickness_mm + 10, bracket_width_mm / 2 + horizontal_bracket_retention_wall_thickness_mm], center = true);
+
+          color("blue")
+          minkowski()
+          {
+            cube([7.75 * 25.4, bracket_depth_mm, bracket_width_mm], center = true);
+
+            sphere(d = horizontal_bracket_retention_tolerance_mm, $fn = 12);
+          }
+        }
       }
     }
-
-    translate([0, 0, base_thickness_mm - floor_inset_mm])
-    linear_extrude(floor_inset_mm + 1)
-    square(floor_size_mm, center = true);
-
-    for (i = [0 : 3])
-      rotate([0, 0, i * 90])
-      translate([0, base_side_mm, 0])
-      cube([base_side_mm * 2, base_side_mm, base_thickness_mm * 2], center = true);
   }
 }
 
@@ -141,7 +190,7 @@ module base_segment()
       rotate([0, 0, i])
       {
         translate([0, -base_side_mm, 0])
-        cube([base_side_mm * 2, base_side_mm * 2, base_thickness_mm * 2], center = true);
+        cube([base_side_mm * 2, base_side_mm * 2, base_thickness_mm * 3], center = true);
 
         translate([0, (base_side_mm + floor_size_mm) / 2 / sqrt(2), 0.5 * pin_depth_mm + pin_insertion_extra_mm])
         rotate([180, 0, 0])
@@ -150,7 +199,7 @@ module base_segment()
           union()
           {
             pin();
-            
+
             translate([0, 0, pin_depth_mm])
             cube([2 * pin_inset_mm, pin_width_mm, pin_depth_mm], center = true);
           }
@@ -162,6 +211,7 @@ module base_segment()
   }
 }
 
+//base();
 base_segment();
 //pin();
 
