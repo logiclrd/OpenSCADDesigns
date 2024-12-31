@@ -22,19 +22,19 @@ top_pin_area_mm = 21;
 corner_piece_hole_depth_mm = 8;
 lid_retention_thickness_mm = 2.5;
 lid_retention_width_mm = 5 * 25.4;
-lid_retention_height_mm = 1 * 25.4;
+lid_retention_height_mm = 12.5;
 lid_retention_angle = 18;
 floor_size_mm = 201;
 ceiling_size_mm = floor_size_mm + 2 * lid_retention_thickness_mm;
 top_thickness_mm = corner_piece_hole_depth_mm + 4;
-lid_thickness_mm = 3.5;
+lid_thickness_mm = 6;
 lid_fillet_mm = 1;
 lid_overhang_mm = 8;
 
-lid_handle_hole_separation_mm = 40;
-lid_handle_hole_size_mm = 2.5;
-lid_handle_screw_head_size_mm = 5;
-lid_handle_screw_head_thickness_mm = 1;
+lid_handle_hole_separation_mm = 5 * 25.4;
+lid_handle_hole_size_mm = 5;
+lid_handle_screw_head_size_mm = 11;
+lid_handle_screw_head_thickness_mm = 2;
 
 horizontal_bracket_retention_width_mm = 6 * 25.4;
 horizontal_bracket_retention_wall_thickness_mm = 2.5;
@@ -129,7 +129,7 @@ module lid()
 
         for (i = [0 : 3])
           rotate([0, 0, i * 90])
-          translate([0, ceiling_size_mm / 2 - lid_retention_thickness_mm / 2, -lid_retention_height_mm / 2])
+          translate([0, ceiling_size_mm / 2 - lid_retention_thickness_mm / 2 - 0.3, -lid_retention_height_mm / 2])
           for (j = [-1 : 1])
             multmatrix(
               [[1, 0, sin(lid_retention_angle) * j, lid_retention_skew_mm * j],

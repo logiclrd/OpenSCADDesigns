@@ -25,6 +25,7 @@ floor_size_mm = 201;
 ceiling_size_mm = floor_size_mm + 2 * lid_retention_thickness_mm;
 top_thickness_mm = corner_piece_hole_depth_mm + 4;
 
+horizontal_bracket_length_mm = 7.625 * 25.4;
 horizontal_bracket_retention_width_mm = 6 * 25.4;
 horizontal_bracket_retention_wall_thickness_mm = 2.5;
 horizontal_bracket_retention_tolerance_mm = 0.3;
@@ -40,6 +41,50 @@ pin_insertion_depth_mm = pin_depth_mm - pin_top_thickness_mm;
 pin_insertion_tolerance_mm = 0.3;
 
 pin_insertion_extra_mm = 1;
+
+module strip_retention(side, height_mm, top_escape_mm, bottom_escape_mm, strip_depth_mm = strip_depth_mm)
+{
+  strip_offset = 0.5 * (strip_width_mm + strip_separation_mm);
+
+  translate([side * strip_offset, -0.5 * bracket_depth_mm + 0.5 * strip_thickness_mm + strip_depth_mm, 0])
+  {
+    translate([0, 0, height_mm * 0.5])
+    cube([strip_width_mm, strip_thickness_mm, height_mm + 5], center = true);
+
+    translate([0, -0.5 * bracket_depth_mm, height_mm * 0.5])
+    cube([strip_width_mm - 2 * strip_retention_wall_mm, bracket_depth_mm, height_mm + 5], center = true);
+
+    difference()
+    {
+      union()
+      for (j = [-1, 1])
+      {
+        intersection()
+        {
+          translate([j * (0.5 * strip_width_mm - 0.5 * strip_retention_wall_mm), 0.5 * strip_retention_wall_mm - 0.5 * strip_thickness_mm, height_mm * 0.5])
+          multmatrix(
+            [[1, 0, 0, 0],
+             [j * strip_retention_wall_skew_factor, 1, 0, -0.5 * strip_retention_wall_x_mm],
+             [0, 0, 1, 0],
+             [0, 0, 0, 1]])
+          cube([strip_retention_wall_mm + 0.1, strip_retention_wall_mm, height_mm + 10], center = true);
+
+          translate([0, -3 * bracket_depth_mm + 0.5 * strip_thickness_mm, height_mm * 0.5 + 10])
+          cube([strip_width_mm, 6 * bracket_depth_mm, height_mm + 20], center = true);
+        }
+      }
+
+      translate([0, 3 * bracket_depth_mm + 0.5 * strip_thickness_mm, 0])
+      cube([5 * strip_width_mm, 6 * bracket_depth_mm, 5 * height_mm], center = true);
+    }
+
+    translate([-side * 0.25 * strip_width_mm, -1.5 * strip_thickness_mm, height_mm - 0.5 * top_escape_mm])
+    cube([strip_width_mm, 2 * strip_thickness_mm, top_escape_mm], center = true);
+
+    translate([-side * 0.25 * strip_width_mm, -1.5 * strip_thickness_mm, 0.5 * bottom_escape_mm])
+    cube([strip_width_mm, 2 * strip_thickness_mm, bottom_escape_mm], center = true);
+  }
+}
 
 module pin()
 {
@@ -101,6 +146,14 @@ base_chamfer_generation_side_mm = mirror_width_mm + corner_piece_offset_mm * sqr
 base_side_mm = mirror_width_mm + corner_piece_offset_mm * sqrt(2) * 2 + corner_piece_inset_mm * 2 + base_chamfer_height_mm * 2;
 top_side_mm = mirror_width_mm + corner_piece_offset_mm * sqrt(2) * 2 + corner_piece_inset_mm * 2;
 
+strip_retention_angle = 28;
+
+strip_retention_min_mm = ceiling_size_mm * 0.5;
+strip_retention_max_mm = mirror_width_mm * 0.5 + corner_piece_offset_mm * sqrt(2) - bracket_depth_mm + mirror_retention_inset_mm;
+strip_retention_width_mm = strip_retention_max_mm - strip_retention_min_mm;
+
+strip_retention_width_flat_mm = strip_retention_width_mm / cos(strip_retention_angle);
+
 echo(base_chamfer_generation_side_mm);
 
 module top()
@@ -148,6 +201,30 @@ module top()
         translate([0, 0.5 * mirror_width_mm + top_side_mm * sqrt(2) / 2 - top_corner_chamfer_mm, 0.5 * top_thickness_mm])
         cube([mirror_width_mm, mirror_width_mm, 2 * top_thickness_mm], center = true);
     }
+
+    for (i = [0 : 3])
+    {
+      rotate([0, 0, i * 90])
+      translate([0, strip_retention_min_mm, top_thickness_mm])
+      difference()
+      {
+        multmatrix(
+          [[1, 0, 0, 0],
+           [0, 1, 0, 0],
+           [0, tan(strip_retention_angle), 1, 0],
+           [0, 0, 0, 1]])
+        translate([0, 0.5 * strip_retention_width_mm, -0.5 * top_thickness_mm])
+        cube([horizontal_bracket_length_mm - 5, strip_retention_width_mm, top_thickness_mm], center = true);
+
+        color("green")
+        rotate([strip_retention_angle - 90, 0, 0])
+        translate([0, strip_depth_mm, 0])
+        translate([0, strip_thickness_mm - strip_depth_mm + 0.5 * strip_thickness_mm, 0.5 * strip_retention_width_flat_mm])
+        translate([-0.5 * horizontal_bracket_length_mm, 0, 0])
+        rotate([0, 90, 0])
+        strip_retention(0, horizontal_bracket_length_mm, 15, 15, 1.75);
+      }
+    }
   }
 }
 
@@ -176,7 +253,7 @@ module top_segment()
             translate([0, 0, pin_depth_mm])
             cube([2 * pin_inset_mm, pin_width_mm, pin_depth_mm], center = true);
           }
-          
+
           sphere(d = pin_insertion_tolerance_mm, $fn = 12);
         }
       }
