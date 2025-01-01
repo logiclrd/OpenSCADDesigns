@@ -106,6 +106,24 @@ module vertical_bracket()
   }
 }
 
+module vertical_bracket_with_cable_port()
+{
+  difference()
+  {
+    vertical_bracket();
+
+    cable_port_height_mm = strip_escape_length_mm + corner_piece_inset_mm;
+
+    for (side = [-1, 1])
+    {
+      strip_offset = 0.5 * (strip_width_mm + strip_separation_mm);
+
+      translate([strip_offset * side, -5, vertical_bracket_height_mm - 0.5 * cable_port_height_mm])
+      cube([strip_width_mm, bracket_depth_mm * 5, cable_port_height_mm], center = true);
+    }
+  }
+}
+
 module horizontal_bracket()
 {
   difference()
@@ -119,6 +137,9 @@ module horizontal_bracket()
 
 translate([-20, 0, 0])
 vertical_bracket();
+
+translate([-60, 0, 0])
+vertical_bracket_with_cable_port();
 
 translate([20, 0, 0])
 horizontal_bracket();
