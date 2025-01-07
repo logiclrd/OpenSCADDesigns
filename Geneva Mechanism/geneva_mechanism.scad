@@ -118,20 +118,20 @@ module mechanism(index_plate_height_mm = index_plate_thickness_mm, driver_height
   driver(driver_height_mm, cam_height_mm);
 }
 
-module multi_mechanism(index_plate_height_mm = index_plate_thickness_mm, driver_height_mm = driver_thickness_mm, cam_height_mm = cam_thickness_mm, index_plate_count = 5, index_plate_layers = 3)
+module multi_mechanism(index_plate_height_mm = index_plate_thickness_mm, driver_height_mm = driver_thickness_mm, cam_height_mm = cam_thickness_mm, index_plate_count = 5, index_plate_layers = 3, index_plate_clearance_mm = 0.6)
 {
   base_height_mm = driver_height_mm - cam_height_mm;
 
   for (i = [1 : index_plate_count])
     rotate([0, 0, (i - 1) * 360 / number_of_points])
-    translate([-center_distance_mm, 0, base_height_mm + ((i - 1) % index_plate_layers) * cam_height_mm])
+    translate([-center_distance_mm, 0, base_height_mm + index_plate_clearance_mm + ((i - 1) % index_plate_layers) * (cam_height_mm + index_plate_clearance_mm)])
     rotate([0, 0, (i > 1) ? 180 / number_of_points : 0])
     index_plate(index_plate_height_mm);
 
   cap_height_mm = driver_height_mm - cam_height_mm;
   
-  multi_driver_height_mm = cap_height_mm + index_plate_layers * index_plate_height_mm + cap_height_mm;
-  multi_cam_height_mm = index_plate_layers * cam_height_mm;
+  multi_driver_height_mm = cap_height_mm + index_plate_clearance_mm + index_plate_layers * (index_plate_height_mm + index_plate_clearance_mm) + cap_height_mm;
+  multi_cam_height_mm = index_plate_layers * (cam_height_mm + index_plate_clearance_mm) + index_plate_clearance_mm;
 
   driver(multi_driver_height_mm, multi_cam_height_mm, true, true);
 }
