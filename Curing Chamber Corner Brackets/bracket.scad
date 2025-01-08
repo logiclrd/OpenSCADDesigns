@@ -1,6 +1,6 @@
 corner_piece_inset_mm = 10;
 vertical_bracket_height_mm = (11 + 11/32) * 0.5 * 25.4 + 2 * corner_piece_inset_mm;
-horizontal_bracket_length_mm = 7.625 * 25.4;
+horizontal_bracket_length_mm = 6 * 25.4;
 strip_thickness_mm = 0.5;
 strip_width_mm = 8.5;
 strip_retention_wall_mm = 1.5;
@@ -13,6 +13,9 @@ bracket_depth_mm = 4;
 mirror_thickness_mm = 1.2;
 mirror_retention_depth_mm = 3;
 mirror_retention_inset_mm = 1.2;
+mirror_top_half_length_mm = 137;
+
+mirror_length_mm = 297;
 
 strip_retention_wall_skew_factor = tan(strip_retention_wall_angle);
 strip_retention_wall_x_mm = strip_retention_wall_mm * strip_retention_wall_skew_factor;
@@ -61,17 +64,19 @@ module strip_retention(side, height_mm, top_escape_mm, bottom_escape_mm)
   }
 }
 
-module vertical_bracket()
+module vertical_bracket(height_mm = vertical_bracket_height_mm)
 {
+  echo("HEIGHT: ", height_mm);
+
   union()
   {
     difference()
     {
-      translate([0, 0, vertical_bracket_height_mm * 0.5])
-      cube([bracket_width_mm, bracket_depth_mm, vertical_bracket_height_mm], center = true);
+      translate([0, 0, height_mm * 0.5])
+      cube([bracket_width_mm, bracket_depth_mm, height_mm], center = true);
 
       for (i = [-1, 1])
-        strip_retention(i, vertical_bracket_height_mm, strip_escape_length_mm + corner_piece_inset_mm, 0);
+        strip_retention(i, height_mm, strip_escape_length_mm + corner_piece_inset_mm, strip_escape_length_mm + corner_piece_inset_mm);
     }
 
     mirror_retention_block_width_mm = mirror_retention_depth_mm + bracket_depth_mm / sqrt(2);
@@ -82,35 +87,35 @@ module vertical_bracket()
       intersection()
       {
         translate([-bracket_width_mm / 2, 0, 0])
-        translate([bracket_depth_mm / sqrt(2) / 2, bracket_depth_mm * (1 - sqrt(2) / 2) / 2, 0.5 * vertical_bracket_height_mm])
+        translate([bracket_depth_mm / sqrt(2) / 2, bracket_depth_mm * (1 - sqrt(2) / 2) / 2, 0.5 * height_mm])
         rotate([0, 0, 45])
         difference()
         {
           translate([-0.5 * mirror_retention_block_width_mm, 0, 0])
-          cube([mirror_retention_block_width_mm, bracket_depth_mm, vertical_bracket_height_mm], center = true);
+          cube([mirror_retention_block_width_mm, bracket_depth_mm, height_mm], center = true);
 
           translate([-mirror_retention_block_width_mm + 0.5 * mirror_retention_depth_mm - 1, -0.5 * bracket_depth_mm + 0.5 * mirror_thickness_mm + mirror_retention_inset_mm, 0])
-          cube([mirror_retention_depth_mm + 2, mirror_thickness_mm, 5 * vertical_bracket_height_mm], center = true);
+          cube([mirror_retention_depth_mm + 2, mirror_thickness_mm, 5 * height_mm], center = true);
         }
 
         union()
         {
           translate([-3.5 * bracket_width_mm, 0, 0])
-          cube([6 * bracket_width_mm, 6 * bracket_width_mm, 4 * vertical_bracket_height_mm], center = true);
+          cube([6 * bracket_width_mm, 6 * bracket_width_mm, 4 * height_mm], center = true);
 
           translate([0, -3.5 * bracket_depth_mm, 0])
-          cube([4 * bracket_width_mm, 6 * bracket_depth_mm, 4 * vertical_bracket_height_mm], center = true);
+          cube([4 * bracket_width_mm, 6 * bracket_depth_mm, 4 * height_mm], center = true);
         }
       }
     }
   }
 }
 
-module vertical_bracket_with_cable_port()
+module vertical_bracket_with_cable_port(height_mm = vertical_bracket_height_mm)
 {
   difference()
   {
-    vertical_bracket();
+    vertical_bracket(height_mm);
 
     cable_port_height_mm = strip_escape_length_mm + corner_piece_inset_mm;
 
@@ -118,7 +123,7 @@ module vertical_bracket_with_cable_port()
     {
       strip_offset = 0.5 * (strip_width_mm + strip_separation_mm);
 
-      translate([strip_offset * side, -5, vertical_bracket_height_mm - 0.5 * cable_port_height_mm])
+      translate([strip_offset * side, -5, height_mm - 0.5 * cable_port_height_mm])
       cube([strip_width_mm, bracket_depth_mm * 5, cable_port_height_mm], center = true);
     }
   }
@@ -139,7 +144,10 @@ translate([-20, 0, 0])
 vertical_bracket();
 
 translate([-60, 0, 0])
-vertical_bracket_with_cable_port();
+vertical_bracket_with_cable_port(mirror_length_mm + 2 * corner_piece_inset_mm);
+
+translate([-100, 0, 0])
+vertical_bracket(mirror_length_mm + 2 * corner_piece_inset_mm);
 
 translate([20, 0, 0])
 horizontal_bracket();

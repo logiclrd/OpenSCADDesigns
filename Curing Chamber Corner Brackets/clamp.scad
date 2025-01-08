@@ -21,21 +21,11 @@ top_corner_chamfer_mm = 12;
 top_pin_area_mm = 21;
 corner_piece_hole_depth_mm = 8;
 lid_retention_thickness_mm = 2.5;
-lid_retention_width_mm = 5 * 25.4;
-lid_retention_height_mm = 12.5;
-lid_retention_angle = 18;
 floor_size_mm = 201;
 ceiling_size_mm = floor_size_mm + 2 * lid_retention_thickness_mm;
 top_thickness_mm = corner_piece_hole_depth_mm + 4;
-lid_thickness_mm = 6;
-lid_fillet_mm = 1;
-lid_overhang_mm = 8;
 
-lid_handle_hole_separation_mm = 5 * 25.4;
-lid_handle_hole_size_mm = 5;
-lid_handle_screw_head_size_mm = 11;
-lid_handle_screw_head_thickness_mm = 2;
-
+horizontal_bracket_length_mm = 7.625 * 25.4;
 horizontal_bracket_retention_width_mm = 6 * 25.4;
 horizontal_bracket_retention_wall_thickness_mm = 2.5;
 horizontal_bracket_retention_tolerance_mm = 0.3;
@@ -51,28 +41,6 @@ pin_insertion_depth_mm = pin_depth_mm - pin_top_thickness_mm;
 pin_insertion_tolerance_mm = 0.3;
 
 pin_insertion_extra_mm = 1;
-
-module pin()
-{
-  difference()
-  {
-    cube([2 * pin_inset_mm, pin_width_mm, pin_depth_mm], center = true);
-    
-    translate([0, 0, -pin_top_thickness_mm])
-    cube([2 * pin_inset_mm - 2 * pin_thickness_mm, pin_width_mm * 2, pin_depth_mm], center = true);
-
-    for (i = [-1, 1])
-    {
-      translate([-i * (pin_inset_mm - pin_thickness_mm * 1.5), 0, 0.5 * pin_insertion_depth_mm - 0.5 * pin_depth_mm])
-      multmatrix(
-        [[1, 0, i * pin_insertion_easing_mm / (2 * pin_insertion_depth_mm), 0],
-         [0, 1, 0, 0],
-         [0, 0, 1, 0],
-         [0, 0, 0, 1]])
-      cube([pin_thickness_mm, 2 * pin_width_mm, pin_insertion_depth_mm], center = true);
-    }
-  }
-}
 
 strip_retention_wall_skew_factor = tan(strip_retention_wall_angle);
 strip_retention_wall_x_mm = strip_retention_wall_mm * strip_retention_wall_skew_factor;
@@ -112,45 +80,68 @@ base_chamfer_generation_side_mm = mirror_width_mm + corner_piece_offset_mm * sqr
 base_side_mm = mirror_width_mm + corner_piece_offset_mm * sqrt(2) * 2 + corner_piece_inset_mm * 2 + base_chamfer_height_mm * 2;
 top_side_mm = mirror_width_mm + corner_piece_offset_mm * sqrt(2) * 2 + corner_piece_inset_mm * 2;
 
-echo(base_chamfer_generation_side_mm);
+strip_retention_angle = 28;
 
-module lid()
+strip_retention_min_mm = ceiling_size_mm * 0.5;
+strip_retention_max_mm = mirror_width_mm * 0.5 + corner_piece_offset_mm * sqrt(2) - bracket_depth_mm + mirror_retention_inset_mm;
+strip_retention_width_mm = strip_retention_max_mm - strip_retention_min_mm;
+
+strip_retention_width_flat_mm = strip_retention_width_mm / cos(strip_retention_angle);
+
+clamp_width_mm = mirror_width_mm + 2 * bracket_width_mm / sqrt(2) + 3 * bracket_depth_mm;
+clamp_depth_mm = bracket_width_mm + bracket_depth_mm * 2 + 2.5;
+clamp_thickness_mm = 10;
+clamp_height_mm = 20;
+
+module clamp()
 {
-  difference()
+  union()
   {
-    minkowski()
+    difference()
     {
-      union()
-      {
-        linear_extrude(height = lid_thickness_mm)
-        square(ceiling_size_mm + 2 * lid_overhang_mm, center = true);
-        
-        lid_retention_skew_mm = lid_retention_height_mm * sin(lid_retention_angle);
+      translate([0, -mirror_width_mm / 2 + clamp_depth_mm / 2 - bracket_width_mm - bracket_depth_mm * 0.5 + bracket_depth_mm * 0.5 - 1 - clamp_thickness_mm / 4, clamp_height_mm / 2])
+      cube([clamp_width_mm, clamp_depth_mm - bracket_depth_mm * 2 + clamp_thickness_mm / 2, clamp_height_mm], center = true);
 
-        for (i = [0 : 3])
-          rotate([0, 0, i * 90])
-          translate([0, floor_size_mm / 2 - lid_retention_thickness_mm / 2 - 0.3, -lid_retention_height_mm / 2])
-          for (j = [-1 : 1])
-            multmatrix(
-              [[1, 0, sin(lid_retention_angle) * j, lid_retention_skew_mm * j],
-               [0, 1, 0, 0],
-               [0, 0, 1, 0],
-               [0, 0, 0, 1]])
-            cube([lid_retention_width_mm - lid_retention_skew_mm * 2, lid_retention_thickness_mm, lid_retention_height_mm], center = true);
+      color("red")
+      for (i = [1 : 2])
+      {
+        rotate([0, 0, 45 + 90 * i])
+        translate([0, mirror_width_mm / sqrt(2) + corner_piece_offset_mm, 0])
+        minkowski()
+        {
+          profile(100);
+          sphere(d = slot_tolerance_mm, $fn = 10);
+        }
+      }
+      
+      difference()
+      {
+        color("green")
+        translate([0, -0.5 * mirror_width_mm - (bracket_width_mm / 2 + bracket_depth_mm / 2) + (bracket_width_mm + bracket_depth_mm * 2) - bracket_width_mm, 5])
+        cube([mirror_width_mm + bracket_width_mm * sqrt(2) + bracket_depth_mm, bracket_width_mm * 1.25, clamp_height_mm * 2], center = true);
+
+        for (i = [-1, 1])
+        {
+          rotate([0, 0, 45 * i])
+          translate([0, -mirror_width_mm / sqrt(2) - bracket_width_mm - bracket_depth_mm * 3, 4])
+          cube([2 * bracket_width_mm, 2 * bracket_width_mm, clamp_height_mm * 3], center = true);
+        }
+      }
+      
+      for (i = [-1, 1])
+      {
+        color("blue")
+        rotate([0, 0, 45 * i])
+        translate([0, -mirror_width_mm / sqrt(2) - bracket_width_mm - bracket_depth_mm * 3.5 - clamp_thickness_mm / 2, 4])
+        cube([2 * bracket_width_mm, 2 * bracket_width_mm, clamp_height_mm * 2], center = true);
       }
 
-      sphere(d = lid_fillet_mm, $fn = 12);
+      translate([25 + mirror_width_mm / 2, -mirror_width_mm / 2, clamp_height_mm / 2 + 25])
+      cube([50, 50, 50], center = true);
+      translate([-(25 + mirror_width_mm / 2), -mirror_width_mm / 2, clamp_height_mm / 2 - 25])
+      cube([50, 50, 50], center = true);
     }
-    
-    for (i = [-1, 1])
-      translate([i * lid_handle_hole_separation_mm / 2, 0, 0])
-      {
-        cylinder(h = lid_thickness_mm * 4, d = lid_handle_hole_size_mm, $fn = 20, center = true);
-        translate([0, 0, -lid_fillet_mm / 2])
-        cylinder(h = lid_handle_screw_head_thickness_mm + 1, d = lid_handle_screw_head_size_mm, $fn = 20);
-      }
   }
 }
 
-lid();
-//pin();
+clamp();
