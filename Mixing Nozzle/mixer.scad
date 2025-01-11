@@ -13,10 +13,22 @@
 //   directed at the top end of the nozzle body without pulling heat away
 //   from the core.
 //
+// Rationales:
+// * Each of the colours being injected into the mix chamber through a
+//   constrained opening would reduce the possibilities of backflow and
+//   cross-contamination.
+// * The mixing plate should break up the laminar flow that typically
+//   results from this kind of extrusion and eliminate the "stripy toothpaste"
+//   output.
+//
 // Obvious challenge is the current design of the heat sink. The fins would be
 // difficult to manufacture. Perhaps a design like the Diamond 5-colour hot end
 // could be used, with each of the inputs being wrapped in a cylindrical
 // heat sink instead.
+//
+// Another possibility is a further mixing insert inside the external nozzle
+// after the mixing plate to create additional agitation. This would be a very
+// tiny machined piece.
 
 nozzle_body_diameter_mm = 40;
 nozzle_body_height_mm = 24;
