@@ -1,0 +1,45 @@
+2x2:
+  Base:
+    2 x 13.85 inches
+  Base Extended:
+    2 x 27.71 inches
+  Total: 83.12
+  Need: one 8'
+
+2x4:
+  Back:
+    2 x 22.75 inches
+    2 x 3.75 inches
+  Back Support:
+    2 x 18.6 inches
+  Base:
+    2 x 1.5 inches
+    1 x 21 inches
+  Base Extended:
+    2 x 1.5 inches
+    1 x 18 inches
+  Total: 135.2
+  Need: one 12', cut at 48"
+
+2x6:
+  Back:
+    2 x 24 inches
+  Back Support:
+    1 x 21 inches
+  Axle:
+    4 x 7.5 inches
+  Platform:
+    2 x 4.5 inches
+  Total: 108
+  Need: one 10', cut at 24"
+
+Plywood:
+  Platform:
+    27.7 x 14.85 inches
+  Already have? Probably
+
+Wheel:
+  Back Support: 2
+  Base Extended: 2
+  Platform: 4
+  Total: 8
