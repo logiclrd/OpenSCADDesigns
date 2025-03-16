@@ -1,10 +1,13 @@
 base_height_mm = 5;
-grid_cell_width_mm = 25;
-grid_cell_height_mm = 15;
-grid_cells_x = 11;
-grid_cells_y = 11;
-min_tower_diameter_mm = 1;
-max_tower_diameter_mm = 3;
+grid_cell_width_mm = 30;
+grid_cell_height_mm = 20;
+grid_cells_x = 9;
+grid_cells_y = 9;
+min_tower_diameter_mm = 3.5;
+max_tower_diameter_mm = 6;
+min_tower_height_mm = 20;
+max_tower_height_mm = 40;
+support_diameter_mm = 10;
 
 // Set seed.
 x = rands(0, 0, 0, 1);
@@ -23,12 +26,17 @@ function hsv2rgb(h, s=1, v=1) = let(
   i == 4 ? [t, p, v] :
            [v, p, q];
 
+plate_width_mm = grid_cells_x * grid_cell_width_mm;
+plate_height_mm = grid_cells_y * grid_cell_height_mm;
+
 module pillar(x, y)
 {
-  translate([x * grid_cell_width_mm + 1 + max_tower_diameter_mm, y * grid_cell_height_mm + 6, 0])
+  avoid_support = (x == 0) && (y == round(grid_cells_y / 2 - 0.01));
+
+  translate([x * grid_cell_width_mm + 1 + max_tower_diameter_mm + (avoid_support ? 5 : 0), y * grid_cell_height_mm + 6, 0])
   {
     diameter = rands(min_tower_diameter_mm, max_tower_diameter_mm, 1)[0];
-    height = rands(10, 30, 1)[0];
+    height = rands(min_tower_height_mm, max_tower_height_mm, 1)[0];
     is_round = rands(0, 2, 1)[0] < 1;
     
     color("blue")
@@ -64,9 +72,19 @@ module pillar(x, y)
 }
 
 color("white")
-cube([grid_cells_x * grid_cell_width_mm, grid_cells_y * grid_cell_height_mm, base_height_mm]);
+cube([plate_width_mm, plate_height_mm, base_height_mm]);
 
 translate([0, 0, base_height_mm])
 for (x = [0 : 1 : grid_cells_x - 1])
   for (y = [0 : 1 : grid_cells_y - 1])
     pillar(x, y);
+
+intersection()
+{
+  for (x = [0 : 2])
+    for (y = [0 : 2])
+      translate([x * plate_width_mm / 2, y * plate_height_mm / 2, max_tower_height_mm / 2 + base_height_mm])
+      cylinder(max_tower_height_mm, d = support_diameter_mm, center = true);
+      
+  //cube([plate_width_mm, plate_height_mm, base_height_mm + max_tower_height_mm]);
+}
