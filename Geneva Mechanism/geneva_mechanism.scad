@@ -24,6 +24,10 @@ index_plate_thickness_mm = 25;
 driver_thickness_mm = 45;
 cam_thickness_mm = 25;
 
+// These should match 6704ZZ bearings.
+//
+// https://www.amazon.ca/HiPicco-6700ZZ-Bearings-Shielded-Bearing/dp/B0C74WFYVB/146-5377152-4851331
+
 axle_diameter_mm = 20;
 axle_sides = 4;
 axle_bearing_diameter_mm = 27;
