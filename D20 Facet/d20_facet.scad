@@ -57,7 +57,7 @@ module text_inset(text, font_size = 10, font = "", flipped, height)
   {
     translate([0, 0, height / 2])
     cube([1000, 1000, height], center = true);
-    
+
     roof()
     {
       scale([flipped ? -1 : +1, 1])
@@ -66,21 +66,30 @@ module text_inset(text, font_size = 10, font = "", flipped, height)
   }
 }
 
-
-intersection()
+module facet(text)
 {
-  translate([0, 0, d20_wall_thickness / 2])
-  cube([1000, 1000, d20_wall_thickness], center = true);
-  
-  difference()
+  intersection()
   {
-    pyramid(
-      base_radius = radius,
-      base_sides = 3,
-      pyramid_height = height);
-    
-    rotate([0, 0, -90])
-    scale([0.02, 0.02, 0.02])
-    text_inset("20", 20, font = "Futura Heavy, Bold", flipped = true, height = 1, $fn = 150);
+    translate([0, 0, d20_wall_thickness / 2])
+    cube([1000, 1000, d20_wall_thickness], center = true);
+
+    difference()
+    {
+      pyramid(
+        base_radius = radius,
+        base_sides = 3,
+        pyramid_height = height);
+
+      rotate([0, 0, -90])
+      scale([0.02, 0.02, 0.02])
+      text_inset(text, 20, font = "Futura Heavy, Bold", flipped = true, height = 1, $fn = 150);
+    }
   }
 }
+
+translate([0, -side * 3 / 5, d20_wall_thickness])
+facet("20");
+
+translate([0, side * 3 / 5, d20_wall_thickness])
+rotate([180, 0, 0])
+facet("20");
