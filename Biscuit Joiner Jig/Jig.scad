@@ -8,7 +8,7 @@ main_plate_height = 146;
 
 small_pin_diameter = 4.5; 
 small_pin_inset_x = 18;
-small_pin_inset_y = 20;
+small_pin_inset_y = 19.5;
 
 small_pin_x = front_plate_width * 0.5 - small_pin_inset_x;
 small_pin_y = small_pin_inset_y;
