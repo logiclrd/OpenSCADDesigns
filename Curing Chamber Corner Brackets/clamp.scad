@@ -95,6 +95,7 @@ clamp_height_mm = 20;
 
 module clamp()
 {
+  translate([0, 1.855, 0])
   union()
   {
     difference()
@@ -137,11 +138,77 @@ module clamp()
       }
 
       translate([25 + mirror_width_mm / 2, -mirror_width_mm / 2, clamp_height_mm / 2 + 25])
-      cube([50, 50, 50], center = true);
+      cube([65, 65, 50], center = true);
       translate([-(25 + mirror_width_mm / 2), -mirror_width_mm / 2, clamp_height_mm / 2 - 25])
-      cube([50, 50, 50], center = true);
+      cube([65, 65, 50], center = true);
     }
   }
 }
 
-clamp();
+module clamp_with_cable_port()
+{
+  translate([0, 1.855, 0])
+  union()
+  {
+    difference()
+    {
+      translate([0, -mirror_width_mm / 2 + clamp_depth_mm / 2 - bracket_width_mm - bracket_depth_mm * 0.5 + bracket_depth_mm * 0.5 - 1 - clamp_thickness_mm / 4, clamp_height_mm * 0.75])
+      cube([clamp_width_mm, clamp_depth_mm - bracket_depth_mm * 2 + clamp_thickness_mm / 2, clamp_height_mm * 1.5], center = true);
+
+      color("red")
+      for (i = [1 : 2])
+      {
+        rotate([0, 0, 45 + 90 * i])
+        translate([0, mirror_width_mm / sqrt(2) + corner_piece_offset_mm, 0])
+        minkowski()
+        {
+          profile(100);
+          sphere(d = slot_tolerance_mm, $fn = 10);
+        }
+      }
+      
+      difference()
+      {
+        color("green")
+        translate([0, -0.5 * mirror_width_mm - (bracket_width_mm / 2 + bracket_depth_mm / 2) + (bracket_width_mm + bracket_depth_mm * 2) - bracket_width_mm, 5])
+        cube([mirror_width_mm + bracket_width_mm * sqrt(2) + bracket_depth_mm, bracket_width_mm * 1.25, clamp_height_mm * 3], center = true);
+
+        for (i = [-1, 1])
+        {
+          rotate([0, 0, 45 * i])
+          translate([0, -mirror_width_mm / sqrt(2) - bracket_width_mm - bracket_depth_mm * 3, 4])
+          cube([2 * bracket_width_mm, 2 * bracket_width_mm, clamp_height_mm * 4], center = true);
+        }
+      }
+      
+      for (i = [-1, 1])
+      {
+        color("blue")
+        rotate([0, 0, 45 * i])
+        translate([0, -mirror_width_mm / sqrt(2) - bracket_width_mm - bracket_depth_mm * 3.5 - clamp_thickness_mm / 2, 4])
+        cube([2 * bracket_width_mm, 2 * bracket_width_mm, clamp_height_mm * 3], center = true);
+      }
+
+      translate([-100, -mirror_width_mm / 2 + clamp_depth_mm / 2 - bracket_width_mm - bracket_depth_mm * 0.5 + bracket_depth_mm * 0.5 - 1 - clamp_thickness_mm / 4, clamp_height_mm * 1.5])
+      cube([clamp_width_mm, clamp_depth_mm - bracket_depth_mm * 2 + clamp_thickness_mm / 2, clamp_height_mm], center = true);
+      
+      translate([25 + mirror_width_mm / 2, -mirror_width_mm / 2, clamp_height_mm / 2 - 25 + clamp_height_mm / 2])
+      cube([65, 65, 50], center = true);
+      translate([-(25 + mirror_width_mm / 2), -mirror_width_mm / 2, clamp_height_mm / 2 - 25])
+      cube([65, 65, 50], center = true);
+
+      translate([clamp_width_mm / 2 - 100, -mirror_width_mm / 2 - clamp_depth_mm / 2, clamp_height_mm * 1.5])
+      multmatrix(
+        [[1, 0, 0, 0],
+         [0, 1, 0, 0],
+         [0.5, 0, 1, 0],
+         [0, 0, 0, 1]])
+      translate([clamp_height_mm, 0, 0])
+      cube([clamp_height_mm * 2, clamp_depth_mm, clamp_height_mm], center = true);
+    }
+  }
+}
+
+//clamp();
+
+clamp_with_cable_port();
