@@ -19,9 +19,9 @@ module disc()
   cylinder(disc_thickness_mm, d = disc_diameter_mm, $fn = 100);
 }
 
-module vane(h = 6.4)
+module vane(h = vane_height_mm)
 {
-  translate([0, 0, h/2])
+  translate([0, 0, 0.5 * h])
   difference()
   {
     intersection()
