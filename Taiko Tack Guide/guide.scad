@@ -23,14 +23,15 @@ radius_mm = diameter_mm / 2;
 //inclination = 15;
 tack_count = 72;
 segments = 8;
-guide_thickness_mm = 10;
+guide_thickness_mm = 8;
 guide_height_mm = 25;
 pin_slot_width_mm = 5;
 pin_height_mm = 15;
 pin_inset_mm = 6.5;
-pin_thickness_mm = 3;
-tack_shaft_diameter_mm = 1.75;
+pin_thickness_mm = 2;
+tack_shaft_diameter_mm = 2.75;
 pin_tolerance_mm = 0.12;
+tack_diameter_mm = 19;
 
 segment_sweep = 360 / segments;
 tacks_per_segment = floor(tack_count / segments);
@@ -90,12 +91,14 @@ module guide_segment()
     for (tack = [1 : tacks_per_segment])
     {
       translate([0, 0, guide_height_mm / 2])
-      scale([1, 1, guide_height_mm])
-      translate([0, 0, tack_shaft_radius_mm])
       rotate([0, 0, tack * tack_sweep - tack_sweep * 0.5])
+      translate([(radius_bottom_mm + radius_top_mm) / 2 + tack_diameter_mm / 2 + 1.5, 0, 0])
+      sphere(d = tack_diameter_mm, $fn = 60);
+
+      rotate([0, 0, tack * tack_sweep - tack_sweep * 0.5])
+      translate([0, 0, guide_height_mm / 2])
       rotate([0, 90, 0])
-      rotate([0, 0, 45])
-      cylinder(radius_mm * 1.2, r = tack_shaft_radius_mm * sqrt(2), $fn = 4);
+      cylinder(radius_mm * 1.2, r = tack_shaft_radius_mm * sqrt(2), $fn = 20);
     }
   }
 }

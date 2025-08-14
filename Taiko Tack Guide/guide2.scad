@@ -30,7 +30,7 @@ first_row_radius_mm = first_row_diameter_mm / 2;
 tack_diameter_mm = 19;
 tack_count = 72;
 guide_thickness_mm = 5;
-tack_shaft_diameter_mm = 1.75;
+tack_shaft_diameter_mm = 2.75;
 
 first_row_tack_spacing_mm = first_row_circumference_mm / tack_count;
 second_row_uninclined_offset_y_mm = sqrt(pow(tack_diameter_mm * 2, 2) - pow(first_row_tack_spacing_mm * 0.5, 2));
@@ -76,4 +76,7 @@ difference()
   translate([0, 0, -second_row_radius_mm * sin(inclination)])
   rotate([0, 90 - inclination, 0])
   cylinder(second_row_radius_mm + 10, d = tack_shaft_diameter_mm, $fn = 50);
+
+  translate([second_row_radius_mm + tack_diameter_mm * 0.5 - guide_thickness_mm, 0, tack_diameter_mm * sin(inclination) / 2])
+  sphere(d = tack_diameter_mm, $fn = 40);
 }
