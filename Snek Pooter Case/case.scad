@@ -8,21 +8,25 @@ second_floor_elevation = first_floor_elevation + floor_height_difference;
 first_floor_depth = 32.4;
 first_floor_width = 67.4;
 
+first_floor_board_depth = 30.1;
+
 pillar_depth = 16.2 - 8.5;
 
-second_floor_depth = 56.5;
+second_floor_board_depth = 58;
+
+second_floor_depth = first_floor_depth + second_floor_board_depth - first_floor_board_depth;
 
 screw_hole_diameter = 2.693;
 screw_hole_depth = 8;
 screw_hole_inset = 3.35;
 
-power_adapter_width = 10.5;
-power_adapter_inset = 4.75;
+power_adapter_width = 11.1;
+power_adapter_inset = 5.25;
 power_adapter_height = 5.25;
 power_adapter_depth = 20;
 power_adapter_outset = 2;
 
-power_adapter_guide_width = power_adapter_width + 2 * pillar_depth;
+power_adapter_guide_width = power_adapter_width + 2 * power_adapter_inset;
 power_adapter_guide_height = power_adapter_height + first_floor_elevation;
 
 module base_design()
@@ -55,10 +59,10 @@ union()
   {
     translate([0, first_floor_depth / 4 - second_floor_depth / 2, -base_plate_height / 2])
     cube([first_floor_width, second_floor_depth - first_floor_depth / 2, base_plate_height], center = true);
-    
+
     translate([0, -first_floor_depth / 4, 0])
     cube([first_floor_width - 2 * pillar_depth, first_floor_depth / 2, base_plate_height * 2.5], center = true);
-    
+
     translate([first_floor_width / 2, (first_floor_depth - second_floor_depth) / 2 - second_floor_depth / 2, 0])
     rotate([0, 0, 45])
     scale([1 / sqrt(2), 1 / sqrt(2), 1])
@@ -83,21 +87,38 @@ union()
 
   // Pillars to the second floor mount points.
   translate([0, first_floor_depth - second_floor_depth, -base_plate_height])
-  union()
+  difference()
   {
-    scale([1, 1, (base_plate_height + second_floor_elevation) / base_plate_height])
-    intersection()
+    union()
     {
-      base_design();
-      
-      translate([0, pillar_depth / 2 - first_floor_depth / 2, first_floor_elevation / 2])
-      cube([first_floor_width, pillar_depth, first_floor_elevation], center = true);
+      scale([1, 1, (base_plate_height + second_floor_elevation) / base_plate_height])
+      intersection()
+      {
+        base_design();
+
+        translate([0, pillar_depth / 2 - first_floor_depth / 2, first_floor_elevation / 2])
+        cube([first_floor_width, pillar_depth, first_floor_elevation], center = true);
+      }
+
+      translate([0.6 + pillar_depth / 2 - first_floor_width / 2, 0.6 + pillar_depth / 2 - first_floor_depth / 2, 0])
+      cylinder(d = screw_hole_diameter + 1, h = second_floor_elevation + base_plate_height - screw_hole_depth, $fn = 40);
+      translate([-0.6 - pillar_depth / 2 + first_floor_width / 2, 0.6 + pillar_depth / 2 - first_floor_depth / 2, 0])
+      cylinder(d = screw_hole_diameter + 1, h = second_floor_elevation + base_plate_height - screw_hole_depth, $fn = 40);
     }
-    
-    translate([0.6 + pillar_depth / 2 - first_floor_width / 2, 0.6 + pillar_depth / 2 - first_floor_depth / 2, 0])
-    cylinder(d = screw_hole_diameter + 1, h = second_floor_elevation + base_plate_height - screw_hole_depth, $fn = 40);
-    translate([-0.6 - pillar_depth / 2 + first_floor_width / 2, 0.6 + pillar_depth / 2 - first_floor_depth / 2, 0])
-    cylinder(d = screw_hole_diameter + 1, h = second_floor_elevation + base_plate_height - screw_hole_depth, $fn = 40);
+
+    // Power adapter guide slot cutout
+    translate([first_floor_width / 2 - power_adapter_width / 2 - power_adapter_inset, pillar_depth / 2 - first_floor_depth / 2, base_plate_height + power_adapter_guide_height - power_adapter_height / 2])
+    cube([power_adapter_width, pillar_depth, power_adapter_height], center = true);
+
+    translate([first_floor_width / 2 - power_adapter_width / 2 - power_adapter_inset, pillar_depth / 2 - first_floor_depth / 2, base_plate_height + power_adapter_guide_height + power_adapter_height / 2])
+    translate([+power_adapter_width / 2, 0, -power_adapter_height / 2])
+    multmatrix(
+      [[1, 0, -0.5, 0],
+       [0, 1, 0, 0],
+       [0, 0, 1, 0],
+       [0, 0, 0, 1]])
+    translate([-power_adapter_width / 2, 0, +power_adapter_height / 2])
+    cube([power_adapter_width, pillar_depth, power_adapter_height], center = true);
   }
 
   // Power adapter guide slot
@@ -108,7 +129,7 @@ union()
     {
       translate([0, 0, power_adapter_guide_height / 2])
       cube([power_adapter_guide_width, power_adapter_depth, power_adapter_guide_height], center = true);
-      
+
       translate([0, 0, power_adapter_height + first_floor_elevation])
       cube([power_adapter_width, power_adapter_depth * 2, power_adapter_height * 2], center = true);
     }
