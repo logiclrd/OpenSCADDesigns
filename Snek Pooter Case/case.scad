@@ -21,7 +21,7 @@ screw_hole_depth = 8;
 screw_hole_inset = 3.35;
 
 power_adapter_width = 11.1;
-power_adapter_inset = 5.25;
+power_adapter_inset = 6.35;
 power_adapter_height = 5.25;
 power_adapter_depth = 20;
 power_adapter_outset = 2;
