@@ -10,7 +10,7 @@ sweep_slices = 60;
 slice_points = 200;
 
 function interpolate(t, from, to)
-  = let(tt = 1 - cos(t * 180) / 2)
+  = let(tt = (1 - cos(t * 180)) / 2)
     tt * to + (1 - tt) * from;
 
 function gen_skin_points(side_diameter_mm, top_diameter_mm)
